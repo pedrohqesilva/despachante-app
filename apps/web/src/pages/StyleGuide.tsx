@@ -17,12 +17,21 @@ import {
   Moon,
   Monitor,
   Check,
-  Building2
+  Building2,
+  Search,
+  Plus,
+  X
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
 import { StatusBadge, StatusType } from "@/components/ui/status-badge"
 import { IconContainer, IconContainerSize } from "@/components/ui/icon-container"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 type Section = "colors" | "status" | "typography" | "icons" | "layout" | "spacing" | "components"
@@ -42,6 +51,7 @@ const componentGroups = [
   { id: "group-botoes", label: "Botões" },
   { id: "group-cards", label: "Cards" },
   { id: "group-dialogs", label: "Dialogs" },
+  { id: "group-popovers", label: "Popovers" },
   { id: "group-estados", label: "Estados" },
 ]
 
@@ -861,6 +871,15 @@ function ComponentsSection() {
       <GroupDivider />
 
       {/* ═══════════════════════════════════════════════════════════════════════
+          POPOVERS
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <GroupTitle id="group-popovers">Popovers</GroupTitle>
+
+      <PopoversSection />
+
+      <GroupDivider />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
           ESTADOS
           ═══════════════════════════════════════════════════════════════════════ */}
       <GroupTitle id="group-estados">Estados</GroupTitle>
@@ -882,5 +901,290 @@ function ComponentsSection() {
         </div>
       </div>
     </div>
+  )
+}
+
+function PopoversSection() {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false)
+  const [searchValue, setSearchValue] = useState("")
+  const [selectedItems, setSelectedItems] = useState<string[]>([])
+
+  const mockClients = [
+    { id: "1", name: "João Silva", taxId: "123.456.789-00" },
+    { id: "2", name: "Maria Santos", taxId: "987.654.321-00" },
+    { id: "3", name: "Pedro Oliveira", taxId: "456.789.123-00" },
+  ]
+
+  const filteredClients = searchValue.trim()
+    ? mockClients.filter((c) =>
+        c.name.toLowerCase().includes(searchValue.toLowerCase())
+      )
+    : mockClients
+
+  const toggleItem = (id: string) => {
+    if (selectedItems.includes(id)) {
+      setSelectedItems(selectedItems.filter((i) => i !== id))
+    } else {
+      setSelectedItems([...selectedItems, id])
+    }
+  }
+
+  return (
+    <>
+      <div id="popover-selecao">
+        <SubsectionTitle>Popover de Seleção</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          Popover com busca e lista de seleção. Usado para selecionar cônjuge, proprietários, etc.
+        </p>
+
+        <div className="max-w-md">
+          <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-between h-10"
+                type="button"
+              >
+                <span className="text-muted-foreground">
+                  {selectedItems.length > 0
+                    ? `${selectedItems.length} item(ns) selecionado(s)`
+                    : "Selecione os itens"}
+                </span>
+                <ChevronDown className="h-4 w-4 opacity-50" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
+              <div className="flex items-center border-b px-3">
+                <Search className="h-4 w-4 shrink-0 opacity-50" />
+                <Input
+                  placeholder="Buscar..."
+                  value={searchValue}
+                  onChange={(e) => setSearchValue(e.target.value)}
+                  className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+                  autoComplete="off"
+                />
+              </div>
+              <div className="max-h-[300px] overflow-y-auto">
+                {/* Ação: Criar novo (opcional) */}
+                <div className="p-1">
+                  <div className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer">
+                    <div className="size-8 rounded-md bg-primary/10 flex items-center justify-center">
+                      <Plus className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium">Criar novo item</p>
+                      <p className="text-xs text-muted-foreground">Adicionar à lista</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Separador com label */}
+                <div className="px-2 py-1.5">
+                  <p className="text-xs font-medium text-muted-foreground px-2">Itens existentes</p>
+                </div>
+
+                {/* Lista de resultados */}
+                <div className="p-1 pt-0">
+                  {filteredClients.length === 0 ? (
+                    <p className="py-6 text-center text-sm text-muted-foreground">
+                      Nenhum item encontrado.
+                    </p>
+                  ) : (
+                    filteredClients.map((client) => {
+                      const isSelected = selectedItems.includes(client.id)
+                      return (
+                        <div
+                          key={client.id}
+                          className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+                          onClick={() => toggleItem(client.id)}
+                        >
+                          <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                            <span className="text-xs font-medium">
+                              {client.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium truncate">{client.name}</p>
+                            <p className="text-xs text-muted-foreground">
+                              {client.taxId}
+                            </p>
+                          </div>
+                          {isSelected && (
+                            <Check className="h-4 w-4 text-primary shrink-0" />
+                          )}
+                        </div>
+                      )
+                    })
+                  )}
+                </div>
+              </div>
+            </PopoverContent>
+          </Popover>
+
+          {/* Card de selecionados */}
+          {selectedItems.length > 0 && (
+            <div className="mt-3 rounded-xl border border-border/50 overflow-hidden divide-y divide-border/50">
+              {mockClients
+                .filter((c) => selectedItems.includes(c.id))
+                .map((client) => (
+                  <div
+                    key={client.id}
+                    className="group flex items-center gap-3 px-3 py-2.5 bg-accent/30 hover:bg-accent/60 transition-colors"
+                  >
+                    <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                      <span className="text-sm font-semibold text-primary">
+                        {client.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">
+                        {client.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {client.taxId}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                      onClick={() => toggleItem(client.id)}
+                    >
+                      <X className="size-4" />
+                    </button>
+                  </div>
+                ))}
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div id="popover-estrutura">
+        <SubsectionTitle>Estrutura do Popover de Seleção</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          Estrutura padronizada para popovers com busca e seleção:
+        </p>
+        <CodeBlock>{`<Popover open={isOpen} onOpenChange={setIsOpen}>
+  <PopoverTrigger asChild>
+    <Button variant="outline" className="w-full justify-between h-10">
+      <span className="text-muted-foreground">
+        {selected ? "X selecionado(s)" : "Selecione..."}
+      </span>
+      <ChevronDown className="h-4 w-4 opacity-50" />
+    </Button>
+  </PopoverTrigger>
+  <PopoverContent
+    className="p-0"
+    align="start"
+    sideOffset={-40}
+    style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}
+  >
+    {/* Search Input */}
+    <div className="flex items-center border-b px-3">
+      <Search className="h-4 w-4 shrink-0 opacity-50" />
+      <Input
+        placeholder="Buscar..."
+        className="h-10 border-0 bg-transparent dark:bg-transparent
+                   focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+        autoComplete="off"
+      />
+    </div>
+
+    <div className="max-h-[300px] overflow-y-auto">
+      {/* Ação: Criar novo (opcional) */}
+      <div className="p-1">
+        <div className="flex items-center gap-2 px-2 py-2 rounded-md
+                        hover:bg-accent cursor-pointer">
+          <div className="size-8 rounded-md bg-primary/10
+                          flex items-center justify-center">
+            <Plus className="h-4 w-4 text-primary" />
+          </div>
+          <div className="flex-1">
+            <p className="text-sm font-medium">Criar novo</p>
+            <p className="text-xs text-muted-foreground">Descrição</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Label da seção */}
+      <div className="px-2 py-1.5">
+        <p className="text-xs font-medium text-muted-foreground px-2">
+          Itens existentes
+        </p>
+      </div>
+
+      {/* Lista de itens */}
+      <div className="p-1 pt-0">
+        {items.map((item) => (
+          <div className="flex items-center gap-2 px-2 py-2 rounded-md
+                          hover:bg-accent cursor-pointer">
+            <div className="size-8 rounded-full bg-muted
+                            flex items-center justify-center shrink-0">
+              <span className="text-xs font-medium">{initial}</span>
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-sm font-medium truncate">{name}</p>
+              <p className="text-xs text-muted-foreground">{subtitle}</p>
+            </div>
+            {isSelected && (
+              <Check className="h-4 w-4 text-primary shrink-0" />
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  </PopoverContent>
+</Popover>`}</CodeBlock>
+      </div>
+
+      <div id="popover-regras">
+        <SubsectionTitle>Regras de Uso</SubsectionTitle>
+        <div className="space-y-3">
+          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
+            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-3.5 text-status-success" />
+            </div>
+            <div>
+              <p className="font-medium text-text-primary">sideOffset={-40}</p>
+              <p className="text-sm text-muted-foreground">
+                Posiciona o input de busca exatamente sobre o botão trigger
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
+            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-3.5 text-status-success" />
+            </div>
+            <div>
+              <p className="font-medium text-text-primary">bg-transparent dark:bg-transparent</p>
+              <p className="text-sm text-muted-foreground">
+                Input deve ser transparente para combinar com o fundo do popover
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
+            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-3.5 text-status-success" />
+            </div>
+            <div>
+              <p className="font-medium text-text-primary">width: var(--radix-popover-trigger-width)</p>
+              <p className="text-sm text-muted-foreground">
+                Popover deve ter a mesma largura do trigger para alinhamento perfeito
+              </p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
+            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-3.5 text-status-success" />
+            </div>
+            <div>
+              <p className="font-medium text-text-primary">Avatar com inicial + nome + subtítulo</p>
+              <p className="text-sm text-muted-foreground">
+                Estrutura consistente para itens de seleção em listas
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
   )
 }

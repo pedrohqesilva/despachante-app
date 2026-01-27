@@ -1,8 +1,9 @@
 import { useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
+import { Id } from "../../convex/_generated/dataModel"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X, User, Loader2 } from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X, User, Loader2, Heart, ChevronDown, Check, UserRound, HeartHandshake, Gem, CircleDashed } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -31,10 +32,34 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"
 import { ClientsTableActions } from "@/components/clients/ClientsTableActions"
 import { ExportButton } from "@/components/clients/ExportButton"
 import { formatTaxId, formatPhone } from "@/lib/format"
-import { Client, ClientStatus } from "@/types/client"
+import { Client, ClientStatus, MaritalStatus, PropertyRegime } from "@/types/client"
+import { cn } from "@/lib/utils"
+
+const MARITAL_STATUS_OPTIONS = [
+  { value: "single" as MaritalStatus, icon: UserRound, label: "Solteiro(a)" },
+  { value: "common_law_marriage" as MaritalStatus, icon: HeartHandshake, label: "União Estável" },
+  { value: "married" as MaritalStatus, icon: Gem, label: "Casado(a)" },
+  { value: "widowed" as MaritalStatus, icon: CircleDashed, label: "Viúvo(a)" },
+  { value: "divorced" as MaritalStatus, icon: X, label: "Divorciado(a)" },
+] as const
+
+const PROPERTY_REGIME_OPTIONS = [
+  { value: "partial_communion" as PropertyRegime, label: "Comunhão Parcial de Bens" },
+  { value: "total_communion" as PropertyRegime, label: "Comunhão Total de Bens" },
+  { value: "total_separation" as PropertyRegime, label: "Separação Total de Bens" },
+] as const
+
+const requiresSpouse = (status: string): boolean => {
+  return status === "married" || status === "common_law_marriage"
+}
 
 type SortField = "name" | "email" | "createdAt" | "status"
 type SortOrder = "asc" | "desc"
@@ -60,6 +85,24 @@ export default function Clients() {
     email: "",
     phone: "",
     taxId: "",
+    fatherName: "",
+    motherName: "",
+    maritalStatus: "" as MaritalStatus | "",
+    propertyRegime: "" as PropertyRegime | "",
+    spouseId: null as Id<"clients"> | null,
+  })
+
+  // Estados para seleção de cônjuge
+  const [spouseSearch, setSpouseSearch] = useState("")
+  const [isSpousePopoverOpen, setIsSpousePopoverOpen] = useState(false)
+  const [isCreatingSpouse, setIsCreatingSpouse] = useState(false)
+  const [spouseForm, setSpouseForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+    taxId: "",
+    fatherName: "",
+    motherName: "",
   })
 
   const clientsData = useQuery(
@@ -88,6 +131,23 @@ export default function Clients() {
         taxId: newClientForm.taxId.replace(/\D/g, ""),
       }
       : "skip"
+  )
+
+  // Busca de cônjuge
+  const spouseSearchResults = useQuery(
+    api.clients.searchExcluding,
+    requiresSpouse(newClientForm.maritalStatus)
+      ? {
+        query: spouseSearch.trim() || undefined,
+        excludeId: editingClient?._id,
+      }
+      : "skip"
+  )
+
+  // Dados do cônjuge selecionado
+  const selectedSpouse = useQuery(
+    api.clients.get,
+    newClientForm.spouseId ? { id: newClientForm.spouseId } : "skip"
   )
 
   const handleSort = (field: SortField) => {
@@ -121,6 +181,11 @@ export default function Clients() {
       email: client.email,
       phone: client.phone || "",
       taxId: formatTaxId(client.taxId),
+      fatherName: client.fatherName || "",
+      motherName: client.motherName || "",
+      maritalStatus: client.maritalStatus || "",
+      propertyRegime: client.propertyRegime || "",
+      spouseId: client.spouseId || null,
     })
     setIsNewClientDialogOpen(true)
   }
@@ -175,6 +240,73 @@ export default function Clients() {
     setNewClientForm({ ...newClientForm, taxId: formatted })
   }
 
+  const handleSpousePhoneChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, "")
+    let formatted = value
+
+    if (cleaned.length <= 2) {
+      formatted = cleaned
+    } else if (cleaned.length <= 7) {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2)}`
+    } else if (cleaned.length <= 10) {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 6)}-${cleaned.slice(6)}`
+    } else {
+      formatted = `(${cleaned.slice(0, 2)}) ${cleaned.slice(2, 7)}-${cleaned.slice(7, 11)}`
+    }
+
+    setSpouseForm({ ...spouseForm, phone: formatted })
+  }
+
+  const handleSpouseTaxIdChange = (value: string) => {
+    const cleaned = value.replace(/\D/g, "")
+    let formatted = value
+
+    if (cleaned.length <= 11) {
+      if (cleaned.length <= 3) {
+        formatted = cleaned
+      } else if (cleaned.length <= 6) {
+        formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3)}`
+      } else if (cleaned.length <= 9) {
+        formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6)}`
+      } else {
+        formatted = `${cleaned.slice(0, 3)}.${cleaned.slice(3, 6)}.${cleaned.slice(6, 9)}-${cleaned.slice(9, 11)}`
+      }
+    } else {
+      if (cleaned.length <= 2) {
+        formatted = cleaned
+      } else if (cleaned.length <= 5) {
+        formatted = `${cleaned.slice(0, 2)}.${cleaned.slice(2)}`
+      } else if (cleaned.length <= 8) {
+        formatted = `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5)}`
+      } else if (cleaned.length <= 12) {
+        formatted = `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5, 8)}/${cleaned.slice(8)}`
+      } else {
+        formatted = `${cleaned.slice(0, 2)}.${cleaned.slice(2, 5)}.${cleaned.slice(5, 8)}/${cleaned.slice(8, 12)}-${cleaned.slice(12, 14)}`
+      }
+    }
+
+    setSpouseForm({ ...spouseForm, taxId: formatted })
+  }
+
+  const handleSelectSpouse = (clientId: Id<"clients">) => {
+    setNewClientForm({ ...newClientForm, spouseId: clientId })
+    setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
+    setIsSpousePopoverOpen(false)
+    setSpouseSearch("")
+  }
+
+  const handleAddSpouse = () => {
+    if (!spouseForm.name.trim() || !spouseForm.email.trim() || !spouseForm.taxId.trim()) {
+      toast.error("Preencha todos os campos obrigatórios do cônjuge")
+      return
+    }
+
+    // Limpa spouseId existente pois estamos criando um novo
+    setNewClientForm({ ...newClientForm, spouseId: null })
+    setIsCreatingSpouse(false)
+    toast.success("Cônjuge adicionado. Será criado ao salvar o cliente.")
+  }
+
   const handleCreateClient = async (skipDuplicateCheck?: boolean) => {
     const shouldSkipCheck = skipDuplicateCheck ?? false
     if (!newClientForm.name.trim() || !newClientForm.email.trim() || !newClientForm.taxId.trim()) {
@@ -195,14 +327,41 @@ export default function Clients() {
     }
 
     try {
+      let finalSpouseId = newClientForm.spouseId
+
+      // Se há um novo cônjuge para criar (spouseForm preenchido e sem spouseId selecionado)
+      if (spouseForm.name.trim() && !newClientForm.spouseId && requiresSpouse(newClientForm.maritalStatus)) {
+        const newSpouseId = await createClientMutation({
+          name: spouseForm.name.trim(),
+          email: spouseForm.email.trim(),
+          phone: spouseForm.phone.replace(/\D/g, "") || undefined,
+          taxId: spouseForm.taxId.replace(/\D/g, ""),
+          status: "pending",
+          fatherName: spouseForm.fatherName.trim() || undefined,
+          motherName: spouseForm.motherName.trim() || undefined,
+          maritalStatus: newClientForm.maritalStatus as MaritalStatus,
+          propertyRegime: newClientForm.propertyRegime || undefined,
+        })
+        finalSpouseId = newSpouseId
+      }
+
       if (editingClient) {
         // Update existing client
+        const spouseChanged = finalSpouseId !== editingClient.spouseId
+        const spouseRemoved = !finalSpouseId && !spouseForm.name.trim() && !!editingClient.spouseId
+
         await updateClientMutation({
           id: editingClient._id,
           name: newClientForm.name.trim(),
           email: newClientForm.email.trim(),
           phone: newClientForm.phone.replace(/\D/g, "") || undefined,
           taxId: newClientForm.taxId.replace(/\D/g, ""),
+          fatherName: newClientForm.fatherName.trim() || undefined,
+          motherName: newClientForm.motherName.trim() || undefined,
+          maritalStatus: newClientForm.maritalStatus || undefined,
+          propertyRegime: newClientForm.propertyRegime || undefined,
+          spouseId: spouseChanged ? finalSpouseId || undefined : undefined,
+          removeSpouse: spouseRemoved,
         })
         toast.success("Cliente atualizado com sucesso")
       } else {
@@ -213,6 +372,11 @@ export default function Clients() {
           phone: newClientForm.phone.replace(/\D/g, "") || undefined,
           taxId: newClientForm.taxId.replace(/\D/g, ""),
           status: "pending",
+          fatherName: newClientForm.fatherName.trim() || undefined,
+          motherName: newClientForm.motherName.trim() || undefined,
+          maritalStatus: newClientForm.maritalStatus || undefined,
+          propertyRegime: newClientForm.propertyRegime || undefined,
+          spouseId: finalSpouseId || undefined,
         })
         toast.success("Cliente criado com sucesso")
       }
@@ -225,7 +389,14 @@ export default function Clients() {
         email: "",
         phone: "",
         taxId: "",
+        fatherName: "",
+        motherName: "",
+        maritalStatus: "",
+        propertyRegime: "",
+        spouseId: null,
       })
+      setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
+      setSpouseSearch("")
     } catch (error) {
       toast.error(editingClient ? "Erro ao atualizar cliente" : "Erro ao criar cliente")
       console.error(error)
@@ -305,7 +476,13 @@ export default function Clients() {
                 email: "",
                 phone: "",
                 taxId: "",
+                fatherName: "",
+                motherName: "",
+                maritalStatus: "",
+                propertyRegime: "",
+                spouseId: null,
               })
+              setSpouseSearch("")
               setIsNewClientDialogOpen(true)
             }}
           >
@@ -539,7 +716,15 @@ export default function Clients() {
               email: "",
               phone: "",
               taxId: "",
+              fatherName: "",
+              motherName: "",
+              maritalStatus: "",
+              propertyRegime: "",
+              spouseId: null,
             })
+            setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
+            setSpouseSearch("")
+            setIsSpousePopoverOpen(false)
           }
         }}
       >
@@ -596,6 +781,37 @@ export default function Clients() {
                     className="h-10"
                   />
                 </div>
+                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Filiação</p>
+                <div className="space-y-2">
+                  <Label htmlFor="motherName" className="text-sm font-medium">
+                    Nome da Mãe
+                  </Label>
+                  <Input
+                    id="motherName"
+                    placeholder="Nome completo da mãe"
+                    value={newClientForm.motherName}
+                    onChange={(e) =>
+                      setNewClientForm({ ...newClientForm, motherName: e.target.value })
+                    }
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fatherName" className="text-sm font-medium">
+                    Nome do Pai
+                  </Label>
+                  <Input
+                    id="fatherName"
+                    placeholder="Nome completo do pai"
+                    value={newClientForm.fatherName}
+                    onChange={(e) =>
+                      setNewClientForm({ ...newClientForm, fatherName: e.target.value })
+                    }
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
               </div>
             </div>
 
@@ -631,6 +847,258 @@ export default function Clients() {
                     className="h-10"
                   />
                 </div>
+              </div>
+            </div>
+
+            {/* Marital Status Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado Civil</p>
+              <div className="space-y-4">
+                <div className="grid grid-cols-5 gap-2">
+                  {MARITAL_STATUS_OPTIONS.map(({ value, icon: Icon, label }) => {
+                    const isSelected = newClientForm.maritalStatus === value
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setNewClientForm({
+                            ...newClientForm,
+                            maritalStatus: value,
+                            propertyRegime: requiresSpouse(value)
+                              ? (newClientForm.propertyRegime || "partial_communion")
+                              : "",
+                            spouseId: requiresSpouse(value) ? newClientForm.spouseId : null,
+                          })
+                          if (!requiresSpouse(value)) {
+                            setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
+                          }
+                        }}
+                        className={cn(
+                          "relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl text-center transition-all cursor-pointer aspect-square",
+                          isSelected
+                            ? "border-2 border-primary bg-primary/10 shadow-sm"
+                            : "border border-border bg-accent/50 hover:bg-accent hover:border-border"
+                        )}
+                      >
+                        <div
+                          className={cn(
+                            "size-8 rounded-lg flex items-center justify-center transition-colors",
+                            isSelected
+                              ? "bg-primary text-primary-foreground shadow-sm"
+                              : "bg-background border border-border text-text-tertiary"
+                          )}
+                        >
+                          <Icon className="size-4" />
+                        </div>
+                        <p
+                          className={cn(
+                            "text-xs font-medium leading-tight",
+                            isSelected ? "text-text-primary" : "text-text-secondary"
+                          )}
+                        >
+                          {label}
+                        </p>
+                        {isSelected && (
+                          <div className="absolute top-1.5 right-1.5 size-4 rounded-full bg-primary flex items-center justify-center">
+                            <Check className="size-2.5 text-primary-foreground" />
+                          </div>
+                        )}
+                      </button>
+                    )
+                  })}
+                </div>
+
+                {/* Property Regime Selection */}
+                {requiresSpouse(newClientForm.maritalStatus) && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Regime de Bens</Label>
+                    <Select
+                      value={newClientForm.propertyRegime}
+                      onValueChange={(value) =>
+                        setNewClientForm({ ...newClientForm, propertyRegime: value as PropertyRegime })
+                      }
+                    >
+                      <SelectTrigger className="w-full !h-10">
+                        <SelectValue placeholder="Selecione o regime de bens" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {PROPERTY_REGIME_OPTIONS.map(({ value, label }) => (
+                          <SelectItem key={value} value={value}>
+                            {label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {/* Spouse Selection */}
+                {requiresSpouse(newClientForm.maritalStatus) && (
+                  <div className="space-y-3">
+                    <Label className="text-sm font-medium">Cônjuge</Label>
+
+                    {/* Spouse Search Popover - Hidden when spouse is selected */}
+                    {!selectedSpouse && !spouseForm.name && (
+                      <Popover open={isSpousePopoverOpen} onOpenChange={setIsSpousePopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            variant="outline"
+                            className="w-full justify-between h-10"
+                            type="button"
+                          >
+                            <span className="text-muted-foreground">
+                              Selecione o cônjuge
+                            </span>
+                            <ChevronDown className="h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                      <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
+                        <div className="flex items-center border-b px-3">
+                          <Search className="h-4 w-4 shrink-0 opacity-50" />
+                          <Input
+                            placeholder="Buscar cliente..."
+                            value={spouseSearch}
+                            onChange={(e) => setSpouseSearch(e.target.value)}
+                            className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+                            autoComplete="off"
+                          />
+                        </div>
+                        <div className="max-h-[300px] overflow-y-auto">
+                          {/* Ação: Criar novo */}
+                          <div className="p-1">
+                            <div
+                              className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+                              onClick={() => {
+                                setIsSpousePopoverOpen(false)
+                                setIsCreatingSpouse(true)
+                              }}
+                            >
+                              <div className="size-8 rounded-md bg-primary/10 flex items-center justify-center">
+                                <Plus className="h-4 w-4 text-primary" />
+                              </div>
+                              <div className="flex-1">
+                                <p className="text-sm font-medium">Criar novo cliente</p>
+                                <p className="text-xs text-muted-foreground">Adicionar como cônjuge</p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Separador com label */}
+                          <div className="px-2 py-1.5">
+                            <p className="text-xs font-medium text-muted-foreground px-2">Clientes existentes</p>
+                          </div>
+
+                          {/* Lista de resultados */}
+                          <div className="p-1 pt-0">
+                            {spouseSearchResults === undefined ? (
+                              <div className="flex items-center justify-center py-6">
+                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                              </div>
+                            ) : spouseSearchResults.length === 0 ? (
+                              <p className="py-6 text-center text-sm text-muted-foreground">
+                                Nenhum cliente encontrado.
+                              </p>
+                            ) : (
+                              spouseSearchResults.map((client) => {
+                                const isSelected = newClientForm.spouseId === client._id
+                                const hasSpouse = !!client.spouseId
+                                return (
+                                  <div
+                                    key={client._id}
+                                    className={cn(
+                                      "flex items-center gap-2 px-2 py-2 rounded-md",
+                                      hasSpouse
+                                        ? "opacity-50 cursor-not-allowed"
+                                        : "hover:bg-accent cursor-pointer"
+                                    )}
+                                    onClick={() => !hasSpouse && handleSelectSpouse(client._id)}
+                                  >
+                                    <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                      <span className="text-xs font-medium">
+                                        {client.name.charAt(0).toUpperCase()}
+                                      </span>
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium truncate">{client.name}</p>
+                                      <p className="text-xs text-muted-foreground">
+                                        {hasSpouse ? "Já possui cônjuge vinculado" : formatTaxId(client.taxId)}
+                                      </p>
+                                    </div>
+                                    {hasSpouse && (
+                                      <Heart className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                                    )}
+                                    {isSelected && (
+                                      <Check className="h-4 w-4 text-primary shrink-0" />
+                                    )}
+                                  </div>
+                                )
+                              })
+                            )}
+                          </div>
+                        </div>
+                      </PopoverContent>
+                      </Popover>
+                    )}
+
+                    {/* Selected Spouse Card - Existing Client */}
+                    {selectedSpouse && !spouseForm.name && (
+                      <div className="rounded-xl border border-border/50 overflow-hidden">
+                        <div className="group flex items-center gap-3 px-3 py-2.5 bg-accent/30 hover:bg-accent/60 transition-colors">
+                          <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                            <span className="text-sm font-semibold text-primary">
+                              {selectedSpouse.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-text-primary truncate">
+                              {selectedSpouse.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {formatTaxId(selectedSpouse.taxId)}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                            onClick={() => setNewClientForm({ ...newClientForm, spouseId: null })}
+                          >
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* New Spouse Card - Pending Creation */}
+                    {spouseForm.name && !newClientForm.spouseId && (
+                      <div className="rounded-xl border border-border/50 overflow-hidden">
+                        <div className="group flex items-center gap-3 px-3 py-2.5 bg-status-warning-muted/30 hover:bg-status-warning-muted/50 transition-colors">
+                          <div className="size-8 rounded-full bg-status-warning-muted border border-status-warning-border flex items-center justify-center shrink-0">
+                            <span className="text-sm font-semibold text-status-warning-foreground">
+                              {spouseForm.name.charAt(0).toUpperCase()}
+                            </span>
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-text-primary truncate">
+                              {spouseForm.name}
+                              <span className="ml-2 text-xs text-status-warning-foreground">(novo)</span>
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {spouseForm.taxId ? formatTaxId(spouseForm.taxId.replace(/\D/g, "")) : "CPF não informado"}
+                            </p>
+                          </div>
+                          <button
+                            type="button"
+                            className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                            onClick={() => setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })}
+                          >
+                            <X className="size-4" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -704,6 +1172,138 @@ export default function Clients() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Create Spouse Dialog */}
+      <Dialog open={isCreatingSpouse} onOpenChange={setIsCreatingSpouse}>
+        <DialogContent className="sm:max-w-[500px] p-0 gap-0 overflow-hidden">
+          <div className="flex items-center gap-gap p-6 border-b border-border/50">
+            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Heart className="size-icon-md text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg font-semibold">
+                Novo Cônjuge
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                Cadastre um novo cliente que será definido como cônjuge
+              </DialogDescription>
+            </div>
+          </div>
+          <div className="p-6 space-y-6">
+            {/* Dados Pessoais */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Dados Pessoais</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="spouseName" className="text-sm font-medium">
+                    Nome <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="spouseName"
+                    value={spouseForm.name}
+                    onChange={(e) => setSpouseForm({ ...spouseForm, name: e.target.value })}
+                    placeholder="Nome completo"
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spouseTaxId" className="text-sm font-medium">
+                    CPF/CNPJ <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="spouseTaxId"
+                    value={spouseForm.taxId}
+                    onChange={(e) => handleSpouseTaxIdChange(e.target.value)}
+                    placeholder="000.000.000-00"
+                    autoComplete="off"
+                    maxLength={18}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Filiação */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Filiação</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="spouseMotherName" className="text-sm font-medium">
+                    Nome da Mãe
+                  </Label>
+                  <Input
+                    id="spouseMotherName"
+                    value={spouseForm.motherName}
+                    onChange={(e) => setSpouseForm({ ...spouseForm, motherName: e.target.value })}
+                    placeholder="Nome completo da mãe"
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spouseFatherName" className="text-sm font-medium">
+                    Nome do Pai
+                  </Label>
+                  <Input
+                    id="spouseFatherName"
+                    value={spouseForm.fatherName}
+                    onChange={(e) => setSpouseForm({ ...spouseForm, fatherName: e.target.value })}
+                    placeholder="Nome completo do pai"
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contato */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contato</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="spouseEmail" className="text-sm font-medium">
+                    Email <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="spouseEmail"
+                    type="email"
+                    value={spouseForm.email}
+                    onChange={(e) => setSpouseForm({ ...spouseForm, email: e.target.value })}
+                    placeholder="email@exemplo.com"
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="spousePhone" className="text-sm font-medium">Telefone</Label>
+                  <Input
+                    id="spousePhone"
+                    value={spouseForm.phone}
+                    onChange={(e) => handleSpousePhoneChange(e.target.value)}
+                    placeholder="(00) 00000-0000"
+                    autoComplete="off"
+                    maxLength={15}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
+            <Button variant="outline" onClick={() => {
+              setIsCreatingSpouse(false)
+              setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
+            }}>
+              Cancelar
+            </Button>
+            <Button onClick={handleAddSpouse}>
+              Adicionar
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   )
 }

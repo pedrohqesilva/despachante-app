@@ -9,7 +9,8 @@
       "Bash(npm run build:*)",
       "Bash(pnpm install:*)",
       "Bash(npx tsc:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(npx convex:*)"
     ]
   }
 }

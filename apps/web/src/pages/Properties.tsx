@@ -1117,52 +1117,61 @@ export default function Properties() {
                       <ChevronDown className="h-4 w-4 opacity-50" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="p-0" align="start" sideOffset={4} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
-                    <div className="p-2">
+                  <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
+                    <div className="flex items-center border-b px-3">
+                      <Search className="h-4 w-4 shrink-0 opacity-50" />
                       <Input
-                        placeholder="Buscar por nome, telefone ou CPF/CNPJ..."
+                        placeholder="Buscar cliente..."
                         value={ownerSearch}
                         onChange={(e) => setOwnerSearch(e.target.value)}
-                        className="h-9 w-full"
-                                              />
+                        className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+                        autoComplete="off"
+                      />
                     </div>
-                    <div className="max-h-[300px] overflow-y-auto py-1">
-                      {activeClients === undefined || isSearchingClients ? (
-                        <div className="flex items-center justify-center p-4">
-                          <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          <span className="ml-2 text-sm text-muted-foreground">Carregando...</span>
-                        </div>
-                      ) : filteredClients.length === 0 ? (
-                        <div className="p-4 text-sm text-muted-foreground text-center">
-                          {ownerSearch.trim() ? "Nenhum cliente encontrado" : "Nenhum cliente cadastrado"}
-                        </div>
-                      ) : (
-                        filteredClients.map((client) => {
-                          const isSelected = newPropertyForm.ownerIds.includes(client._id)
-                          return (
-                            <div
-                              key={client._id}
-                              className="relative flex items-center gap-2 mx-1 px-2 py-1.5 rounded-sm hover:bg-accent hover:text-accent-foreground cursor-pointer outline-none select-none"
-                              onClick={() => toggleOwner(client._id)}
-                            >
+                    <div className="max-h-[300px] overflow-y-auto">
+                      {/* Separador com label */}
+                      <div className="px-2 py-1.5">
+                        <p className="text-xs font-medium text-muted-foreground px-2">Clientes</p>
+                      </div>
+
+                      {/* Lista de resultados */}
+                      <div className="p-1 pt-0">
+                        {activeClients === undefined || isSearchingClients ? (
+                          <div className="flex items-center justify-center py-6">
+                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                          </div>
+                        ) : filteredClients.length === 0 ? (
+                          <p className="py-6 text-center text-sm text-muted-foreground">
+                            {ownerSearch.trim() ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado."}
+                          </p>
+                        ) : (
+                          filteredClients.map((client) => {
+                            const isSelected = newPropertyForm.ownerIds.includes(client._id)
+                            return (
                               <div
-                                className={cn(
-                                  "flex h-4 w-4 items-center justify-center rounded-sm border border-primary",
-                                  isSelected && "bg-primary text-primary-foreground"
-                                )}
+                                key={client._id}
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+                                onClick={() => toggleOwner(client._id)}
                               >
-                                {isSelected && <Check className="h-3 w-3" />}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <div className="text-sm">{client.name}</div>
-                                <div className="text-xs text-muted-foreground">
-                                  {formatTaxId(client.taxId)}
+                                <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                  <span className="text-xs font-medium">
+                                    {client.name.charAt(0).toUpperCase()}
+                                  </span>
                                 </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium truncate">{client.name}</p>
+                                  <p className="text-xs text-muted-foreground">
+                                    {formatTaxId(client.taxId)}
+                                  </p>
+                                </div>
+                                {isSelected && (
+                                  <Check className="h-4 w-4 text-primary shrink-0" />
+                                )}
                               </div>
-                            </div>
-                          )
-                        })
-                      )}
+                            )
+                          })
+                        )}
+                      </div>
                     </div>
                   </PopoverContent>
                 </Popover>

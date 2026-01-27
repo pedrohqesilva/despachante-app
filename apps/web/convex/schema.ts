@@ -21,12 +21,32 @@ export default defineSchema({
       v.literal("inactive"),
       v.literal("pending")
     ),
+    maritalStatus: v.optional(
+      v.union(
+        v.literal("single"),
+        v.literal("common_law_marriage"),
+        v.literal("married"),
+        v.literal("widowed"),
+        v.literal("divorced")
+      )
+    ),
+    propertyRegime: v.optional(
+      v.union(
+        v.literal("partial_communion"),
+        v.literal("total_communion"),
+        v.literal("total_separation")
+      )
+    ),
+    spouseId: v.optional(v.id("clients")),
+    fatherName: v.optional(v.string()),
+    motherName: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("email", ["email"])
     .index("status", ["status"])
-    .index("taxId", ["taxId"]),
+    .index("taxId", ["taxId"])
+    .index("spouseId", ["spouseId"]),
   notaryOffices: defineTable({
     name: v.string(),
     code: v.string(),
