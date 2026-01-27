@@ -1,0 +1,26 @@
+{
+  "name": "despachante-app",
+  "private": true,
+  "version": "1.0.0",
+  "packageManager": "pnpm@9.15.0",
+  "scripts": {
+    "dev": "turbo dev",
+    "dev:web": "turbo dev --filter=@despachante/web",
+    "dev:server": "turbo dev --filter=@despachante/server",
+    "build": "turbo build",
+    "build:web": "turbo build --filter=@despachante/web",
+    "build:server": "turbo build --filter=@despachante/server",
+    "lint": "turbo lint",
+    "typecheck": "turbo typecheck",
+    "clean": "turbo clean && rm -rf node_modules",
+    "convex:dev": "pnpm --filter @despachante/convex dev",
+    "convex:deploy": "pnpm --filter @despachante/convex deploy"
+  },
+  "devDependencies": {
+    "turbo": "^2.3.0"
+  },
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=9.0.0"
+  }
+}

@@ -1,0 +1,38 @@
+---
+alwaysApply: true
+---
+
+# Design System Rules
+
+## Component Library
+- **Always use shadcn/ui components** for UI elements (buttons, inputs, cards, dialogs, etc.)
+- Before creating custom components, check if shadcn/ui has a suitable component
+- Use `npx shadcn@latest add [component]` to add new shadcn components when needed
+- Prefer shadcn components over custom implementations or other UI libraries
+
+## Icons
+- **Always use Lucide icons** for all iconography in the application
+- Import icons from `lucide-react` package
+- Use Lucide icons instead of other icon libraries (Font Awesome, Material Icons, etc.)
+- Check Lucide's icon library at https://lucide.dev/icons before creating custom icons
+- Use appropriate icon sizes with Tailwind classes (e.g., `size-4`, `size-5`, `size-6`)
+
+## Styling
+- **Always use Tailwind CSS** for all styling and layout
+- Use Tailwind utility classes instead of custom CSS or inline styles
+- Follow Tailwind's utility-first approach
+- Use Tailwind's design tokens (colors, spacing, typography) from the theme configuration
+- Leverage Tailwind's responsive utilities (sm:, md:, lg:, xl:, 2xl:) for responsive design
+- Use Tailwind's dark mode utilities (dark:) when implementing dark mode support
+
+## Component Structure
+- When using shadcn components, customize them with Tailwind classes rather than modifying the component source directly
+- Use Tailwind's `cn()` utility (from shadcn) for conditional class merging
+- Maintain consistency with shadcn's design patterns and conventions
+
+## Best Practices
+- Combine shadcn components with Tailwind utilities to create cohesive, maintainable UI
+- Use Tailwind's spacing scale for consistent margins and padding
+- Leverage Tailwind's color palette for consistent theming
+- Prefer Tailwind's flexbox and grid utilities for layouts
+- Use Tailwind's typography plugin or utilities for text styling
