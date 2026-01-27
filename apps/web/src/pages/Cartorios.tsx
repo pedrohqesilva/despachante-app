@@ -1,0 +1,575 @@
+import { useState } from "react"
+import { useQuery, useMutation } from "convex/react"
+import { api } from "../../convex/_generated/api"
+import { toast } from "sonner"
+import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Building2, X } from "lucide-react"
+import { PageHeader, PageHeaderDescription, PageHeaderHeading } from "@/components/page-header"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table"
+import { Badge } from "@/components/ui/badge"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
+import { Skeleton } from "@/components/ui/skeleton"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { NotaryOfficesTableActions } from "@/components/notary-offices/NotaryOfficesTableActions"
+import type { NotaryOffice, NotaryOfficeStatus } from "@/types/notary-office"
+
+type SortField = "name" | "code" | "createdAt" | "status"
+type SortOrder = "asc" | "desc"
+
+export default function Cartorios() {
+  const [search, setSearch] = useState("")
+  const [statusFilter, setStatusFilter] = useState<NotaryOfficeStatus | "all">("all")
+  const [page, setPage] = useState(1)
+  const [pageSize, setPageSize] = useState(10)
+  const [sortBy, setSortBy] = useState<SortField>("createdAt")
+  const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingNotaryOffice, setEditingNotaryOffice] = useState<NotaryOffice | null>(null)
+  const [formData, setFormData] = useState({
+    name: "",
+    code: "",
+    address: "",
+    city: "",
+    state: "",
+    phone: "",
+    email: "",
+    status: "active" as "active" | "inactive",
+  })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+
+  const notaryOfficesData = useQuery(api.notaryOffices.list, {
+    page,
+    pageSize,
+    search: search || undefined,
+    status: statusFilter !== "all" ? statusFilter : undefined,
+    sortBy,
+    sortOrder,
+  })
+
+  const createMutation = useMutation(api.notaryOffices.create)
+  const updateMutation = useMutation(api.notaryOffices.update)
+  const deleteMutation = useMutation(api.notaryOffices.remove)
+
+  const handleSort = (field: SortField) => {
+    if (sortBy === field) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+    } else {
+      setSortBy(field)
+      setSortOrder("asc")
+    }
+  }
+
+  const handleDelete = async (notaryOffice: NotaryOffice) => {
+    try {
+      await deleteMutation({ id: notaryOffice._id })
+      toast.success("Cartório excluído com sucesso")
+    } catch (error) {
+      toast.error("Erro ao excluir cartório")
+      console.error(error)
+    }
+  }
+
+  const handleOpenDialog = () => {
+    setEditingNotaryOffice(null)
+    setFormData({
+      name: "",
+      code: "",
+      address: "",
+      city: "",
+      state: "",
+      phone: "",
+      email: "",
+      status: "active",
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleEdit = (notaryOffice: NotaryOffice) => {
+    setEditingNotaryOffice(notaryOffice)
+    setFormData({
+      name: notaryOffice.name,
+      code: notaryOffice.code,
+      address: notaryOffice.address || "",
+      city: notaryOffice.city || "",
+      state: notaryOffice.state || "",
+      phone: notaryOffice.phone || "",
+      email: notaryOffice.email || "",
+      status: notaryOffice.status,
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleCloseDialog = () => {
+    setIsDialogOpen(false)
+    setEditingNotaryOffice(null)
+    setFormData({
+      name: "",
+      code: "",
+      address: "",
+      city: "",
+      state: "",
+      phone: "",
+      email: "",
+      status: "active",
+    })
+  }
+
+  const handleSubmit = async () => {
+    if (!formData.name.trim() || !formData.code.trim()) {
+      toast.error("Preencha os campos obrigatórios")
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      if (editingNotaryOffice) {
+        await updateMutation({
+          id: editingNotaryOffice._id,
+          name: formData.name.trim(),
+          code: formData.code.trim(),
+          address: formData.address.trim() || undefined,
+          city: formData.city.trim() || undefined,
+          state: formData.state.trim() || undefined,
+          phone: formData.phone.trim() || undefined,
+          email: formData.email.trim() || undefined,
+          status: formData.status,
+        })
+        toast.success("Cartório atualizado com sucesso")
+      } else {
+        await createMutation({
+          name: formData.name.trim(),
+          code: formData.code.trim(),
+          address: formData.address.trim() || undefined,
+          city: formData.city.trim() || undefined,
+          state: formData.state.trim() || undefined,
+          phone: formData.phone.trim() || undefined,
+          email: formData.email.trim() || undefined,
+          status: "active",
+        })
+        toast.success("Cartório criado com sucesso")
+      }
+      handleCloseDialog()
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : "Erro ao salvar cartório"
+      toast.error(errorMessage)
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const getStatusBadgeVariant = (status: NotaryOfficeStatus) => {
+    switch (status) {
+      case "active":
+        return "default"
+      case "inactive":
+        return "secondary"
+      default:
+        return "secondary"
+    }
+  }
+
+  const getStatusBadgeClassName = (status: NotaryOfficeStatus) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+      case "inactive":
+        return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20"
+      default:
+        return ""
+    }
+  }
+
+  const getStatusLabel = (status: NotaryOfficeStatus) => {
+    switch (status) {
+      case "active":
+        return "Ativo"
+      case "inactive":
+        return "Inativo"
+      default:
+        return status
+    }
+  }
+
+  const SortIcon = ({ field }: { field: SortField }) => {
+    if (sortBy !== field) {
+      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
+    }
+    return sortOrder === "asc" ? (
+      <ArrowUp className="ml-2 h-4 w-4" />
+    ) : (
+      <ArrowDown className="ml-2 h-4 w-4" />
+    )
+  }
+
+  const isLoading = notaryOfficesData === undefined
+  const notaryOffices = notaryOfficesData?.data ?? []
+  const total = notaryOfficesData?.total ?? 0
+  const totalPages = notaryOfficesData?.totalPages ?? 0
+
+  return (
+    <div className="flex-1 flex flex-col">
+      <PageHeader>
+        <div className="flex items-center justify-between">
+          <div>
+            <PageHeaderHeading>Cartórios</PageHeaderHeading>
+            <PageHeaderDescription>
+              Gerencie os cartórios cadastrados no sistema
+            </PageHeaderDescription>
+          </div>
+          <Button onClick={handleOpenDialog}>
+            <Plus className="mr-2 h-4 w-4" />
+            Novo Cartório
+          </Button>
+        </div>
+      </PageHeader>
+
+      <div className="flex-1 space-y-4">
+        <div className="flex items-center gap-4">
+          <div className="relative flex-1 max-w-sm">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Buscar por nome, código, cidade ou estado..."
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
+              className="pl-9 pr-9"
+              autoComplete="off"
+            />
+            {search && (
+              <button
+                onClick={() => {
+                  setSearch("")
+                  setPage(1)
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Select
+            value={statusFilter}
+            onValueChange={(value) => {
+              setStatusFilter(value as NotaryOfficeStatus | "all")
+              setPage(1)
+            }}
+          >
+            <SelectTrigger className="w-[180px]">
+              <SelectValue placeholder="Filtrar por status" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos os status</SelectItem>
+              <SelectItem value="active">Ativo</SelectItem>
+              <SelectItem value="inactive">Inativo</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[150px]">
+                  <button
+                    onClick={() => handleSort("code")}
+                    className="flex items-center hover:text-foreground cursor-pointer"
+                  >
+                    Código
+                    <SortIcon field="code" />
+                  </button>
+                </TableHead>
+                <TableHead className="w-[300px]">
+                  <button
+                    onClick={() => handleSort("name")}
+                    className="flex items-center hover:text-foreground cursor-pointer"
+                  >
+                    Nome
+                    <SortIcon field="name" />
+                  </button>
+                </TableHead>
+                <TableHead>Cidade/Estado</TableHead>
+                <TableHead>Telefone</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="w-[120px]">
+                  <button
+                    onClick={() => handleSort("status")}
+                    className="flex items-center hover:text-foreground cursor-pointer"
+                  >
+                    Status
+                    <SortIcon field="status" />
+                  </button>
+                </TableHead>
+                <TableHead className="w-[100px] text-right">Ações</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading ? (
+                Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i}>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[120px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[200px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[150px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[120px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[180px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[80px]" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-4 w-[60px]" />
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : notaryOffices.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={7} className="h-72 text-center">
+                    <button
+                      onClick={handleOpenDialog}
+                      className="flex flex-col items-center justify-center gap-2 w-full h-full hover:opacity-80 transition-opacity cursor-pointer"
+                    >
+                      <Building2 className="h-12 w-12 text-muted-foreground" />
+                      <p className="text-base font-medium text-muted-foreground">
+                        Nenhum cartório encontrado
+                      </p>
+                      <p className="text-sm text-muted-foreground/70">
+                        Clique para adicionar um novo cartório
+                      </p>
+                    </button>
+                  </TableCell>
+                </TableRow>
+              ) : (
+                notaryOffices.map((notaryOffice: NotaryOffice) => (
+                  <TableRow key={notaryOffice._id}>
+                    <TableCell className="font-medium">{notaryOffice.code}</TableCell>
+                    <TableCell>{notaryOffice.name}</TableCell>
+                    <TableCell>
+                      {notaryOffice.city && notaryOffice.state
+                        ? `${notaryOffice.city}/${notaryOffice.state}`
+                        : notaryOffice.city || notaryOffice.state || "-"}
+                    </TableCell>
+                    <TableCell>{notaryOffice.phone || "-"}</TableCell>
+                    <TableCell>{notaryOffice.email || "-"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getStatusBadgeVariant(notaryOffice.status)}
+                        className={getStatusBadgeClassName(notaryOffice.status)}
+                      >
+                        {getStatusLabel(notaryOffice.status)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <NotaryOfficesTableActions
+                        notaryOffice={notaryOffice}
+                        onEdit={handleEdit}
+                        onDelete={handleDelete}
+                      />
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {!isLoading && totalPages > 0 && (
+          <div className="flex items-center justify-between">
+            <div className="text-sm text-muted-foreground">
+              Mostrando {notaryOffices.length} de {total} cartório(s)
+            </div>
+            <div className="flex items-center gap-2">
+              <Select
+                value={String(pageSize)}
+                onValueChange={(value) => {
+                  setPageSize(Number(value))
+                  setPage(1)
+                }}
+              >
+                <SelectTrigger className="w-[100px]">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="25">25</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
+              <div className="flex items-center gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(1, p - 1))}
+                  disabled={page === 1}
+                >
+                  Anterior
+                </Button>
+                <div className="text-sm">
+                  Página {page} de {totalPages}
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={page === totalPages}
+                >
+                  Próxima
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-[550px]">
+          <DialogHeader>
+            <DialogTitle>
+              {editingNotaryOffice ? "Editar Cartório" : "Novo Cartório"}
+            </DialogTitle>
+            <DialogDescription>
+              {editingNotaryOffice
+                ? "Atualize os dados do cartório"
+                : "Preencha os dados para cadastrar um novo cartório"}
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">
+                Nome <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="name"
+                placeholder="Nome do cartório"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                autoComplete="off"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="code">
+                Código <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id="code"
+                placeholder="Código do cartório"
+                value={formData.code}
+                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                autoComplete="off"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="address">Endereço</Label>
+              <Input
+                id="address"
+                placeholder="Endereço completo"
+                value={formData.address}
+                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                autoComplete="off"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="city">Cidade</Label>
+                <Input
+                  id="city"
+                  placeholder="Cidade"
+                  value={formData.city}
+                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  autoComplete="off"
+                  disabled={isSubmitting}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">Estado</Label>
+                <Input
+                  id="state"
+                  placeholder="UF"
+                  value={formData.state}
+                  onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                  autoComplete="off"
+                  maxLength={2}
+                  disabled={isSubmitting}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="phone">Telefone</Label>
+              <Input
+                id="phone"
+                placeholder="(00) 00000-0000"
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                autoComplete="off"
+                disabled={isSubmitting}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="email@exemplo.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                autoComplete="off"
+                disabled={isSubmitting}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleCloseDialog} disabled={isSubmitting}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSubmit} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

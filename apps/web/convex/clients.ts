@@ -32,7 +32,7 @@ export const list = query({
           client.name.toLowerCase().includes(searchLower) ||
           client.email.toLowerCase().includes(searchLower) ||
           client.taxId.includes(searchLower) ||
-          (client.phone && client.phone.replace(/\D/g, "").includes(searchCleaned))
+          (searchCleaned.length > 0 && client.phone && client.phone.replace(/\D/g, "").includes(searchCleaned))
       );
     }
 

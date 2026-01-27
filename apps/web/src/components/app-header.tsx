@@ -18,7 +18,7 @@ import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { baseUrl } from '@/config/app'
 import { useAuth } from '@/contexts/AuthContext'
-import { Users } from 'lucide-react'
+import { Users, Settings } from 'lucide-react'
 
 export function AppHeader() {
     const { user, signOut } = useAuth()
@@ -152,6 +152,13 @@ export function AppHeader() {
                                                 </p>
                                             </div>
                                         </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem asChild>
+                                            <Link to="/configuracoes" className="cursor-pointer">
+                                                <Settings className="mr-2 size-4" />
+                                                Configurações
+                                            </Link>
+                                        </DropdownMenuItem>
                                         <DropdownMenuSeparator />
                                         <DropdownMenuItem onClick={handleSignOut}>
                                             Sair

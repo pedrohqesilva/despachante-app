@@ -4,6 +4,8 @@ import { ProtectedRoute } from './components/ProtectedRoute'
 import NotMatch from './pages/NotMatch'
 import Home from './pages/Home'
 import Clients from './pages/Clients'
+import Settings from './pages/Settings'
+import Cartorios from './pages/Cartorios'
 
 export default function Router() {
     return (
@@ -12,6 +14,8 @@ export default function Router() {
                 <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
                     <Route path="" element={<Home />} />
                     <Route path="clientes" element={<Clients />} />
+                    <Route path="configuracoes" element={<Settings />} />
+                    <Route path="cadastros/cartorios" element={<Cartorios />} />
                 </Route>
                 <Route path="*" element={<NotMatch />} />
             </Route>

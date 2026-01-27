@@ -1,7 +1,6 @@
 ---
-alwaysApply: true
+alwaysApply: false
 ---
-
 # Design System Rules
 
 ## Component Library
@@ -29,6 +28,32 @@ alwaysApply: true
 - When using shadcn components, customize them with Tailwind classes rather than modifying the component source directly
 - Use Tailwind's `cn()` utility (from shadcn) for conditional class merging
 - Maintain consistency with shadcn's design patterns and conventions
+
+## Design Consistency & Pattern Reuse
+- **Always analyze similar pages** before implementing new features
+- **Reuse existing components** and patterns to maintain consistency
+- **Follow established patterns** from reference pages (e.g., Clients.tsx, Cartorios.tsx)
+- **Avoid design variations** - if a pattern exists, use it instead of creating new ones
+- **Check for reusable components** in `src/components/` before creating new ones
+- **Match layout structure** - use same container classes, spacing, and organization
+- **Reuse table patterns** - sorting, pagination, filters, empty states, loading states
+- **Reuse dialog patterns** - form structure, validation, error handling
+- **Reuse action components** - table actions dropdowns, status badges, buttons
+
+### Before Implementing a New Page
+1. **Search for similar pages** (e.g., list pages, detail pages, form pages)
+2. **Identify reusable components** (TableActions, ExportButton, etc.)
+3. **Copy the layout structure** from the reference page
+4. **Adapt the content** while maintaining the same structure and patterns
+5. **Reuse existing utilities** (format functions, status helpers, etc.)
+
+### Common Patterns to Reuse
+- **List Pages**: `flex-1 flex flex-col` container, PageHeader with button, filters row, table with sorting, pagination footer
+- **Table Actions**: Dropdown menu with Edit/Delete options, confirmation dialogs
+- **Status Badges**: Custom className helpers for consistent colors
+- **Empty States**: Clickable button with icon, message, and description
+- **Loading States**: Skeleton rows matching table structure
+- **Form Dialogs**: Same structure, validation patterns, loading states
 
 ## Best Practices
 - Combine shadcn components with Tailwind utilities to create cohesive, maintainable UI

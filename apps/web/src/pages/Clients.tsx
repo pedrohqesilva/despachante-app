@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users } from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X } from "lucide-react"
 import { PageHeader, PageHeaderDescription, PageHeaderHeading } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -246,6 +246,19 @@ export default function Clients() {
     }
   }
 
+  const getStatusBadgeClassName = (status: ClientStatus) => {
+    switch (status) {
+      case "active":
+        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+      case "inactive":
+        return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20"
+      case "pending":
+        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
+      default:
+        return ""
+    }
+  }
+
   const getStatusLabel = (status: ClientStatus) => {
     switch (status) {
       case "active":
@@ -315,9 +328,21 @@ export default function Clients() {
                 setSearch(e.target.value)
                 setPage(1)
               }}
-              className="pl-9"
+              className="pl-9 pr-9"
               autoComplete="off"
             />
+            {search && (
+              <button
+                onClick={() => {
+                  setSearch("")
+                  setPage(1)
+                }}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                type="button"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            )}
           </div>
           <Select
             value={statusFilter}
@@ -427,7 +452,10 @@ export default function Clients() {
                     </TableCell>
                     <TableCell>{formatTaxId(client.taxId)}</TableCell>
                     <TableCell>
-                      <Badge variant={getStatusBadgeVariant(client.status)}>
+                      <Badge
+                        variant={getStatusBadgeVariant(client.status)}
+                        className={getStatusBadgeClassName(client.status)}
+                      >
                         {getStatusLabel(client.status)}
                       </Badge>
                     </TableCell>

@@ -27,4 +27,21 @@ export default defineSchema({
     .index("email", ["email"])
     .index("status", ["status"])
     .index("taxId", ["taxId"]),
+  notaryOffices: defineTable({
+    name: v.string(),
+    code: v.string(),
+    address: v.optional(v.string()),
+    city: v.optional(v.string()),
+    state: v.optional(v.string()),
+    phone: v.optional(v.string()),
+    email: v.optional(v.string()),
+    status: v.union(
+      v.literal("active"),
+      v.literal("inactive")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("code", ["code"])
+    .index("status", ["status"]),
 });
