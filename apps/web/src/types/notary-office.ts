@@ -6,7 +6,11 @@ export interface NotaryOffice {
   _id: Id<"notaryOffices">
   name: string
   code: string
-  address?: string
+  zipCode?: string
+  street?: string
+  number?: string
+  complement?: string
+  neighborhood?: string
   city?: string
   state?: string
   phone?: string
@@ -19,7 +23,11 @@ export interface NotaryOffice {
 export interface CreateNotaryOfficeDTO {
   name: string
   code: string
-  address?: string
+  zipCode?: string
+  street?: string
+  number?: string
+  complement?: string
+  neighborhood?: string
   city?: string
   state?: string
   phone?: string

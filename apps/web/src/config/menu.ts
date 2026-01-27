@@ -1,6 +1,7 @@
 import {
     Home,
     Users,
+    Building2,
     LucideIcon
 } from 'lucide-react'
 
@@ -23,5 +24,10 @@ export const mainMenu: MenuType = [
         title: 'Clientes',
         url: '/clientes',
         icon: Users
+    },
+    {
+        title: 'Imóveis',
+        url: '/imoveis',
+        icon: Building2
     }
 ]

@@ -65,3 +65,39 @@ export function formatDateOnly(timestamp: number): string {
 
   return `${day}/${month}/${year}`
 }
+
+/**
+ * Formats a ZIP code string
+ * 00000-000
+ */
+export function formatZipCode(zipCode: string): string {
+  const cleaned = zipCode.replace(/\D/g, "")
+
+  if (cleaned.length === 8) {
+    return cleaned.replace(/(\d{5})(\d{3})/, "$1-$2")
+  }
+
+  return zipCode
+}
+
+/**
+ * Formats a currency value to Brazilian format
+ * R$ 0.000,00
+ */
+export function formatCurrency(value: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    style: "currency",
+    currency: "BRL",
+  }).format(value)
+}
+
+/**
+ * Formats an area value
+ * 0.000 m²
+ */
+export function formatArea(area: number): string {
+  return new Intl.NumberFormat("pt-BR", {
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(area) + " m²"
+}

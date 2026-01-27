@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { toast } from "sonner"
@@ -49,7 +49,11 @@ export default function Cartorios() {
   const [formData, setFormData] = useState({
     name: "",
     code: "",
-    address: "",
+    zipCode: "",
+    street: "",
+    number: "",
+    complement: "",
+    neighborhood: "",
     city: "Belo Horizonte",
     state: "MG",
     phone: "",
@@ -57,6 +61,8 @@ export default function Cartorios() {
     status: "active" as "active" | "inactive",
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isLoadingCep, setIsLoadingCep] = useState(false)
+  const numberInputRef = useRef<HTMLInputElement>(null)
 
   const notaryOfficesData = useQuery(api.notaryOffices.list, {
     page,
@@ -70,6 +76,37 @@ export default function Cartorios() {
   const createMutation = useMutation(api.notaryOffices.create)
   const updateMutation = useMutation(api.notaryOffices.update)
   const deleteMutation = useMutation(api.notaryOffices.remove)
+
+  const fetchAddressByCep = useCallback(async (cep: string) => {
+    const cleanedCep = cep.replace(/\D/g, "")
+    if (cleanedCep.length !== 8) return
+
+    setIsLoadingCep(true)
+    try {
+      const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
+      const data = await response.json()
+
+      if (data.erro) {
+        toast.error("CEP não encontrado")
+        return
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        street: data.logradouro || prev.street,
+        neighborhood: data.bairro || prev.neighborhood,
+        city: data.localidade || prev.city,
+        state: data.uf || prev.state,
+        complement: data.complemento || prev.complement,
+      }))
+      setTimeout(() => numberInputRef.current?.focus(), 0)
+    } catch (error) {
+      toast.error("Erro ao buscar CEP")
+      console.error(error)
+    } finally {
+      setIsLoadingCep(false)
+    }
+  }, [])
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -95,7 +132,11 @@ export default function Cartorios() {
     setFormData({
       name: "",
       code: "",
-      address: "",
+      zipCode: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
       city: "Belo Horizonte",
       state: "MG",
       phone: "",
@@ -110,7 +151,11 @@ export default function Cartorios() {
     setFormData({
       name: notaryOffice.name,
       code: notaryOffice.code,
-      address: notaryOffice.address || "",
+      zipCode: notaryOffice.zipCode || "",
+      street: notaryOffice.street || "",
+      number: notaryOffice.number || "",
+      complement: notaryOffice.complement || "",
+      neighborhood: notaryOffice.neighborhood || "",
       city: notaryOffice.city || "",
       state: notaryOffice.state || "",
       phone: notaryOffice.phone || "",
@@ -126,7 +171,11 @@ export default function Cartorios() {
     setFormData({
       name: "",
       code: "",
-      address: "",
+      zipCode: "",
+      street: "",
+      number: "",
+      complement: "",
+      neighborhood: "",
       city: "Belo Horizonte",
       state: "MG",
       phone: "",
@@ -143,14 +192,22 @@ export default function Cartorios() {
 
     setIsSubmitting(true)
     try {
+      const locationData = {
+        zipCode: formData.zipCode.replace(/\D/g, "") || undefined,
+        street: formData.street.trim() || undefined,
+        number: formData.number.trim() || undefined,
+        complement: formData.complement.trim() || undefined,
+        neighborhood: formData.neighborhood.trim() || undefined,
+        city: formData.city.trim() || undefined,
+        state: formData.state.trim() || undefined,
+      }
+
       if (editingNotaryOffice) {
         await updateMutation({
           id: editingNotaryOffice._id,
           name: formData.name.trim(),
           code: formData.code.trim(),
-          address: formData.address.trim() || undefined,
-          city: formData.city.trim() || undefined,
-          state: formData.state.trim() || undefined,
+          ...locationData,
           phone: formData.phone.trim() || undefined,
           email: formData.email.trim() || undefined,
           status: formData.status,
@@ -160,9 +217,7 @@ export default function Cartorios() {
         await createMutation({
           name: formData.name.trim(),
           code: formData.code.trim(),
-          address: formData.address.trim() || undefined,
-          city: formData.city.trim() || undefined,
-          state: formData.state.trim() || undefined,
+          ...locationData,
           phone: formData.phone.trim() || undefined,
           email: formData.email.trim() || undefined,
           status: "active",
@@ -568,16 +623,89 @@ export default function Cartorios() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Localização</p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="text-sm font-medium">Endereço</Label>
-                  <Input
-                    id="address"
-                    placeholder="Rua Exemplo, 123, 3º Andar, Bairro Exemplo"
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    autoComplete="off"
-                    disabled={isSubmitting}
-                    className="h-10"
-                  />
+                  <Label htmlFor="zipCode" className="text-sm font-medium">CEP</Label>
+                  <div className="relative w-32">
+                    <Input
+                      id="zipCode"
+                      placeholder="00000-000"
+                      value={formData.zipCode}
+                      onChange={(e) => {
+                        const cleaned = e.target.value.replace(/\D/g, "")
+                        let formatted = e.target.value
+                        if (cleaned.length <= 8) {
+                          if (cleaned.length <= 5) {
+                            formatted = cleaned
+                          } else {
+                            formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`
+                          }
+                        }
+                        setFormData({ ...formData, zipCode: formatted })
+                        if (cleaned.length === 8) {
+                          fetchAddressByCep(cleaned)
+                        }
+                      }}
+                      autoComplete="off"
+                      maxLength={9}
+                      disabled={isSubmitting || isLoadingCep}
+                      className="h-10 pr-8"
+                    />
+                    {isLoadingCep && (
+                      <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                    )}
+                  </div>
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-3 space-y-2">
+                    <Label htmlFor="street" className="text-sm font-medium">Logradouro</Label>
+                    <Input
+                      id="street"
+                      placeholder="Rua Exemplo"
+                      value={formData.street}
+                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="col-span-1 space-y-2">
+                    <Label htmlFor="number" className="text-sm font-medium">Número</Label>
+                    <Input
+                      ref={numberInputRef}
+                      id="number"
+                      placeholder="123"
+                      value={formData.number}
+                      onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                      className="h-10"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="complement" className="text-sm font-medium">Complemento</Label>
+                    <Input
+                      id="complement"
+                      placeholder="Sala 101, 3º Andar"
+                      value={formData.complement}
+                      onChange={(e) => setFormData({ ...formData, complement: e.target.value })}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="neighborhood" className="text-sm font-medium">Bairro</Label>
+                    <Input
+                      id="neighborhood"
+                      placeholder="Centro"
+                      value={formData.neighborhood}
+                      onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                      className="h-10"
+                    />
+                  </div>
                 </div>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="col-span-3 space-y-2">
@@ -592,7 +720,7 @@ export default function Cartorios() {
                       className="h-10"
                     />
                   </div>
-                  <div className="space-y-2">
+                  <div className="col-span-1 space-y-2">
                     <Label htmlFor="state" className="text-sm font-medium">UF</Label>
                     <Input
                       id="state"

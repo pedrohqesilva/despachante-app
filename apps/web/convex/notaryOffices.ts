@@ -25,12 +25,16 @@ export const list = query({
 
     if (args.search) {
       const searchLower = args.search.toLowerCase()
+      const searchCleaned = args.search.replace(/\D/g, "")
       notaryOffices = notaryOffices.filter(
         (notaryOffice) =>
           notaryOffice.name.toLowerCase().includes(searchLower) ||
           notaryOffice.code.toLowerCase().includes(searchLower) ||
+          (notaryOffice.street && notaryOffice.street.toLowerCase().includes(searchLower)) ||
+          (notaryOffice.neighborhood && notaryOffice.neighborhood.toLowerCase().includes(searchLower)) ||
           (notaryOffice.city && notaryOffice.city.toLowerCase().includes(searchLower)) ||
-          (notaryOffice.state && notaryOffice.state.toLowerCase().includes(searchLower))
+          (notaryOffice.state && notaryOffice.state.toLowerCase().includes(searchLower)) ||
+          (notaryOffice.zipCode && notaryOffice.zipCode.includes(searchCleaned))
       )
     }
 
@@ -95,7 +99,11 @@ export const create = mutation({
   args: {
     name: v.string(),
     code: v.string(),
-    address: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    street: v.optional(v.string()),
+    number: v.optional(v.string()),
+    complement: v.optional(v.string()),
+    neighborhood: v.optional(v.string()),
     city: v.optional(v.string()),
     state: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -121,7 +129,11 @@ export const create = mutation({
     const notaryOfficeId = await ctx.db.insert("notaryOffices", {
       name: args.name,
       code: args.code,
-      address: args.address,
+      zipCode: args.zipCode,
+      street: args.street,
+      number: args.number,
+      complement: args.complement,
+      neighborhood: args.neighborhood,
       city: args.city,
       state: args.state,
       phone: args.phone,
@@ -140,7 +152,11 @@ export const update = mutation({
     id: v.id("notaryOffices"),
     name: v.optional(v.string()),
     code: v.optional(v.string()),
-    address: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    street: v.optional(v.string()),
+    number: v.optional(v.string()),
+    complement: v.optional(v.string()),
+    neighborhood: v.optional(v.string()),
     city: v.optional(v.string()),
     state: v.optional(v.string()),
     phone: v.optional(v.string()),

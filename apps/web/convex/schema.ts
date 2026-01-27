@@ -30,7 +30,11 @@ export default defineSchema({
   notaryOffices: defineTable({
     name: v.string(),
     code: v.string(),
-    address: v.optional(v.string()),
+    zipCode: v.optional(v.string()),
+    street: v.optional(v.string()),
+    number: v.optional(v.string()),
+    complement: v.optional(v.string()),
+    neighborhood: v.optional(v.string()),
     city: v.optional(v.string()),
     state: v.optional(v.string()),
     phone: v.optional(v.string()),
@@ -44,4 +48,33 @@ export default defineSchema({
   })
     .index("code", ["code"])
     .index("status", ["status"]),
+  properties: defineTable({
+    zipCode: v.string(),
+    street: v.string(),
+    number: v.string(),
+    complement: v.optional(v.string()),
+    neighborhood: v.string(),
+    city: v.string(),
+    state: v.string(),
+    type: v.union(
+      v.literal("house"),
+      v.literal("apartment"),
+      v.literal("land"),
+      v.literal("building")
+    ),
+    area: v.number(),
+    value: v.number(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("inactive"),
+      v.literal("pending")
+    ),
+    ownerIds: v.array(v.id("clients")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("status", ["status"])
+    .index("city", ["city"])
+    .index("type", ["type"])
+    .index("zipCode", ["zipCode"]),
 });

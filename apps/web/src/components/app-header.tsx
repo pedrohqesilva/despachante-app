@@ -18,7 +18,7 @@ import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { baseUrl } from '@/config/app'
 import { useAuth } from '@/contexts/AuthContext'
-import { Users, Settings } from 'lucide-react'
+import { Users, Settings, Building2 } from 'lucide-react'
 
 export function AppHeader() {
     const { user, signOut } = useAuth()
@@ -129,6 +129,22 @@ export function AppHeader() {
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Clientes</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant='ghost'
+                                                size='icon'
+                                                className='h-8 w-8'
+                                                asChild>
+                                                <Link to="/imoveis">
+                                                    <Building2 className='h-4 w-4' />
+                                                </Link>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Imóveis</p>
                                         </TooltipContent>
                                     </Tooltip>
                                 </TooltipProvider>

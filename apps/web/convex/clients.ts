@@ -30,7 +30,6 @@ export const list = query({
       clients = clients.filter(
         (client) =>
           client.name.toLowerCase().includes(searchLower) ||
-          client.email.toLowerCase().includes(searchLower) ||
           client.taxId.includes(searchLower) ||
           (searchCleaned.length > 0 && client.phone && client.phone.replace(/\D/g, "").includes(searchCleaned))
       );
@@ -101,13 +100,14 @@ export const search = query({
     }
 
     const searchLower = args.query.toLowerCase();
+    const searchCleaned = args.query.replace(/\D/g, "");
     const clients = await ctx.db.query("clients").collect();
 
     return clients.filter(
       (client) =>
         client.name.toLowerCase().includes(searchLower) ||
-        client.email.toLowerCase().includes(searchLower) ||
-        client.taxId.includes(searchLower)
+        client.taxId.includes(searchLower) ||
+        (searchCleaned.length > 0 && client.phone && client.phone.replace(/\D/g, "").includes(searchCleaned))
     );
   },
 });
