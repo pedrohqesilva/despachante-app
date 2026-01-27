@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useRef } from "react"
 import {
   Palette,
   Type,
@@ -11,6 +11,7 @@ import {
   Shield,
   Settings,
   ChevronRight,
+  ChevronDown,
   Key,
   Sun,
   Moon,
@@ -34,6 +35,14 @@ const sections = [
   { id: "spacing" as Section, label: "Espaçamento", icon: Layout },
   { id: "layout" as Section, label: "Layout", icon: Layout },
   { id: "components" as Section, label: "Componentes", icon: Component },
+]
+
+// Component groups for navigation
+const componentGroups = [
+  { id: "group-botoes", label: "Botões" },
+  { id: "group-cards", label: "Cards" },
+  { id: "group-dialogs", label: "Dialogs" },
+  { id: "group-estados", label: "Estados" },
 ]
 
 function ColorSwatch({
@@ -78,6 +87,8 @@ function SubsectionTitle({ children }: { children: React.ReactNode }) {
 
 export default function StyleGuide() {
   const [activeSection, setActiveSection] = useState<Section>("colors")
+  const [componentsExpanded, setComponentsExpanded] = useState(false)
+  const mainRef = useRef<HTMLDivElement>(null)
 
   const renderSection = () => {
     switch (activeSection) {
@@ -101,9 +112,9 @@ export default function StyleGuide() {
   }
 
   return (
-    <div className="flex-1 flex flex-col min-h-0">
-      {/* Header */}
-      <div className="border-b backdrop-blur">
+    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden -mb-20">
+      {/* Header - Fixed */}
+      <div className="border-b backdrop-blur shrink-0">
         <div className="px-6 py-6">
           <h1 className="text-2xl font-semibold tracking-tight">Style Guide</h1>
           <p className="text-sm text-muted-foreground mt-1">
@@ -113,33 +124,70 @@ export default function StyleGuide() {
       </div>
 
       {/* Content */}
-      <div className="flex-1 flex min-h-0">
-        {/* Sidebar */}
-        <aside className="w-sidebar border-r border-border/50 shrink-0">
+      <div className="flex-1 flex min-h-0 overflow-hidden">
+        {/* Sidebar - Fixed */}
+        <aside className="w-sidebar border-r border-border/50 shrink-0 overflow-y-auto">
           <nav className="p-4 space-y-1">
-            {sections.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveSection(id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
-                  activeSection === id
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "text-text-tertiary hover:text-text-primary hover:bg-accent"
-                )}
-              >
-                <Icon className={cn(
-                  "size-icon-sm",
-                  activeSection === id ? "text-primary" : "text-text-disabled"
-                )} />
-                {label}
-              </button>
-            ))}
+            {sections.map(({ id, label, icon: Icon }) => {
+              const isComponents = id === "components"
+              const isActive = activeSection === id
+
+              return (
+                <div key={id}>
+                  <button
+                    onClick={() => {
+                      setActiveSection(id)
+                      if (isComponents) {
+                        setComponentsExpanded(!componentsExpanded)
+                      }
+                    }}
+                    className={cn(
+                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                      isActive
+                        ? "bg-primary/10 text-primary border border-primary/20"
+                        : "text-text-tertiary hover:text-text-primary hover:bg-accent"
+                    )}
+                  >
+                    <Icon className={cn(
+                      "size-icon-sm",
+                      isActive ? "text-primary" : "text-text-disabled"
+                    )} />
+                    <span className="flex-1 text-left">{label}</span>
+                    {isComponents && (
+                      <ChevronDown className={cn(
+                        "size-4 transition-transform",
+                        componentsExpanded && isActive ? "rotate-180" : ""
+                      )} />
+                    )}
+                  </button>
+
+                  {/* Submenu for Components */}
+                  {isComponents && componentsExpanded && isActive && (
+                    <div className="ml-6 mt-1 space-y-0.5 border-l border-border/50 pl-3">
+                      {componentGroups.map(({ id: groupId, label: groupLabel }) => (
+                        <button
+                          key={groupId}
+                          onClick={() => {
+                            const element = document.getElementById(groupId)
+                            if (element) {
+                              element.scrollIntoView({ behavior: "smooth", block: "start" })
+                            }
+                          }}
+                          className="w-full text-left px-2 py-1.5 text-xs text-text-tertiary hover:text-text-primary hover:bg-accent/50 rounded transition-colors cursor-pointer"
+                        >
+                          {groupLabel}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
           </nav>
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 overflow-auto">
+        <main ref={mainRef} className="flex-1 overflow-auto">
           <div className="max-w-content-max mx-auto p-8 space-y-8">
             {renderSection()}
           </div>
@@ -579,6 +627,18 @@ className="size-icon-lg"`}</CodeBlock>
   )
 }
 
+function GroupTitle({ id, children }: { id?: string; children: React.ReactNode }) {
+  return (
+    <div id={id} className="pt-4 first:pt-0">
+      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">{children}</h3>
+    </div>
+  )
+}
+
+function GroupDivider() {
+  return <div className="h-px bg-border my-8" />
+}
+
 function ComponentsSection() {
   const [selectedTheme, setSelectedTheme] = useState<"light" | "dark" | "system">("light")
 
@@ -591,46 +651,30 @@ function ComponentsSection() {
         </p>
       </div>
 
-      {/* Standardized Card Structure */}
-      <div>
-        <SubsectionTitle>Estrutura Padronizada de Cards</SubsectionTitle>
-        <p className="text-text-secondary mb-4">
-          TODOS os cards de configurações DEVEM seguir esta estrutura exata:
-        </p>
-        <CodeBlock>{`<div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
-  {/* Icon Container */}
-  <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
-    <Icon className="size-icon-md text-text-tertiary" />
-  </div>
+      {/* ═══════════════════════════════════════════════════════════════════════
+          BOTÕES
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <GroupTitle id="group-botoes">Botões</GroupTitle>
 
-  {/* Text Content */}
-  <div className="flex-1 min-w-0">
-    <p className="font-medium text-text-primary">{title}</p>
-    <p className="text-sm text-muted-foreground">{description}</p>
-  </div>
-
-  {/* Action (optional) */}
-  <ActionElement className="shrink-0" />
-</div>`}</CodeBlock>
-      </div>
-
-      {/* Card with Switch */}
-      <div>
-        <SubsectionTitle>Card com Switch</SubsectionTitle>
-        <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
-          <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
-            <Bell className="size-icon-md text-text-tertiary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-text-primary">Notificações do sistema</p>
-            <p className="text-sm text-muted-foreground">Receba alertas sobre atualizações e informações importantes.</p>
-          </div>
-          <Switch className="shrink-0" />
+      <div id="botoes">
+        <SubsectionTitle>Botões</SubsectionTitle>
+        <div className="flex flex-wrap gap-3">
+          <Button>Primary</Button>
+          <Button variant="secondary">Secondary</Button>
+          <Button variant="outline">Outline</Button>
+          <Button variant="ghost">Ghost</Button>
+          <Button variant="destructive">Destructive</Button>
         </div>
       </div>
 
-      {/* Card with Button */}
-      <div>
+      <GroupDivider />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          CARDS
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <GroupTitle id="group-cards">Cards</GroupTitle>
+
+      <div id="card-button">
         <SubsectionTitle>Card com Button</SubsectionTitle>
         <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
           <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
@@ -644,8 +688,21 @@ function ComponentsSection() {
         </div>
       </div>
 
-      {/* Card with ChevronRight (Navigation) */}
-      <div>
+      <div id="card-switch">
+        <SubsectionTitle>Card com Switch</SubsectionTitle>
+        <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+          <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+            <Bell className="size-icon-md text-text-tertiary" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-text-primary">Notificações do sistema</p>
+            <p className="text-sm text-muted-foreground">Receba alertas sobre atualizações e informações importantes.</p>
+          </div>
+          <Switch className="shrink-0" />
+        </div>
+      </div>
+
+      <div id="card-navegacao">
         <SubsectionTitle>Card de Navegação</SubsectionTitle>
         <button className="w-full flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-primary/30 hover:bg-primary/5 transition-all text-left cursor-pointer group">
           <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors">
@@ -659,9 +716,21 @@ function ComponentsSection() {
         </button>
       </div>
 
-      {/* Selectable Cards (Theme) */}
-      <div>
-        <SubsectionTitle>Cards Selecionáveis (Tema)</SubsectionTitle>
+      <div id="card-status">
+        <SubsectionTitle>Card de Status (Success)</SubsectionTitle>
+        <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-status-success-muted/30 border border-status-success-border">
+          <div className="size-icon-container-md rounded-xl bg-status-success-muted border border-status-success-border flex items-center justify-center shrink-0">
+            <Shield className="size-icon-md text-status-success" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="font-medium text-text-primary">Conta protegida</p>
+            <p className="text-sm text-muted-foreground">Sua conta está protegida com autenticação por senha.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="cards-selecionaveis">
+        <SubsectionTitle>Cards Selecionáveis</SubsectionTitle>
         <div className="space-y-3">
           {[
             { value: "light" as const, icon: Sun, label: "Claro", description: "Tema claro para ambientes bem iluminados" },
@@ -708,22 +777,95 @@ function ComponentsSection() {
         </div>
       </div>
 
-      {/* Status Card */}
-      <div>
-        <SubsectionTitle>Card de Status (Success)</SubsectionTitle>
-        <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-status-success-muted/30 border border-status-success-border">
-          <div className="size-icon-container-md rounded-xl bg-status-success-muted border border-status-success-border flex items-center justify-center shrink-0">
-            <Shield className="size-icon-md text-status-success" />
+      <div id="estrutura-cards">
+        <SubsectionTitle>Estrutura Padronizada de Cards</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          TODOS os cards de configurações DEVEM seguir esta estrutura exata:
+        </p>
+        <CodeBlock>{`<div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+  {/* Icon Container */}
+  <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+    <Icon className="size-icon-md text-text-tertiary" />
+  </div>
+
+  {/* Text Content */}
+  <div className="flex-1 min-w-0">
+    <p className="font-medium text-text-primary">{title}</p>
+    <p className="text-sm text-muted-foreground">{description}</p>
+  </div>
+
+  {/* Action (optional) */}
+  <ActionElement className="shrink-0" />
+</div>`}</CodeBlock>
+      </div>
+
+      <GroupDivider />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          DIALOGS
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <GroupTitle id="group-dialogs">Dialogs</GroupTitle>
+
+      <div id="dialog-formulario">
+        <SubsectionTitle>Dialog de Formulário</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          Estrutura padronizada para dialogs de criação/edição:
+        </p>
+        <div className="rounded-lg border border-border bg-secondary shadow-xl max-w-lg p-6 space-y-4">
+          <div className="flex items-center gap-gap">
+            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Building2 className="size-icon-md text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-lg font-semibold">Novo Item</p>
+              <p className="text-sm text-muted-foreground">
+                Preencha os dados para cadastrar um novo item
+              </p>
+            </div>
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="font-medium text-text-primary">Conta protegida</p>
-            <p className="text-sm text-muted-foreground">Sua conta está protegida com autenticação por senha.</p>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm font-medium">Nome <span className="text-destructive">*</span></p>
+              <div className="h-10 rounded-md border border-input bg-muted px-3 flex items-center text-muted-foreground text-sm">
+                Nome do item
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-3 pt-2">
+            <Button variant="outline">Cancelar</Button>
+            <Button>Criar item</Button>
           </div>
         </div>
       </div>
 
-      {/* Empty State Pattern */}
-      <div>
+      <div id="dialog-confirmacao">
+        <SubsectionTitle>Dialog de Confirmação</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          Estrutura padronizada para dialogs de confirmação de ações destrutivas:
+        </p>
+        <div className="rounded-xl border border-border overflow-hidden bg-secondary p-6 space-y-4 max-w-lg">
+          <div className="space-y-2">
+            <p className="text-lg font-semibold">Confirmar exclusão</p>
+            <p className="text-sm text-muted-foreground">
+              Tem certeza que deseja excluir o cliente{" "}
+              <strong>Nome do Cliente</strong>? Esta ação não pode ser desfeita.
+            </p>
+          </div>
+          <div className="flex items-center justify-end gap-3">
+            <Button variant="outline">Cancelar</Button>
+            <Button variant="destructive">Excluir</Button>
+          </div>
+        </div>
+      </div>
+
+      <GroupDivider />
+
+      {/* ═══════════════════════════════════════════════════════════════════════
+          ESTADOS
+          ═══════════════════════════════════════════════════════════════════════ */}
+      <GroupTitle id="group-estados">Estados</GroupTitle>
+
+      <div id="empty-state">
         <SubsectionTitle>Empty State</SubsectionTitle>
         <div className="flex flex-col items-center justify-center gap-3 py-12 group cursor-pointer">
           <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
@@ -737,70 +879,6 @@ function ComponentsSection() {
               Clique para adicionar um novo item
             </p>
           </div>
-        </div>
-      </div>
-
-      {/* Form Dialog Pattern */}
-      <div>
-        <SubsectionTitle>Dialog de Formulário</SubsectionTitle>
-        <p className="text-text-secondary mb-4">
-          Estrutura padronizada para dialogs de criação/edição:
-        </p>
-        <div className="rounded-xl border border-border overflow-hidden bg-background">
-          {/* Dialog Header */}
-          <div className="flex items-center gap-gap p-6 border-b border-border/50">
-            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-              <Building2 className="size-icon-md text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <p className="text-lg font-semibold">Novo Item</p>
-              <p className="text-sm text-muted-foreground mt-0.5">
-                Preencha os dados para cadastrar um novo item
-              </p>
-            </div>
-          </div>
-
-          {/* Dialog Content */}
-          <div className="p-6 space-y-6">
-            {/* Section with left-aligned title */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Identificação
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Código <span className="text-destructive">*</span></p>
-                  <div className="h-10 rounded-md border border-input bg-background px-3 flex items-center text-muted-foreground text-sm">
-                    Ex: ITEM-001
-                  </div>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm font-medium">Nome <span className="text-destructive">*</span></p>
-                  <div className="h-10 rounded-md border border-input bg-background px-3 flex items-center text-muted-foreground text-sm">
-                    Nome do item
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Dialog Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
-            <Button variant="outline">Cancelar</Button>
-            <Button>Criar item</Button>
-          </div>
-        </div>
-      </div>
-
-      {/* Button Patterns */}
-      <div>
-        <SubsectionTitle>Botões</SubsectionTitle>
-        <div className="flex flex-wrap gap-3">
-          <Button>Primary</Button>
-          <Button variant="secondary">Secondary</Button>
-          <Button variant="outline">Outline</Button>
-          <Button variant="ghost">Ghost</Button>
-          <Button variant="destructive">Destructive</Button>
         </div>
       </div>
     </div>
