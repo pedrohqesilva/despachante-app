@@ -248,11 +248,11 @@ export default function Clients() {
   const getStatusBadgeClassName = (status: ClientStatus) => {
     switch (status) {
       case "active":
-        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
+        return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
       case "inactive":
-        return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 font-medium"
+        return "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
       case "pending":
-        return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium"
+        return "bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
       default:
         return ""
     }
@@ -435,7 +435,7 @@ export default function Clients() {
                         <Users className="size-8 text-primary" />
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+                        <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
                           Nenhum cliente encontrado
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -448,12 +448,12 @@ export default function Clients() {
               ) : (
                 clients.map((client) => (
                   <TableRow key={client._id} className="hover:bg-muted/50">
-                    <TableCell className="font-semibold text-foreground">{client.name}</TableCell>
-                    <TableCell className="text-foreground/80">{client.email}</TableCell>
-                    <TableCell className="text-foreground/70">
+                    <TableCell className="font-semibold text-text-primary">{client.name}</TableCell>
+                    <TableCell className="text-text-secondary">{client.email}</TableCell>
+                    <TableCell className="text-text-tertiary">
                       {client.phone ? formatPhone(client.phone) : "-"}
                     </TableCell>
-                    <TableCell className="text-foreground/70">{formatTaxId(client.taxId)}</TableCell>
+                    <TableCell className="text-text-tertiary">{formatTaxId(client.taxId)}</TableCell>
                     <TableCell>
                       <Badge
                         variant={getStatusBadgeVariant(client.status)}

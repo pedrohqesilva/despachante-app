@@ -14,15 +14,132 @@ alwaysApply: false
 - Import icons from `lucide-react` package
 - Use Lucide icons instead of other icon libraries (Font Awesome, Material Icons, etc.)
 - Check Lucide's icon library at https://lucide.dev/icons before creating custom icons
-- Use appropriate icon sizes with Tailwind classes (e.g., `size-4`, `size-5`, `size-6`)
+- Use semantic icon size tokens: `size-icon-sm` (16px), `size-icon-md` (20px), `size-icon-lg` (32px)
 
 ## Styling
 - **Always use Tailwind CSS** for all styling and layout
+- **Always use semantic tokens** instead of magic numbers and hardcoded colors
 - Use Tailwind utility classes instead of custom CSS or inline styles
 - Follow Tailwind's utility-first approach
 - Use Tailwind's design tokens (colors, spacing, typography) from the theme configuration
 - Leverage Tailwind's responsive utilities (sm:, md:, lg:, xl:, 2xl:) for responsive design
 - Use Tailwind's dark mode utilities (dark:) when implementing dark mode support
+
+## Semantic Tokens
+
+### Status Colors
+Use semantic status tokens for consistent state indication:
+```tsx
+// Success/Active - Use for active, completed, verified states
+"bg-status-success-muted text-status-success-foreground border-status-success-border"
+
+// Warning/Pending - Use for pending, attention needed states
+"bg-status-warning-muted text-status-warning-foreground border-status-warning-border"
+
+// Error - Use for error, failed states
+"bg-status-error-muted text-status-error-foreground border-status-error-border"
+
+// Neutral/Inactive - Use for inactive, disabled states
+"bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border"
+
+// Info - Use for informational states
+"bg-status-info-muted text-status-info-foreground border-status-info-border"
+```
+
+### Text Hierarchy
+Use semantic text tokens for consistent hierarchy:
+```tsx
+// Primary text (names, titles)
+"text-text-primary" or "font-semibold text-text-primary"
+
+// Secondary text (email, descriptions)
+"text-text-secondary"
+
+// Tertiary text (phone, address, dates)
+"text-text-tertiary"
+
+// Muted text (helper text, captions)
+"text-text-muted"
+
+// Disabled text
+"text-text-disabled"
+```
+
+### Layout Dimensions
+Use semantic layout tokens:
+```tsx
+// Sidebar width
+"w-sidebar" // 16rem (256px)
+
+// Content max width
+"max-w-content-max" // 42rem (672px)
+```
+
+### Icon Sizes
+Use semantic icon tokens:
+```tsx
+// Icon sizes
+"size-icon-sm"  // 1rem (16px)
+"size-icon-md"  // 1.25rem (20px)
+"size-icon-lg"  // 2rem (32px)
+
+// Icon container sizes
+"size-icon-container-sm"  // 1.75rem (28px)
+"size-icon-container-md"  // 2.75rem (44px)
+"size-icon-container-lg"  // 4rem (64px)
+```
+
+### Spacing Tokens
+Use semantic spacing tokens for consistent padding and gaps:
+```tsx
+// Card padding (settings cards, list items)
+"p-card"     // 1.25rem (20px) - Standard card padding
+"p-card-sm"  // 1rem (16px) - Compact card padding
+"p-card-lg"  // 1.5rem (24px) - Large card padding
+
+// Card minimum height
+"min-h-card" // 5rem (80px) - Consistent card height
+
+// Gaps between elements
+"gap-gap"    // 1rem (16px) - Standard gap between elements
+
+// Section and page spacing
+"p-section"  // 1.5rem (24px) - Section padding
+"p-page"     // 2rem (32px) - Page content padding
+```
+
+**IMPORTANT**: Never use magic numbers like `p-4`, `p-5`, `gap-4`. Always use semantic tokens to prevent inconsistencies.
+
+## Reusable Components
+
+### StatusBadge Component
+Use the StatusBadge component for status indicators:
+```tsx
+import { StatusBadge } from "@/components/ui/status-badge"
+
+<StatusBadge status="success">Ativo</StatusBadge>
+<StatusBadge status="warning">Pendente</StatusBadge>
+<StatusBadge status="error">Erro</StatusBadge>
+<StatusBadge status="neutral">Inativo</StatusBadge>
+<StatusBadge status="info">Info</StatusBadge>
+```
+
+### IconContainer Component
+Use the IconContainer component for consistent icon styling:
+```tsx
+import { IconContainer } from "@/components/ui/icon-container"
+import { Bell, Shield } from "lucide-react"
+
+// Sizes
+<IconContainer size="sm" icon={Bell} />
+<IconContainer size="md" icon={Bell} />
+<IconContainer size="lg" icon={Bell} />
+
+// Variants
+<IconContainer icon={Bell} variant="default" />
+<IconContainer icon={Shield} variant="primary" />
+<IconContainer icon={Settings} variant="muted" />
+```
 
 ## Component Structure
 - When using shadcn components, customize them with Tailwind classes rather than modifying the component source directly
@@ -37,9 +154,9 @@ Use this pattern for all page headers:
 <div className="border-b backdrop-blur">
   <div className="px-6 py-6 flex items-center justify-between">
     <div>
-      <h1 className="text-2xl font-semibold tracking-tight">Título da Página</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Titulo da Pagina</h1>
       <p className="text-sm text-muted-foreground mt-1">
-        Descrição da página.
+        Descricao da pagina.
       </p>
     </div>
     {/* Optional: Action button */}
@@ -58,37 +175,41 @@ Use this pattern for all page headers:
 </div>
 ```
 
+### Settings Page Layout
+```tsx
+<div className="flex-1 flex min-h-0">
+  {/* Sidebar */}
+  <aside className="w-sidebar border-r border-border/50 shrink-0">
+    <nav className="p-4 space-y-1">
+      {/* Navigation items */}
+    </nav>
+  </aside>
+
+  {/* Content */}
+  <main className="flex-1 overflow-auto">
+    <div className="max-w-content-max mx-auto p-8">
+      {/* Section content */}
+    </div>
+  </main>
+</div>
+```
+
 ## Color Patterns
 
 ### Status Badges
-Use these color patterns for status badges:
+Use the StatusBadge component or these semantic classes:
 ```tsx
 // Active/Success
-"bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
+"bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
 
 // Inactive/Neutral
-"bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 font-medium"
+"bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
 
 // Pending/Warning
-"bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium"
+"bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
 
 // Error/Danger
-"bg-red-500/15 text-red-600 dark:text-red-400 border-red-500/30 font-medium"
-```
-
-### Text Hierarchy
-```tsx
-// Primary text (names, titles)
-"font-semibold text-foreground"
-
-// Secondary text (email, descriptions)
-"text-foreground/80"
-
-// Tertiary text (phone, address, dates)
-"text-foreground/70"
-
-// Muted text (helper text, captions)
-"text-muted-foreground"
+"bg-status-error-muted text-status-error-foreground border-status-error-border font-medium"
 ```
 
 ### Interactive Elements
@@ -99,7 +220,7 @@ Use these color patterns for status badges:
 "bg-primary/10 text-primary border border-primary/20"
 
 // Inactive state
-"text-foreground/70 hover:text-foreground hover:bg-accent"
+"text-text-tertiary hover:text-text-primary hover:bg-accent"
 ```
 
 #### Selectable Cards (e.g., theme selection)
@@ -111,25 +232,52 @@ Use these color patterns for status badges:
 "border-2 border-transparent bg-accent/50 hover:bg-accent hover:border-border"
 ```
 
-#### Settings Cards
+#### Settings Cards (Standardized Structure)
+All settings cards MUST follow this exact structure for consistency:
 ```tsx
-// Standard card
-"p-5 rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors"
+// Standard settings card
+<div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+  {/* Icon Container */}
+  <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+    <Icon className="size-icon-md text-text-tertiary" />
+  </div>
+
+  {/* Text Content */}
+  <div className="flex-1 min-w-0">
+    <p className="font-medium text-text-primary">{title}</p>
+    <p className="text-sm text-muted-foreground">{description}</p>
+  </div>
+
+  {/* Action (optional) - Button, Switch, or ChevronRight */}
+  <ActionElement className="shrink-0" />
+</div>
 
 // Success/Status card
-"p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/20"
+<div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-status-success-muted/30 border border-status-success-border">
+  ...
+</div>
 ```
 
+**CRITICAL**: Always use this exact structure:
+- `items-center` for vertical alignment
+- `gap-gap` for spacing between elements
+- `p-card` for padding
+- `min-h-card` for consistent height
+- Icon, text container, and action as direct siblings (NO nested wrappers)
+- Text container with `flex-1 min-w-0`
+- All actions with `shrink-0`
+
 ### Icon Containers
+Use the IconContainer component or these classes:
 ```tsx
 // Standard icon container
-"size-11 rounded-xl bg-background border border-border flex items-center justify-center"
+"size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center"
 
 // Primary/Active icon container
-"size-11 rounded-xl bg-primary text-primary-foreground shadow-sm"
+"size-icon-container-md rounded-xl bg-primary text-primary-foreground shadow-sm"
 
 // Muted icon container
-"size-11 rounded-xl bg-muted flex items-center justify-center"
+"size-icon-container-md rounded-xl bg-muted flex items-center justify-center"
 ```
 
 ## Table Patterns
@@ -151,9 +299,9 @@ Use these color patterns for status badges:
 ### Table Data Row
 ```tsx
 <TableRow className="hover:bg-muted/50">
-  <TableCell className="font-semibold text-foreground">Primary</TableCell>
-  <TableCell className="text-foreground/80">Secondary</TableCell>
-  <TableCell className="text-foreground/70">Tertiary</TableCell>
+  <TableCell className="font-semibold text-text-primary">Primary</TableCell>
+  <TableCell className="text-text-secondary">Secondary</TableCell>
+  <TableCell className="text-text-tertiary">Tertiary</TableCell>
 </TableRow>
 ```
 
@@ -164,10 +312,10 @@ Use these color patterns for status badges:
     <Icon className="size-8 text-primary" />
   </div>
   <div>
-    <p className="text-base font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+    <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
       Nenhum item encontrado
     </p>
-    <p className="text-sm text-muted-foreground mt-1">
+    <p className="text-sm text-text-muted mt-1">
       Clique para adicionar um novo item
     </p>
   </div>
@@ -184,19 +332,21 @@ Use these color patterns for status badges:
 - **Reuse table patterns** - sorting, pagination, filters, empty states, loading states
 - **Reuse dialog patterns** - form structure, validation, error handling
 - **Reuse action components** - table actions dropdowns, status badges, buttons
+- **Visit /style-guide** for complete documentation of the design system
 
 ### Before Implementing a New Page
 1. **Search for similar pages** (e.g., list pages, detail pages, form pages)
-2. **Identify reusable components** (TableActions, ExportButton, etc.)
+2. **Identify reusable components** (TableActions, ExportButton, StatusBadge, IconContainer, etc.)
 3. **Copy the layout structure** from the reference page
 4. **Adapt the content** while maintaining the same structure and patterns
 5. **Reuse existing utilities** (format functions, status helpers, etc.)
 
 ### Common Patterns to Reuse
 - **List Pages**: `flex-1 flex flex-col` container, standard header with button, filters row, table with sorting, pagination footer
-- **Settings Pages**: Sidebar navigation with sections, content area with `max-w-2xl mx-auto p-8`
+- **Settings Pages**: Sidebar navigation with sections, content area with `max-w-content-max mx-auto p-8`
 - **Table Actions**: Dropdown menu with Edit/Delete options, confirmation dialogs
-- **Status Badges**: Use the color patterns defined above
+- **Status Badges**: Use the StatusBadge component
+- **Icon Containers**: Use the IconContainer component
 - **Empty States**: Use the clickable empty state pattern with primary-colored icon
 - **Loading States**: Skeleton rows matching table structure
 - **Form Dialogs**: Same structure, validation patterns, loading states
@@ -208,6 +358,45 @@ Use these color patterns for status badges:
 - Prefer Tailwind's flexbox and grid utilities for layouts
 - Use Tailwind's typography plugin or utilities for text styling
 - Use `rounded-xl` for cards and containers, `rounded-lg` for smaller elements
-- Use opacity modifiers for subtle backgrounds (e.g., `/10`, `/15`, `/50`)
+- Use semantic tokens instead of magic numbers and hardcoded colors
 - Always include hover/transition states for interactive elements
 - **Always add `cursor-pointer`** to clickable elements (`<button>`, `<div onClick>`, etc.)
+- **Check /style-guide page** for complete design system documentation
+
+## MANDATORY: Style Guide Workflow
+
+### Before Creating New Components
+1. **ALWAYS visit `/style-guide`** to check existing patterns and components
+2. **Search this file** for similar patterns before implementing
+3. **Reuse existing components** (StatusBadge, IconContainer, etc.) instead of creating new ones
+4. **Follow established card structures** - never deviate from the standardized patterns
+
+### After Creating New Components or Patterns
+If you create a new reusable component or pattern, you MUST:
+
+1. **Update this file (`design.mdc`)**:
+   - Add documentation for the new component/pattern
+   - Include usage examples with code snippets
+   - Document all variants and props
+
+2. **Update the Style Guide page (`src/pages/StyleGuide.tsx`)**:
+   - Add a visual example of the new component
+   - Include interactive demos if applicable
+   - Add the component to the appropriate section
+
+3. **Update `index.css`** (if new tokens are needed):
+   - Add semantic tokens for any new values
+   - Register tokens in the `@theme inline` block
+   - NEVER use magic numbers - always create tokens
+
+### Checklist for New Components
+```
+[ ] Checked /style-guide for existing patterns
+[ ] Checked design.mdc for similar documentation
+[ ] Used semantic tokens (no magic numbers)
+[ ] Added documentation to design.mdc
+[ ] Added example to StyleGuide.tsx
+[ ] Added any new CSS tokens to index.css
+```
+
+**IMPORTANT**: Failing to update documentation creates inconsistencies. Always keep design.mdc and StyleGuide.tsx in sync with the actual implementation.

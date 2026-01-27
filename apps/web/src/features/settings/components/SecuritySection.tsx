@@ -7,19 +7,17 @@ export function SecuritySection() {
   const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false)
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {/* Password Section */}
-      <div className="flex items-start justify-between gap-4 p-5 rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
-        <div className="flex gap-4">
-          <div className="size-11 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
-            <Key className="size-5 text-foreground/60" />
-          </div>
-          <div>
-            <p className="font-medium text-foreground">Senha</p>
-            <p className="text-sm text-muted-foreground mt-1">
-              Altere sua senha para manter sua conta segura.
-            </p>
-          </div>
+      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+        <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
+          <Key className="size-icon-md text-text-tertiary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-text-primary">Senha</p>
+          <p className="text-sm text-muted-foreground">
+            Altere sua senha para manter sua conta segura.
+          </p>
         </div>
         <Button
           variant="outline"
@@ -31,13 +29,13 @@ export function SecuritySection() {
       </div>
 
       {/* Security Status */}
-      <div className="flex items-start gap-4 p-5 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-        <div className="size-11 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shrink-0">
-          <ShieldCheck className="size-5 text-emerald-500" />
+      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-status-success-muted/30 border border-status-success-border">
+        <div className="size-icon-container-md rounded-xl bg-status-success-muted border border-status-success-border flex items-center justify-center shrink-0">
+          <ShieldCheck className="size-icon-md text-status-success" />
         </div>
-        <div>
-          <p className="font-medium text-foreground">Conta protegida</p>
-          <p className="text-sm text-muted-foreground mt-1">
+        <div className="flex-1 min-w-0">
+          <p className="font-medium text-text-primary">Conta protegida</p>
+          <p className="text-sm text-muted-foreground">
             Sua conta está protegida com autenticação por senha.
           </p>
         </div>

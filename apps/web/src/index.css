@@ -37,6 +37,76 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+
+  /* Status: Success (Active) */
+  --status-success: oklch(0.765 0.177 163.223);
+  --status-success-foreground: oklch(0.527 0.154 163.223);
+  --status-success-muted: oklch(0.765 0.177 163.223 / 15%);
+  --status-success-border: oklch(0.765 0.177 163.223 / 30%);
+
+  /* Status: Warning (Pending) */
+  --status-warning: oklch(0.769 0.188 70.08);
+  --status-warning-foreground: oklch(0.666 0.179 58.318);
+  --status-warning-muted: oklch(0.769 0.188 70.08 / 15%);
+  --status-warning-border: oklch(0.769 0.188 70.08 / 30%);
+
+  /* Status: Error */
+  --status-error: oklch(0.577 0.245 27.325);
+  --status-error-foreground: oklch(0.577 0.245 27.325);
+  --status-error-muted: oklch(0.577 0.245 27.325 / 15%);
+  --status-error-border: oklch(0.577 0.245 27.325 / 30%);
+
+  /* Status: Neutral (Inactive) */
+  --status-neutral: oklch(0.556 0 0);
+  --status-neutral-foreground: oklch(0.442 0 0);
+  --status-neutral-muted: oklch(0.556 0 0 / 15%);
+  --status-neutral-border: oklch(0.556 0 0 / 30%);
+
+  /* Status: Info */
+  --status-info: oklch(0.623 0.214 259.815);
+  --status-info-foreground: oklch(0.488 0.243 264.376);
+  --status-info-muted: oklch(0.623 0.214 259.815 / 15%);
+  --status-info-border: oklch(0.623 0.214 259.815 / 30%);
+
+  /* Text Hierarchy */
+  --text-primary: var(--foreground);
+  --text-secondary: oklch(0.145 0 0 / 80%);
+  --text-tertiary: oklch(0.145 0 0 / 70%);
+  --text-muted: var(--muted-foreground);
+  --text-disabled: oklch(0.145 0 0 / 50%);
+
+  /* Layout Dimensions */
+  --sidebar-width: 16rem;
+  --sidebar-width-mobile: 18rem;
+  --sidebar-width-collapsed: 3rem;
+  --content-max-width: 42rem;
+
+  /* Spacing - Components */
+  --spacing-card: 1.25rem;
+  --spacing-card-sm: 1rem;
+  --spacing-card-lg: 1.5rem;
+  --spacing-section: 1.5rem;
+  --spacing-page: 2rem;
+  --spacing-gap: 1rem;
+
+  /* Card Dimensions */
+  --card-min-height: 5rem;
+
+  /* Icon Container Sizes */
+  --icon-container-sm: 1.75rem;
+  --icon-container-md: 2.75rem;
+  --icon-container-lg: 4rem;
+
+  /* Icon Sizes */
+  --icon-sm: 1rem;
+  --icon-md: 1.25rem;
+  --icon-lg: 2rem;
+
+  /* Action/Accent Colors (Gradient) */
+  --action-gradient-start: oklch(0.769 0.188 70.08);
+  --action-gradient-mid: oklch(0.879 0.213 91.504);
+  --action-gradient-end: oklch(0.769 0.188 70.08);
+  --action-foreground: oklch(0 0 0);
 }
 
 .dark {
@@ -71,6 +141,28 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Status: Success (Active) - Dark Mode */
+  --status-success-foreground: oklch(0.765 0.177 163.223);
+
+  /* Status: Warning (Pending) - Dark Mode */
+  --status-warning-foreground: oklch(0.769 0.188 70.08);
+
+  /* Status: Error - Dark Mode */
+  --status-error-foreground: oklch(0.704 0.191 22.216);
+
+  /* Status: Neutral (Inactive) - Dark Mode */
+  --status-neutral-foreground: oklch(0.708 0 0);
+
+  /* Status: Info - Dark Mode */
+  --status-info-foreground: oklch(0.623 0.214 259.815);
+
+  /* Text Hierarchy - Dark Mode */
+  --text-primary: var(--foreground);
+  --text-secondary: oklch(0.985 0 0 / 80%);
+  --text-tertiary: oklch(0.985 0 0 / 70%);
+  --text-muted: var(--muted-foreground);
+  --text-disabled: oklch(0.985 0 0 / 50%);
 }
 
 @theme inline {
@@ -109,6 +201,66 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+
+  /* Status Colors */
+  --color-status-success: var(--status-success);
+  --color-status-success-foreground: var(--status-success-foreground);
+  --color-status-success-muted: var(--status-success-muted);
+  --color-status-success-border: var(--status-success-border);
+  --color-status-warning: var(--status-warning);
+  --color-status-warning-foreground: var(--status-warning-foreground);
+  --color-status-warning-muted: var(--status-warning-muted);
+  --color-status-warning-border: var(--status-warning-border);
+  --color-status-error: var(--status-error);
+  --color-status-error-foreground: var(--status-error-foreground);
+  --color-status-error-muted: var(--status-error-muted);
+  --color-status-error-border: var(--status-error-border);
+  --color-status-neutral: var(--status-neutral);
+  --color-status-neutral-foreground: var(--status-neutral-foreground);
+  --color-status-neutral-muted: var(--status-neutral-muted);
+  --color-status-neutral-border: var(--status-neutral-border);
+  --color-status-info: var(--status-info);
+  --color-status-info-foreground: var(--status-info-foreground);
+  --color-status-info-muted: var(--status-info-muted);
+  --color-status-info-border: var(--status-info-border);
+
+  /* Text Hierarchy */
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-tertiary: var(--text-tertiary);
+  --color-text-muted: var(--text-muted);
+  --color-text-disabled: var(--text-disabled);
+
+  /* Action/Gradient Colors */
+  --color-action-gradient-start: var(--action-gradient-start);
+  --color-action-gradient-mid: var(--action-gradient-mid);
+  --color-action-gradient-end: var(--action-gradient-end);
+  --color-action-foreground: var(--action-foreground);
+
+  /* Layout Spacing */
+  --spacing-sidebar: var(--sidebar-width);
+  --spacing-content-max: var(--content-max-width);
+
+  /* Component Spacing */
+  --spacing-card: var(--spacing-card);
+  --spacing-card-sm: var(--spacing-card-sm);
+  --spacing-card-lg: var(--spacing-card-lg);
+  --spacing-section: var(--spacing-section);
+  --spacing-page: var(--spacing-page);
+  --spacing-gap: var(--spacing-gap);
+
+  /* Icon Container Sizes */
+  --size-icon-container-sm: var(--icon-container-sm);
+  --size-icon-container-md: var(--icon-container-md);
+  --size-icon-container-lg: var(--icon-container-lg);
+
+  /* Icon Sizes */
+  --size-icon-sm: var(--icon-sm);
+  --size-icon-md: var(--icon-md);
+  --size-icon-lg: var(--icon-lg);
+
+  /* Card Dimensions */
+  --min-h-card: var(--card-min-height);
 }
 
 @layer base {

@@ -10,13 +10,13 @@ import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   const { theme } = useTheme()
-  
+
   // Converter theme para formato esperado pelo sonner
-  const sonnerTheme = theme === "system" 
-    ? "system" 
-    : theme === "dark" 
-    ? "dark" 
-    : "light"
+  const sonnerTheme = theme === "system"
+    ? "system"
+    : theme === "dark"
+      ? "dark"
+      : "light"
 
   return (
     <Sonner
@@ -27,7 +27,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
         classNames: {
           toast: "!min-w-[400px]",
           error: "!bg-destructive !text-destructive-foreground !border-destructive !text-base",
-          success: "!bg-green-600 !text-white !border-green-600 !text-base",
+          success: "!bg-muted !text-white !border-accent !text-base",
           info: "!text-base",
           warning: "!text-base",
         },

@@ -32,8 +32,9 @@ export function ActionButton({
             onClick={onClick}
             className={cn(
                 "w-full h-12 text-sm font-semibold rounded-lg transition-all duration-300",
-                "bg-gradient-to-r from-amber-500 via-yellow-500 to-amber-500 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-600",
-                "text-black shadow-lg hover:shadow-xl hover:shadow-amber-500/25",
+                "bg-gradient-to-r from-action-gradient-start via-action-gradient-mid to-action-gradient-end",
+                "hover:brightness-95",
+                "text-action-foreground shadow-lg hover:shadow-xl hover:shadow-action-gradient-start/25",
                 "disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none disabled:from-muted disabled:via-muted disabled:to-muted disabled:text-muted-foreground",
                 className
             )}

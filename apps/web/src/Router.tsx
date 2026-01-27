@@ -6,6 +6,7 @@ import Home from './pages/Home'
 import Clients from './pages/Clients'
 import Settings from './pages/Settings'
 import Cartorios from './pages/Cartorios'
+import StyleGuide from './pages/StyleGuide'
 
 export default function Router() {
     return (
@@ -16,6 +17,7 @@ export default function Router() {
                     <Route path="clientes" element={<Clients />} />
                     <Route path="configuracoes" element={<Settings />} />
                     <Route path="cadastros/cartorios" element={<Cartorios />} />
+                    <Route path="style-guide" element={<StyleGuide />} />
                 </Route>
                 <Route path="*" element={<NotMatch />} />
             </Route>

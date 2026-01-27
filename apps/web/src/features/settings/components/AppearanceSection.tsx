@@ -48,48 +48,46 @@ export function AppearanceSection() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="grid gap-3">
-        {themes.map(({ value, icon: Icon, label, description }) => {
-          const isSelected = settings.theme === value
-          return (
-            <button
-              key={value}
-              type="button"
-              onClick={() => handleThemeChange(value)}
+    <div className="space-y-3">
+      {themes.map(({ value, icon: Icon, label, description }) => {
+        const isSelected = settings.theme === value
+        return (
+          <button
+            key={value}
+            type="button"
+            onClick={() => handleThemeChange(value)}
+            className={cn(
+              "w-full flex items-center gap-gap p-card min-h-card rounded-xl text-left transition-all cursor-pointer",
+              isSelected
+                ? "border-2 border-primary bg-primary/10 shadow-sm"
+                : "border border-transparent bg-accent/50 hover:bg-accent hover:border-border"
+            )}
+          >
+            <div
               className={cn(
-                "flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all cursor-pointer",
+                "size-icon-container-md rounded-xl flex items-center justify-center shrink-0 transition-colors",
                 isSelected
-                  ? "border-primary bg-primary/10 shadow-sm"
-                  : "border-transparent bg-accent/50 hover:bg-accent hover:border-border"
+                  ? "bg-primary text-primary-foreground shadow-sm"
+                  : "bg-background border border-border text-text-tertiary"
               )}
             >
-              <div
-                className={cn(
-                  "size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
-                  isSelected 
-                    ? "bg-primary text-primary-foreground shadow-sm" 
-                    : "bg-background border border-border text-foreground/60"
-                )}
-              >
-                <Icon className="size-5" />
+              <Icon className="size-icon-md" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className={cn(
+                "font-medium",
+                isSelected ? "text-text-primary" : "text-text-secondary"
+              )}>{label}</p>
+              <p className="text-sm text-muted-foreground">{description}</p>
+            </div>
+            {isSelected && (
+              <div className="size-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                <Check className="size-4 text-primary-foreground" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className={cn(
-                  "font-medium",
-                  isSelected ? "text-foreground" : "text-foreground/80"
-                )}>{label}</p>
-                <p className="text-sm text-muted-foreground">{description}</p>
-              </div>
-              {isSelected && (
-                <div className="size-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                  <Check className="size-4 text-primary-foreground" />
-                </div>
-              )}
-            </button>
-          )
-        })}
-      </div>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }

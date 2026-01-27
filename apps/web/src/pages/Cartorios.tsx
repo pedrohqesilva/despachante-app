@@ -192,9 +192,9 @@ export default function Cartorios() {
   const getStatusBadgeClassName = (status: NotaryOfficeStatus) => {
     switch (status) {
       case "active":
-        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
+        return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
       case "inactive":
-        return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 font-medium"
+        return "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
       default:
         return ""
     }
@@ -364,7 +364,7 @@ export default function Cartorios() {
                         <Building2 className="size-8 text-primary" />
                       </div>
                       <div>
-                        <p className="text-base font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+                        <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
                           Nenhum cartório encontrado
                         </p>
                         <p className="text-sm text-muted-foreground mt-1">
@@ -377,15 +377,15 @@ export default function Cartorios() {
               ) : (
                 notaryOffices.map((notaryOffice: NotaryOffice) => (
                   <TableRow key={notaryOffice._id} className="hover:bg-muted/50">
-                    <TableCell className="font-semibold text-foreground">{notaryOffice.code}</TableCell>
-                    <TableCell className="text-foreground/80">{notaryOffice.name}</TableCell>
-                    <TableCell className="text-foreground/70">
+                    <TableCell className="font-semibold text-text-primary">{notaryOffice.code}</TableCell>
+                    <TableCell className="text-text-secondary">{notaryOffice.name}</TableCell>
+                    <TableCell className="text-text-tertiary">
                       {notaryOffice.city && notaryOffice.state
                         ? `${notaryOffice.city}/${notaryOffice.state}`
                         : notaryOffice.city || notaryOffice.state || "-"}
                     </TableCell>
-                    <TableCell className="text-foreground/70">{notaryOffice.phone || "-"}</TableCell>
-                    <TableCell className="text-foreground/70">{notaryOffice.email || "-"}</TableCell>
+                    <TableCell className="text-text-tertiary">{notaryOffice.phone || "-"}</TableCell>
+                    <TableCell className="text-text-tertiary">{notaryOffice.email || "-"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={getStatusBadgeVariant(notaryOffice.status)}
