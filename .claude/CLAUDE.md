@@ -118,6 +118,61 @@ cartorios: defineTable({ // ❌ Table name in Portuguese
 </Button>
 ```
 
+## Design System Reference
+
+When working with UI components, styling, or design patterns, **ALWAYS** check these reference files:
+
+1. **`.cursor/rules/design.mdc`** - Complete design system documentation with:
+   - Component patterns and structures
+   - Semantic tokens (colors, spacing, typography)
+   - Reusable components (StatusBadge, IconContainer, etc.)
+   - Layout patterns (pages, dialogs, tables)
+   - Best practices and consistency guidelines
+
+2. **`apps/web/src/pages/StyleGuide.tsx`** - Visual style guide with:
+   - Interactive examples of all components
+   - Color swatches and tokens
+   - Typography hierarchy
+   - Icon sizes and variants
+   - Spacing and layout tokens
+   - Component patterns and structures
+
+**When to check these files:**
+- Before creating new UI components
+- When implementing styling or layout
+- When unsure about which component or pattern to use
+- When adding new design tokens or patterns
+- When reviewing code for design consistency
+
+**IMPORTANT**: Always verify existing patterns before creating new ones. Reuse components and follow established structures to maintain consistency.
+
+## Subagent Usage
+
+When working on frontend development tasks, **use the Next.js Frontend Specialist subagent** when necessary:
+
+**`.cursor/agents/nextjs-frontend-specialist.md`** - Specialized agent for:
+- Creating and modifying React/Next.js components
+- Managing shadcn/ui components using MCP tools
+- Implementing styling with Tailwind CSS 4
+- Structuring applications with clean and modular architecture
+- Applying SOLID principles in frontend
+- Organizing code following Feature-Sliced Design patterns
+- Implementing layouts and UI features
+- Ensuring accessibility and UX best practices
+
+**When to use this subagent:**
+- When creating new UI components or features
+- When implementing complex frontend architecture
+- When working with shadcn/ui components
+- When structuring frontend code organization
+- When implementing design patterns and layouts
+- When needing specialized frontend expertise
+
+**How to use:**
+- Reference the subagent file for detailed guidelines and workflows
+- Follow the MCP tool usage patterns for shadcn components
+- Apply the architectural patterns and best practices described
+
 ## Enforcement Rules
 
 When writing or reviewing code, always ensure:
@@ -127,3 +182,4 @@ When writing or reviewing code, always ensure:
 4. UI text and user-facing messages are in Portuguese
 5. Code is self-explanatory - prefer refactoring over adding comments
 6. Complex business logic includes Portuguese comments explaining the "why"
+7. Design patterns follow the guidelines in `design.mdc` and `StyleGuide.tsx`
