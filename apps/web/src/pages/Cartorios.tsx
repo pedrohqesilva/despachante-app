@@ -50,8 +50,8 @@ export default function Cartorios() {
     name: "",
     code: "",
     address: "",
-    city: "",
-    state: "",
+    city: "Belo Horizonte",
+    state: "MG",
     phone: "",
     email: "",
     status: "active" as "active" | "inactive",
@@ -96,8 +96,8 @@ export default function Cartorios() {
       name: "",
       code: "",
       address: "",
-      city: "",
-      state: "",
+      city: "Belo Horizonte",
+      state: "MG",
       phone: "",
       email: "",
       status: "active",
@@ -127,8 +127,8 @@ export default function Cartorios() {
       name: "",
       code: "",
       address: "",
-      city: "",
-      state: "",
+      city: "Belo Horizonte",
+      state: "MG",
       phone: "",
       email: "",
       status: "active",
@@ -458,105 +458,160 @@ export default function Cartorios() {
       </div>
 
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>
-              {editingNotaryOffice ? "Editar Cartório" : "Novo Cartório"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingNotaryOffice
-                ? "Atualize os dados do cartório"
-                : "Preencha os dados para cadastrar um novo cartório"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">
-                Nome <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="name"
-                placeholder="Nome do cartório"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                autoComplete="off"
-                disabled={isSubmitting}
-              />
+        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center gap-gap p-6 border-b border-border/50">
+            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Building2 className="size-icon-md text-primary" />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="code">
-                Código <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="code"
-                placeholder="Código do cartório"
-                value={formData.code}
-                onChange={(e) => setFormData({ ...formData, code: e.target.value })}
-                autoComplete="off"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="address">Endereço</Label>
-              <Input
-                id="address"
-                placeholder="Endereço completo"
-                value={formData.address}
-                onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                autoComplete="off"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="city">Cidade</Label>
-                <Input
-                  id="city"
-                  placeholder="Cidade"
-                  value={formData.city}
-                  onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                  autoComplete="off"
-                  disabled={isSubmitting}
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="state">Estado</Label>
-                <Input
-                  id="state"
-                  placeholder="UF"
-                  value={formData.state}
-                  onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
-                  autoComplete="off"
-                  maxLength={2}
-                  disabled={isSubmitting}
-                />
-              </div>
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                placeholder="(00) 00000-0000"
-                value={formData.phone}
-                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                autoComplete="off"
-                disabled={isSubmitting}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@exemplo.com"
-                value={formData.email}
-                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                autoComplete="off"
-                disabled={isSubmitting}
-              />
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg font-semibold">
+                {editingNotaryOffice ? "Editar Cartório" : "Novo Cartório"}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                {editingNotaryOffice
+                  ? "Atualize os dados do cartório selecionado"
+                  : "Preencha os dados para cadastrar um novo cartório"}
+              </DialogDescription>
             </div>
           </div>
-          <DialogFooter>
+
+          {/* Form Content */}
+          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            {/* Identification Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Identificação</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="code" className="text-sm font-medium">
+                    Código <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="code"
+                    placeholder="Exemplo: 1º OFICIO"
+                    value={formData.code}
+                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    autoComplete="off"
+                    disabled={isSubmitting}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Nome <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Exemplo: Cartório de Registro de Imóveis"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    autoComplete="off"
+                    disabled={isSubmitting}
+                    className="h-10"
+                  />
+                </div>
+                {editingNotaryOffice && (
+                  <div className="space-y-2">
+                    <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+                    <Select
+                      value={formData.status}
+                      onValueChange={(value: "active" | "inactive") => setFormData({ ...formData, status: value })}
+                      disabled={isSubmitting}
+                    >
+                      <SelectTrigger className="h-10">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="active">Ativo</SelectItem>
+                        <SelectItem value="inactive">Inativo</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Contact Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contato</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="(00) 00000-0000"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    autoComplete="off"
+                    disabled={isSubmitting}
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    value={formData.email}
+                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                    autoComplete="off"
+                    disabled={isSubmitting}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Location Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Localização</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="address" className="text-sm font-medium">Endereço</Label>
+                  <Input
+                    id="address"
+                    placeholder="Rua Exemplo, 123, 3º Andar, Bairro Exemplo"
+                    value={formData.address}
+                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                    autoComplete="off"
+                    disabled={isSubmitting}
+                    className="h-10"
+                  />
+                </div>
+                <div className="grid grid-cols-4 gap-4">
+                  <div className="col-span-3 space-y-2">
+                    <Label htmlFor="city" className="text-sm font-medium">Cidade</Label>
+                    <Input
+                      id="city"
+                      placeholder="Belo Horizonte"
+                      value={formData.city}
+                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      autoComplete="off"
+                      disabled={isSubmitting}
+                      className="h-10"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="state" className="text-sm font-medium">UF</Label>
+                    <Input
+                      id="state"
+                      placeholder="MG"
+                      value={formData.state}
+                      onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                      autoComplete="off"
+                      maxLength={2}
+                      disabled={isSubmitting}
+                      className="h-10 uppercase"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
             <Button variant="outline" onClick={handleCloseDialog} disabled={isSubmitting}>
               Cancelar
             </Button>
@@ -566,11 +621,13 @@ export default function Cartorios() {
                   <Loader2 className="mr-2 size-4 animate-spin" />
                   Salvando...
                 </>
+              ) : editingNotaryOffice ? (
+                "Salvar alterações"
               ) : (
-                "Salvar"
+                "Criar cartório"
               )}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
     </div>

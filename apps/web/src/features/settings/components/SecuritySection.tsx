@@ -9,7 +9,7 @@ export function SecuritySection() {
   return (
     <div className="space-y-3">
       {/* Password Section */}
-      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-border hover:border-border transition-colors">
         <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
           <Key className="size-icon-md text-text-tertiary" />
         </div>

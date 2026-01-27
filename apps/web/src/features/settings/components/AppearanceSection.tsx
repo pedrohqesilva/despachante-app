@@ -60,7 +60,7 @@ export function AppearanceSection() {
               "w-full flex items-center gap-gap p-card min-h-card rounded-xl text-left transition-all cursor-pointer",
               isSelected
                 ? "border-2 border-primary bg-primary/10 shadow-sm"
-                : "border border-transparent bg-accent/50 hover:bg-accent hover:border-border"
+                : "border border-border bg-accent/50 hover:bg-accent hover:border-border"
             )}
           >
             <div

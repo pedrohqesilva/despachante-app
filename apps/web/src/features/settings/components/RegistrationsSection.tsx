@@ -24,12 +24,12 @@ export function RegistrationsSection() {
           onClick={() => navigate(route)}
           className={cn(
             "w-full flex items-center gap-gap p-card min-h-card rounded-xl cursor-pointer",
-            "bg-accent/50 border border-transparent hover:border-primary/30 hover:bg-primary/5",
+            "bg-accent/50 border border-border hover:border-primary/30 hover:bg-primary/5",
             "transition-all text-left group"
           )}
         >
-          <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors">
-            <Icon className="size-icon-md text-text-tertiary group-hover:text-primary transition-colors" />
+          <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0 transition-colors">
+            <Icon className="size-icon-md text-text-tertiary transition-colors" />
           </div>
           <div className="flex-1 min-w-0">
             <p className="font-medium text-text-primary">{label}</p>

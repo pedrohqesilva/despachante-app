@@ -27,7 +27,7 @@ export function NotificationsSection() {
   return (
     <div className="space-y-3">
       {/* System Notifications */}
-      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-border hover:border-border transition-colors">
         <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
           <Bell className="size-icon-md text-text-tertiary" />
         </div>
@@ -45,7 +45,7 @@ export function NotificationsSection() {
       </div>
 
       {/* Email Notifications */}
-      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
+      <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-border hover:border-border transition-colors">
         <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
           <Mail className="size-icon-md text-text-tertiary" />
         </div>

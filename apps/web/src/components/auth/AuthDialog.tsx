@@ -4,12 +4,12 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { LoginForm } from "./LoginForm";
 import { SignUpForm } from "./SignUpForm";
 import { Button } from "@/components/ui/button";
+import { LogIn, UserPlus } from "lucide-react";
 
 type AuthDialogProps = {
   open: boolean;
@@ -47,33 +47,47 @@ export function AuthDialog({
     e.preventDefault();
   };
 
+  const Icon = mode === "login" ? LogIn : UserPlus;
+
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogContent 
-        className="sm:max-w-md" 
+      <DialogContent
+        className="sm:max-w-[440px] p-0 gap-0 overflow-hidden"
         showCloseButton={false}
         onInteractOutside={handleInteractOutside}
       >
-        <DialogHeader>
-          <DialogTitle>
-            {mode === "login" ? "Entrar" : "Criar conta"}
-          </DialogTitle>
-          <DialogDescription>
-            {mode === "login"
-              ? "Entre com sua conta para continuar"
-              : "Crie uma conta para começar"}
-          </DialogDescription>
-        </DialogHeader>
+        {/* Header */}
+        <div className="p-8 pb-2">
+          <div className="flex items-center gap-4">
+            <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Icon className="size-6 text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-xl font-semibold">
+                {mode === "login" ? "Bem-vindo de volta" : "Criar conta"}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-1">
+                {mode === "login"
+                  ? "Entre com sua conta para continuar"
+                  : "Crie uma conta para começar"}
+              </DialogDescription>
+            </div>
+          </div>
+        </div>
 
-        {mode === "login" ? <LoginForm /> : <SignUpForm />}
+        {/* Form Content */}
+        <div className="px-8 py-6">
+          {mode === "login" ? <LoginForm /> : <SignUpForm />}
+        </div>
 
-        <div className="mt-4 text-center text-sm">
+        {/* Footer */}
+        <div className="px-8 pb-8 text-center text-sm text-muted-foreground">
           {mode === "login" ? (
             <>
               Não tem uma conta?{" "}
               <Button
                 variant="link"
-                className="p-0 h-auto"
+                className="p-0 h-auto font-medium text-primary"
                 onClick={() => setMode("signup")}
               >
                 Criar conta
@@ -84,7 +98,7 @@ export function AuthDialog({
               Já tem uma conta?{" "}
               <Button
                 variant="link"
-                className="p-0 h-auto"
+                className="p-0 h-auto font-medium text-primary"
                 onClick={() => setMode("login")}
               >
                 Entrar

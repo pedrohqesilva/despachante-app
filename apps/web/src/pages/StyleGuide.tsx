@@ -8,7 +8,6 @@ import {
   Component,
   Users,
   Bell,
-  Mail,
   Shield,
   Settings,
   ChevronRight,
@@ -737,6 +736,58 @@ function ComponentsSection() {
             <p className="text-sm text-text-muted mt-1">
               Clique para adicionar um novo item
             </p>
+          </div>
+        </div>
+      </div>
+
+      {/* Form Dialog Pattern */}
+      <div>
+        <SubsectionTitle>Dialog de Formulário</SubsectionTitle>
+        <p className="text-text-secondary mb-4">
+          Estrutura padronizada para dialogs de criação/edição:
+        </p>
+        <div className="rounded-xl border border-border overflow-hidden bg-background">
+          {/* Dialog Header */}
+          <div className="flex items-center gap-gap p-6 border-b border-border/50">
+            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <Building2 className="size-icon-md text-primary" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="text-lg font-semibold">Novo Item</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Preencha os dados para cadastrar um novo item
+              </p>
+            </div>
+          </div>
+
+          {/* Dialog Content */}
+          <div className="p-6 space-y-6">
+            {/* Section with left-aligned title */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Identificação
+              </p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Código <span className="text-destructive">*</span></p>
+                  <div className="h-10 rounded-md border border-input bg-background px-3 flex items-center text-muted-foreground text-sm">
+                    Ex: ITEM-001
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium">Nome <span className="text-destructive">*</span></p>
+                  <div className="h-10 rounded-md border border-input bg-background px-3 flex items-center text-muted-foreground text-sm">
+                    Nome do item
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Dialog Footer */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
+            <Button variant="outline">Cancelar</Button>
+            <Button>Criar item</Button>
           </div>
         </div>
       </div>

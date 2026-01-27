@@ -2,7 +2,7 @@ import { useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X } from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X, User, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -543,73 +543,100 @@ export default function Clients() {
           }
         }}
       >
-        <DialogContent className="sm:max-w-[550px]">
-          <DialogHeader>
-            <DialogTitle>
-              {editingClient ? "Editar Cliente" : "Novo Cliente"}
-            </DialogTitle>
-            <DialogDescription>
-              {editingClient
-                ? "Atualize os dados do cliente"
-                : "Preencha os dados para cadastrar um novo cliente"}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">
-                Nome <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="name"
-                placeholder="Nome completo"
-                value={newClientForm.name}
-                onChange={(e) =>
-                  setNewClientForm({ ...newClientForm, name: e.target.value })
-                }
-                autoComplete="off"
-              />
+        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
+          {/* Header */}
+          <div className="flex items-center gap-gap p-6 border-b border-border/50">
+            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+              <User className="size-icon-md text-primary" />
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="email">
-                Email <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="email@exemplo.com"
-                value={newClientForm.email}
-                onChange={(e) =>
-                  setNewClientForm({ ...newClientForm, email: e.target.value })
-                }
-                autoComplete="off"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="phone">Telefone</Label>
-              <Input
-                id="phone"
-                placeholder="(00) 00000-0000"
-                value={newClientForm.phone}
-                onChange={(e) => handlePhoneChange(e.target.value)}
-                autoComplete="off"
-                maxLength={15}
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="taxId">
-                CPF/CNPJ <span className="text-destructive">*</span>
-              </Label>
-              <Input
-                id="taxId"
-                placeholder="000.000.000-00 ou 00.000.000/0000-00"
-                value={newClientForm.taxId}
-                onChange={(e) => handleTaxIdChange(e.target.value)}
-                autoComplete="off"
-                maxLength={18}
-              />
+            <div className="flex-1 min-w-0">
+              <DialogTitle className="text-lg font-semibold">
+                {editingClient ? "Editar Cliente" : "Novo Cliente"}
+              </DialogTitle>
+              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+                {editingClient
+                  ? "Atualize os dados do cliente selecionado"
+                  : "Preencha os dados para cadastrar um novo cliente"}
+              </DialogDescription>
             </div>
           </div>
-          <DialogFooter>
+
+          {/* Form Content */}
+          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+            {/* Personal Data Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Dados Pessoais</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name" className="text-sm font-medium">
+                    Nome <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="name"
+                    placeholder="Nome completo"
+                    value={newClientForm.name}
+                    onChange={(e) =>
+                      setNewClientForm({ ...newClientForm, name: e.target.value })
+                    }
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="taxId" className="text-sm font-medium">
+                    CPF/CNPJ <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="taxId"
+                    placeholder="000.000.000-00 ou 00.000.000/0000-00"
+                    value={newClientForm.taxId}
+                    onChange={(e) => handleTaxIdChange(e.target.value)}
+                    autoComplete="off"
+                    maxLength={18}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Contact Section */}
+            <div className="space-y-4">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contato</p>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email" className="text-sm font-medium">
+                    Email <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="email@exemplo.com"
+                    value={newClientForm.email}
+                    onChange={(e) =>
+                      setNewClientForm({ ...newClientForm, email: e.target.value })
+                    }
+                    autoComplete="off"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                  <Input
+                    id="phone"
+                    placeholder="(00) 00000-0000"
+                    value={newClientForm.phone}
+                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    autoComplete="off"
+                    maxLength={15}
+                    className="h-10"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
             <Button
               variant="outline"
               onClick={() => setIsNewClientDialogOpen(false)}
@@ -617,9 +644,9 @@ export default function Clients() {
               Cancelar
             </Button>
             <Button onClick={() => handleCreateClient()}>
-              Salvar
+              {editingClient ? "Salvar alterações" : "Criar cliente"}
             </Button>
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 

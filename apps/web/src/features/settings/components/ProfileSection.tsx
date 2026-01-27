@@ -29,12 +29,12 @@ export function ProfileSection() {
   return (
     <div className="space-y-8">
       {/* Avatar Section */}
-      <div className="flex items-center gap-4 p-5 rounded-xl bg-accent/50">
-        <div className="size-16 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center">
-          <User className="size-8 text-primary" />
+      <div className="flex items-center gap-4 p-5 rounded-xl bg-accent/50 border border-border">
+        <div className="size-16 rounded-xl bg-background border border-border flex items-center justify-center">
+          <User className="size-8 text-text-tertiary" />
         </div>
         <div>
-          <p className="font-semibold text-foreground">{user?.name || "Usuário"}</p>
+          <p className="font-semibold text-text-primary">{user?.name || "Usuário"}</p>
           <p className="text-sm text-muted-foreground">{user?.email}</p>
         </div>
       </div>

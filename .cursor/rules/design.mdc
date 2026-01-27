@@ -322,6 +322,63 @@ Use the IconContainer component or these classes:
 </button>
 ```
 
+## Dialog Patterns
+
+### Form Dialog (Create/Edit)
+All form dialogs MUST follow this structure for consistency:
+```tsx
+<DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
+  {/* Header with Icon */}
+  <div className="flex items-center gap-gap p-6 border-b border-border/50">
+    <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+      <Icon className="size-icon-md text-primary" />
+    </div>
+    <div className="flex-1 min-w-0">
+      <DialogTitle className="text-lg font-semibold">{title}</DialogTitle>
+      <DialogDescription className="text-sm text-muted-foreground mt-0.5">
+        {description}
+      </DialogDescription>
+    </div>
+  </div>
+
+  {/* Form Content with Sections */}
+  <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
+    {/* Section */}
+    <div className="space-y-4">
+      {/* Section Title (left-aligned) */}
+      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+        Section Name
+      </p>
+
+      {/* Form Fields (stacked vertically) */}
+      <div className="space-y-4">
+        <div className="space-y-2">
+          <Label className="text-sm font-medium">
+            Field <span className="text-destructive">*</span>
+          </Label>
+          <Input className="h-10" />
+        </div>
+      </div>
+    </div>
+  </div>
+
+  {/* Footer */}
+  <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
+    <Button variant="outline">Cancelar</Button>
+    <Button>{isEditing ? "Salvar alterações" : "Criar item"}</Button>
+  </div>
+</DialogContent>
+```
+
+**CRITICAL**: Always use this dialog structure:
+- `p-0 gap-0 overflow-hidden` on DialogContent
+- Header with icon, title, and description
+- Section titles LEFT-ALIGNED (not centered)
+- Form fields STACKED VERTICALLY (not side-by-side)
+- Form fields with `h-10` height
+- Footer with `border-t border-border/50` separator (same background)
+- Contextual button text (Create vs Save)
+
 ## Design Consistency & Pattern Reuse
 - **Always analyze similar pages** before implementing new features
 - **Reuse existing components** and patterns to maintain consistency
