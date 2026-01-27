@@ -7,11 +7,18 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipProvider,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { AppLogo } from './app-logo'
 import { Button } from './ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 import { baseUrl } from '@/config/app'
 import { useAuth } from '@/contexts/AuthContext'
+import { Users } from 'lucide-react'
 
 export function AppHeader() {
     const { user, signOut } = useAuth()
@@ -104,34 +111,54 @@ export function AppHeader() {
                             ))}
                         </nav> */}
                     </div>
-                    <nav className="flex gap-1">
+                    <nav className="flex gap-1 items-center">
                         {user && (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button
-                                        variant='ghost'
-                                        className='relative h-8 w-8 rounded-full cursor-pointer ml-2'>
-                                        <Avatar className='h-8 w-8'>
-                                            <AvatarImage src={baseUrl + '/avatars/shadcn.jpg'} alt={getUserDisplayName()} />
-                                            <AvatarFallback className="rounded-lg">{getUserInitials()}</AvatarFallback>
-                                        </Avatar>
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className='w-56' align='end' forceMount>
-                                    <DropdownMenuLabel className='font-normal'>
-                                        <div className='flex flex-col space-y-1'>
-                                            <p className='text-sm font-medium leading-none'>{getUserDisplayName()}</p>
-                                            <p className='text-xs leading-none text-muted-foreground'>
-                                                {user.email}
-                                            </p>
-                                        </div>
-                                    </DropdownMenuLabel>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem onClick={handleSignOut}>
-                                        Sair
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                            <>
+                                <TooltipProvider>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button
+                                                variant='ghost'
+                                                size='icon'
+                                                className='h-8 w-8'
+                                                asChild>
+                                                <Link to="/clientes">
+                                                    <Users className='h-4 w-4' />
+                                                </Link>
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Clientes</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </TooltipProvider>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button
+                                            variant='ghost'
+                                            className='relative h-8 w-8 rounded-full cursor-pointer ml-2'>
+                                            <Avatar className='h-8 w-8'>
+                                                <AvatarImage src={baseUrl + '/avatars/shadcn.jpg'} alt={getUserDisplayName()} />
+                                                <AvatarFallback className="rounded-lg">{getUserInitials()}</AvatarFallback>
+                                            </Avatar>
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent className='w-56' align='end' forceMount>
+                                        <DropdownMenuLabel className='font-normal'>
+                                            <div className='flex flex-col space-y-1'>
+                                                <p className='text-sm font-medium leading-none'>{getUserDisplayName()}</p>
+                                                <p className='text-xs leading-none text-muted-foreground'>
+                                                    {user.email}
+                                                </p>
+                                            </div>
+                                        </DropdownMenuLabel>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem onClick={handleSignOut}>
+                                            Sair
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
                         )}
                     </nav>
                 </div>

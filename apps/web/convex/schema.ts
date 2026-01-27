@@ -11,4 +11,20 @@ export default defineSchema({
     image: v.optional(v.string()),
     isAnonymous: v.optional(v.boolean()),
   }).index("email", ["email"]),
+  clients: defineTable({
+    name: v.string(),
+    email: v.string(),
+    phone: v.optional(v.string()),
+    taxId: v.string(),
+    status: v.union(
+      v.literal("active"),
+      v.literal("inactive"),
+      v.literal("pending")
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("email", ["email"])
+    .index("status", ["status"])
+    .index("taxId", ["taxId"]),
 });

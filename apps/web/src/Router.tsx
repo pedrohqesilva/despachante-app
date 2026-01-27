@@ -3,6 +3,7 @@ import { AppLayout } from './components/app-layout'
 import { ProtectedRoute } from './components/ProtectedRoute'
 import NotMatch from './pages/NotMatch'
 import Home from './pages/Home'
+import Clients from './pages/Clients'
 
 export default function Router() {
     return (
@@ -10,6 +11,7 @@ export default function Router() {
             <Route element={<AppLayout />}>
                 <Route element={<ProtectedRoute><Outlet /></ProtectedRoute>}>
                     <Route path="" element={<Home />} />
+                    <Route path="clientes" element={<Clients />} />
                 </Route>
                 <Route path="*" element={<NotMatch />} />
             </Route>

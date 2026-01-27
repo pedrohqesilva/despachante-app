@@ -8,7 +8,7 @@ function PageHeader({
   return (
     <section
       className={cn(
-        "pt-6 pb-4 space-y-2",
+        "pt-6 pb-8 space-y-2",
         className
       )}
       {...props}>
