@@ -3,7 +3,6 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { toast } from "sonner"
 import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Building2, X } from "lucide-react"
-import { PageHeader, PageHeaderDescription, PageHeaderHeading } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -193,9 +192,9 @@ export default function Cartorios() {
   const getStatusBadgeClassName = (status: NotaryOfficeStatus) => {
     switch (status) {
       case "active":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
       case "inactive":
-        return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20"
+        return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 font-medium"
       default:
         return ""
     }
@@ -230,22 +229,22 @@ export default function Cartorios() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <PageHeader>
-        <div className="flex items-center justify-between">
+      <div className="border-b backdrop-blur">
+        <div className="px-6 py-6 flex items-center justify-between">
           <div>
-            <PageHeaderHeading>Cartórios</PageHeaderHeading>
-            <PageHeaderDescription>
-              Gerencie os cartórios cadastrados no sistema
-            </PageHeaderDescription>
+            <h1 className="text-2xl font-semibold tracking-tight">Cartórios</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Gerencie os cartórios cadastrados no sistema.
+            </p>
           </div>
           <Button onClick={handleOpenDialog}>
             <Plus className="mr-2 h-4 w-4" />
             Novo Cartório
           </Button>
         </div>
-      </PageHeader>
+      </div>
 
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 p-6">
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
@@ -290,14 +289,14 @@ export default function Cartorios() {
           </Select>
         </div>
 
-        <div className="rounded-md border">
+        <div className="rounded-xl border border-border/50 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 <TableHead className="w-[150px]">
                   <button
                     onClick={() => handleSort("code")}
-                    className="flex items-center hover:text-foreground cursor-pointer"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Código
                     <SortIcon field="code" />
@@ -306,25 +305,25 @@ export default function Cartorios() {
                 <TableHead className="w-[300px]">
                   <button
                     onClick={() => handleSort("name")}
-                    className="flex items-center hover:text-foreground cursor-pointer"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Nome
                     <SortIcon field="name" />
                   </button>
                 </TableHead>
-                <TableHead>Cidade/Estado</TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead className="font-semibold">Cidade/Estado</TableHead>
+                <TableHead className="font-semibold">Telefone</TableHead>
+                <TableHead className="font-semibold">Email</TableHead>
                 <TableHead className="w-[120px]">
                   <button
                     onClick={() => handleSort("status")}
-                    className="flex items-center hover:text-foreground cursor-pointer"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Status
                     <SortIcon field="status" />
                   </button>
                 </TableHead>
-                <TableHead className="w-[100px] text-right">Ações</TableHead>
+                <TableHead className="w-[100px] text-right font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -359,30 +358,34 @@ export default function Cartorios() {
                   <TableCell colSpan={7} className="h-72 text-center">
                     <button
                       onClick={handleOpenDialog}
-                      className="flex flex-col items-center justify-center gap-2 w-full h-full hover:opacity-80 transition-opacity cursor-pointer"
+                      className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
                     >
-                      <Building2 className="h-12 w-12 text-muted-foreground" />
-                      <p className="text-base font-medium text-muted-foreground">
-                        Nenhum cartório encontrado
-                      </p>
-                      <p className="text-sm text-muted-foreground/70">
-                        Clique para adicionar um novo cartório
-                      </p>
+                      <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
+                        <Building2 className="size-8 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+                          Nenhum cartório encontrado
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Clique para adicionar um novo cartório
+                        </p>
+                      </div>
                     </button>
                   </TableCell>
                 </TableRow>
               ) : (
                 notaryOffices.map((notaryOffice: NotaryOffice) => (
-                  <TableRow key={notaryOffice._id}>
-                    <TableCell className="font-medium">{notaryOffice.code}</TableCell>
-                    <TableCell>{notaryOffice.name}</TableCell>
-                    <TableCell>
+                  <TableRow key={notaryOffice._id} className="hover:bg-muted/50">
+                    <TableCell className="font-semibold text-foreground">{notaryOffice.code}</TableCell>
+                    <TableCell className="text-foreground/80">{notaryOffice.name}</TableCell>
+                    <TableCell className="text-foreground/70">
                       {notaryOffice.city && notaryOffice.state
                         ? `${notaryOffice.city}/${notaryOffice.state}`
                         : notaryOffice.city || notaryOffice.state || "-"}
                     </TableCell>
-                    <TableCell>{notaryOffice.phone || "-"}</TableCell>
-                    <TableCell>{notaryOffice.email || "-"}</TableCell>
+                    <TableCell className="text-foreground/70">{notaryOffice.phone || "-"}</TableCell>
+                    <TableCell className="text-foreground/70">{notaryOffice.email || "-"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={getStatusBadgeVariant(notaryOffice.status)}

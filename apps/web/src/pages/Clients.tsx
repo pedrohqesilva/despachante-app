@@ -3,7 +3,6 @@ import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { toast } from "sonner"
 import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X } from "lucide-react"
-import { PageHeader, PageHeaderDescription, PageHeaderHeading } from "@/components/page-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -249,11 +248,11 @@ export default function Clients() {
   const getStatusBadgeClassName = (status: ClientStatus) => {
     switch (status) {
       case "active":
-        return "bg-green-500/10 text-green-600 dark:text-green-400 border-green-500/20"
+        return "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border-emerald-500/30 font-medium"
       case "inactive":
-        return "bg-gray-500/10 text-gray-600 dark:text-gray-400 border-gray-500/20"
+        return "bg-zinc-500/15 text-zinc-600 dark:text-zinc-400 border-zinc-500/30 font-medium"
       case "pending":
-        return "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400 border-yellow-500/20"
+        return "bg-amber-500/15 text-amber-600 dark:text-amber-400 border-amber-500/30 font-medium"
       default:
         return ""
     }
@@ -290,13 +289,13 @@ export default function Clients() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <PageHeader>
-        <div className="flex items-center justify-between">
+      <div className="border-b backdrop-blur">
+        <div className="px-6 py-6 flex items-center justify-between">
           <div>
-            <PageHeaderHeading>Clientes</PageHeaderHeading>
-            <PageHeaderDescription>
-              Gerencie os clientes da sua empresa
-            </PageHeaderDescription>
+            <h1 className="text-2xl font-semibold tracking-tight">Clientes</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              Gerencie os clientes da sua empresa.
+            </p>
           </div>
           <Button
             onClick={() => {
@@ -314,9 +313,9 @@ export default function Clients() {
             Novo Cliente
           </Button>
         </div>
-      </PageHeader>
+      </div>
 
-      <div className="flex-1 space-y-4">
+      <div className="flex-1 space-y-4 p-6">
         {/* Filters */}
         <div className="flex items-center gap-4">
           <div className="relative flex-1 max-w-sm">
@@ -365,14 +364,14 @@ export default function Clients() {
         </div>
 
         {/* Table */}
-        <div className="rounded-md border">
+        <div className="rounded-xl border border-border/50 overflow-hidden">
           <Table>
             <TableHeader>
-              <TableRow>
+              <TableRow className="bg-muted/30 hover:bg-muted/30">
                 <TableHead className="w-[400px]">
                   <button
                     onClick={() => handleSort("name")}
-                    className="flex items-center hover:text-foreground"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Nome
                     <SortIcon field="name" />
@@ -381,24 +380,24 @@ export default function Clients() {
                 <TableHead>
                   <button
                     onClick={() => handleSort("email")}
-                    className="flex items-center hover:text-foreground"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Email
                     <SortIcon field="email" />
                   </button>
                 </TableHead>
-                <TableHead>Telefone</TableHead>
-                <TableHead>CPF/CNPJ</TableHead>
+                <TableHead className="font-semibold">Telefone</TableHead>
+                <TableHead className="font-semibold">CPF/CNPJ</TableHead>
                 <TableHead className="w-[120px]">
                   <button
                     onClick={() => handleSort("status")}
-                    className="flex items-center hover:text-foreground"
+                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
                   >
                     Status
                     <SortIcon field="status" />
                   </button>
                 </TableHead>
-                <TableHead className="w-[100px] text-right">Ações</TableHead>
+                <TableHead className="w-[100px] text-right font-semibold">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
@@ -430,27 +429,31 @@ export default function Clients() {
                   <TableCell colSpan={6} className="h-72 text-center">
                     <button
                       onClick={() => setIsNewClientDialogOpen(true)}
-                      className="flex flex-col items-center justify-center gap-2 w-full h-full hover:opacity-80 transition-opacity cursor-pointer"
+                      className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
                     >
-                      <Users className="h-12 w-12 text-muted-foreground" />
-                      <p className="text-base font-medium text-muted-foreground">
-                        Nenhum cliente encontrado
-                      </p>
-                      <p className="text-sm text-muted-foreground/70">
-                        Clique para adicionar um novo cliente
-                      </p>
+                      <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
+                        <Users className="size-8 text-primary" />
+                      </div>
+                      <div>
+                        <p className="text-base font-semibold text-foreground/80 group-hover:text-foreground transition-colors">
+                          Nenhum cliente encontrado
+                        </p>
+                        <p className="text-sm text-muted-foreground mt-1">
+                          Clique para adicionar um novo cliente
+                        </p>
+                      </div>
                     </button>
                   </TableCell>
                 </TableRow>
               ) : (
                 clients.map((client) => (
-                  <TableRow key={client._id}>
-                    <TableCell className="font-medium">{client.name}</TableCell>
-                    <TableCell>{client.email}</TableCell>
-                    <TableCell>
+                  <TableRow key={client._id} className="hover:bg-muted/50">
+                    <TableCell className="font-semibold text-foreground">{client.name}</TableCell>
+                    <TableCell className="text-foreground/80">{client.email}</TableCell>
+                    <TableCell className="text-foreground/70">
                       {client.phone ? formatPhone(client.phone) : "-"}
                     </TableCell>
-                    <TableCell>{formatTaxId(client.taxId)}</TableCell>
+                    <TableCell className="text-foreground/70">{formatTaxId(client.taxId)}</TableCell>
                     <TableCell>
                       <Badge
                         variant={getStatusBadgeVariant(client.status)}

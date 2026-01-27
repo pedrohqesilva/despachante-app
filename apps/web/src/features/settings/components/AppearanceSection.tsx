@@ -1,0 +1,95 @@
+import { useState, useEffect } from "react"
+import { Sun, Moon, Monitor, Check } from "lucide-react"
+import { useTheme } from "@/contexts/ThemeContext"
+import { settingsService } from "../services/settings.service"
+import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+import type { SystemSettings } from "../types/settings.types"
+
+export function AppearanceSection() {
+  const { theme, setTheme } = useTheme()
+  const [settings, setSettings] = useState<SystemSettings>(() =>
+    settingsService.getSystemSettings()
+  )
+
+  useEffect(() => {
+    if (settings.theme !== theme) {
+      setSettings((prev) => ({ ...prev, theme: theme as SystemSettings["theme"] }))
+    }
+  }, [theme, settings.theme])
+
+  const handleThemeChange = (value: SystemSettings["theme"]) => {
+    setTheme(value)
+    const updated = { ...settings, theme: value }
+    setSettings(updated)
+    settingsService.updateSystemSettings(updated)
+    toast.success("Tema atualizado")
+  }
+
+  const themes = [
+    {
+      value: "light" as const,
+      icon: Sun,
+      label: "Claro",
+      description: "Tema claro para ambientes bem iluminados",
+    },
+    {
+      value: "dark" as const,
+      icon: Moon,
+      label: "Escuro",
+      description: "Tema escuro para reduzir o cansaço visual",
+    },
+    {
+      value: "system" as const,
+      icon: Monitor,
+      label: "Sistema",
+      description: "Segue a configuração do seu dispositivo",
+    },
+  ]
+
+  return (
+    <div className="space-y-6">
+      <div className="grid gap-3">
+        {themes.map(({ value, icon: Icon, label, description }) => {
+          const isSelected = settings.theme === value
+          return (
+            <button
+              key={value}
+              type="button"
+              onClick={() => handleThemeChange(value)}
+              className={cn(
+                "flex items-center gap-4 p-4 rounded-xl border-2 text-left transition-all cursor-pointer",
+                isSelected
+                  ? "border-primary bg-primary/10 shadow-sm"
+                  : "border-transparent bg-accent/50 hover:bg-accent hover:border-border"
+              )}
+            >
+              <div
+                className={cn(
+                  "size-11 rounded-xl flex items-center justify-center shrink-0 transition-colors",
+                  isSelected 
+                    ? "bg-primary text-primary-foreground shadow-sm" 
+                    : "bg-background border border-border text-foreground/60"
+                )}
+              >
+                <Icon className="size-5" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className={cn(
+                  "font-medium",
+                  isSelected ? "text-foreground" : "text-foreground/80"
+                )}>{label}</p>
+                <p className="text-sm text-muted-foreground">{description}</p>
+              </div>
+              {isSelected && (
+                <div className="size-6 rounded-full bg-primary flex items-center justify-center shrink-0">
+                  <Check className="size-4 text-primary-foreground" />
+                </div>
+              )}
+            </button>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
