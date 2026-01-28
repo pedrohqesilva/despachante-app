@@ -1,0 +1,59 @@
+---
+alwaysApply: true
+---
+
+# Feature Documentation Rules
+
+## Mandatory README Updates
+
+When modifying any file inside `apps/web/src/features/*/`, you **MUST** update the corresponding `README.md` in that feature folder.
+
+### Trigger Conditions
+
+Update the feature README when:
+- Adding, removing, or renaming components
+- Modifying component props or interfaces
+- Adding, removing, or modifying hooks
+- Changing exported types
+- Modifying `index.ts` exports
+- Adding new backend integrations (queries/mutations)
+
+### Feature README Locations
+
+| Feature | README Path |
+|---------|-------------|
+| Clients | `apps/web/src/features/clients/README.md` |
+| Properties | `apps/web/src/features/properties/README.md` |
+| Notary Offices | `apps/web/src/features/notary-offices/README.md` |
+
+### What to Update
+
+1. **Structure section**: Update folder tree if files changed
+2. **Components section**: Update props interfaces and descriptions
+3. **Hooks section**: Update return types and parameters
+4. **Types section**: Update interfaces and type definitions
+5. **Usage section**: Update examples if API changed
+6. **Backend Integration**: Update queries/mutations list
+
+### Example Workflow
+
+```
+1. READ features/clients/README.md first (for context)
+2. Modify component in features/clients/components/
+3. Update features/clients/index.ts if exports changed
+4. Update features/clients/README.md with changes
+5. Commit all changes together
+```
+
+## Pre-Work Context Loading
+
+**BEFORE starting any work on a feature**, you **MUST** read the feature's README.md to understand:
+- Current folder structure
+- Existing components and their purposes
+- Available hooks and their APIs
+- Type definitions in use
+- Backend integration patterns
+
+This ensures you have full context before making changes and helps maintain consistency.
+
+**Remember**: Documentation must stay in sync with code. Outdated docs mislead developers.

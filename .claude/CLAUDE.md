@@ -146,32 +146,113 @@ When working with UI components, styling, or design patterns, **ALWAYS** check t
 
 **IMPORTANT**: Always verify existing patterns before creating new ones. Reuse components and follow established structures to maintain consistency.
 
-## Subagent Usage
+## External Documentation (Context7 MCP)
 
-When working on frontend development tasks, **use the Next.js Frontend Specialist subagent** when necessary:
+When you need up-to-date documentation for any library (React, Next.js, Convex, Tailwind, etc.), use the Context7 MCP tools:
 
-**`.cursor/agents/nextjs-frontend-specialist.md`** - Specialized agent for:
+1. **mcp__context7__resolve-library-id** - First, find the library ID
+   - `libraryName`: "next.js", `query`: "what you need to know"
+
+2. **mcp__context7__query-docs** - Then, query the documentation
+   - `libraryId`: "/vercel/next.js", `query`: "server components usage"
+
+**When to use:**
+- When unsure about a library's API or best practices
+- When implementing features that require specific library knowledge
+- When debugging issues related to external libraries
+- When the built-in knowledge might be outdated
+
+## Specialized Agents
+
+Use the specialized agents when working on specific layers of the application:
+
+### Frontend Specialist
+
+**`.claude/agents/frontend-specialist.md`** - Use for:
 - Creating and modifying React/Next.js components
 - Managing shadcn/ui components using MCP tools
 - Implementing styling with Tailwind CSS 4
-- Structuring applications with clean and modular architecture
+- Structuring applications with Feature-Sliced Design
 - Applying SOLID principles in frontend
-- Organizing code following Feature-Sliced Design patterns
 - Implementing layouts and UI features
 - Ensuring accessibility and UX best practices
 
-**When to use this subagent:**
-- When creating new UI components or features
-- When implementing complex frontend architecture
-- When working with shadcn/ui components
-- When structuring frontend code organization
-- When implementing design patterns and layouts
-- When needing specialized frontend expertise
+**When to use:**
+- Creating new UI components or features
+- Implementing complex frontend architecture
+- Working with shadcn/ui components
+- Structuring frontend code organization
+- Implementing design patterns and layouts
 
-**How to use:**
-- Reference the subagent file for detailed guidelines and workflows
-- Follow the MCP tool usage patterns for shadcn components
-- Apply the architectural patterns and best practices described
+### Backend Specialist
+
+**`.claude/agents/convex-backend-specialist.md`** - Use for:
+- Creating or modifying database schemas
+- Implementing queries and mutations
+- Designing API structures
+- Applying clean architecture patterns
+- Implementing business logic
+- Ensuring SOLID principles in backend code
+
+**When to use:**
+- Creating new database tables or modifying schema
+- Implementing backend queries and mutations
+- Adding validation or business logic
+- Refactoring backend code
+- Integrating frontend with backend
+
+### How to Use Agents
+
+1. Identify the task layer (frontend or backend)
+2. Reference the appropriate agent file for guidelines
+3. Follow the architectural patterns described
+4. Apply the language standards (English code, Portuguese UI/comments)
+
+### Parallel Execution for New Features
+
+When creating a new feature that requires both frontend and backend work, **launch both agents in parallel** for maximum efficiency:
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    New Feature Request                       │
+└─────────────────────────────────────────────────────────────┘
+                              │
+              ┌───────────────┴───────────────┐
+              ▼                               ▼
+┌─────────────────────────┐     ┌─────────────────────────┐
+│   Backend Specialist    │     │   Frontend Specialist   │
+│                         │     │                         │
+│ • Create schema         │     │ • Create components     │
+│ • Implement queries     │     │ • Implement hooks       │
+│ • Implement mutations   │     │ • Create UI/forms       │
+│ • Add validation        │     │ • Add styling           │
+└─────────────────────────┘     └─────────────────────────┘
+              │                               │
+              └───────────────┬───────────────┘
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│              Integration & Testing                           │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**When to use parallel execution:**
+- Creating a new feature (e.g., "criar módulo de documentos")
+- Adding CRUD operations for a new entity
+- Implementing a complete user flow
+
+**How to execute in parallel:**
+1. Send a single message with multiple Task tool calls
+2. One Task for `convex-backend-specialist` (schema, queries, mutations)
+3. One Task for `frontend-specialist` (components, hooks, UI)
+4. Both agents work simultaneously
+5. Integrate and test after both complete
+
+**Example prompt for parallel execution:**
+```
+Criar feature de documentos:
+- Backend: schema, queries (list, get), mutations (create, update, delete)
+- Frontend: DocumentDialog, DocumentFormFields, useDocumentForm, página de listagem
+```
 
 ## Enforcement Rules
 
@@ -184,3 +265,57 @@ When writing or reviewing code, always ensure:
 6. Complex business logic includes Portuguese comments explaining the "why"
 7. Design patterns follow the guidelines in `design.mdc` and `StyleGuide.tsx`
 8. **When editing any file, remove unnecessary comments** - delete obvious, redundant, or outdated comments that don't add value
+9. **Read feature README before starting work** - always read the README.md of a feature before modifying it
+10. **Always update feature README** - when modifying components, hooks, or types in a feature folder
+
+## Feature Documentation
+
+Each feature in `apps/web/src/features/` has its own `README.md` that documents:
+- Folder structure
+- Components (props, usage)
+- Hooks (return values, usage)
+- Types (interfaces, enums)
+- Backend integration (queries, mutations)
+- Usage examples
+
+### Before Starting Work on a Feature
+
+**ALWAYS read the feature's README.md first** to understand:
+1. Current folder structure and file organization
+2. Existing components and their responsibilities
+3. Available hooks and their APIs
+4. Type definitions currently in use
+5. Backend integration patterns (queries/mutations)
+
+This ensures you have full context before making changes and helps maintain consistency with existing patterns.
+
+### When to Update Feature README
+
+**ALWAYS update the feature's README.md when:**
+- Adding new components to the feature
+- Modifying component props or behavior
+- Adding or modifying hooks
+- Changing types or interfaces
+- Adding new exports to `index.ts`
+- Changing backend integration (new queries/mutations)
+
+### README Update Checklist
+
+When modifying a feature, verify that the README reflects:
+1. ✅ Current folder structure
+2. ✅ All exported components with their props
+3. ✅ All exported hooks with their return types
+4. ✅ All exported types
+5. ✅ Accurate usage examples
+6. ✅ Current backend integration info
+
+### Feature README Locations
+
+```
+apps/web/src/features/
+├── clients/README.md
+├── properties/README.md
+└── notary-offices/README.md
+```
+
+**IMPORTANT**: Outdated documentation is worse than no documentation. Keep READMEs in sync with code changes.
