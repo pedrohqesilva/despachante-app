@@ -3,11 +3,12 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { Id } from "../../convex/_generated/dataModel"
-import { User, Building2, FileText, ArrowLeft, Pencil, Search, Plus, X, Heart, ChevronDown, Check, Loader2, UserRound, HeartHandshake, Gem, CircleDashed } from "lucide-react"
+import { User, Building2, FileText, ArrowLeft, Pencil, Search, Plus, X, Heart, ChevronDown, Check, Loader2, UserRound, HeartHandshake, Gem, CircleDashed, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
+import { DateInput } from "@/components/ui/date-input"
 import { Label } from "@/components/ui/label"
 import {
   Dialog,
@@ -90,6 +91,7 @@ export default function ClientDetails() {
     motherName: "",
     maritalStatus: "" as MaritalStatus | "",
     propertyRegime: "" as PropertyRegime | "",
+    weddingDate: "",
     spouseId: null as Id<"clients"> | null,
   })
 
@@ -127,6 +129,13 @@ export default function ClientDetails() {
     editForm.spouseId ? { id: editForm.spouseId } : "skip"
   )
 
+  const missingDocuments = useQuery(
+    api.clientDocuments.getMissingRequired,
+    client ? { clientId: client._id } : "skip"
+  )
+
+  const hasMissingDocuments = missingDocuments && missingDocuments.length > 0
+
   const updateClientMutation = useMutation(api.clients.update)
   const createClientMutation = useMutation(api.clients.create)
 
@@ -143,6 +152,7 @@ export default function ClientDetails() {
       motherName: client.motherName || "",
       maritalStatus: client.maritalStatus || "",
       propertyRegime: client.propertyRegime || "",
+      weddingDate: client.weddingDate || "",
       spouseId: client.spouseId || null,
     })
     setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
@@ -267,6 +277,7 @@ export default function ClientDetails() {
         motherName: editForm.motherName.trim() || undefined,
         maritalStatus: editForm.maritalStatus || undefined,
         propertyRegime: editForm.propertyRegime || undefined,
+        weddingDate: editForm.weddingDate || undefined,
         spouseId: spouseChanged ? finalSpouseId || undefined : undefined,
         removeSpouse: spouseRemoved,
       })
@@ -391,6 +402,9 @@ export default function ClientDetails() {
                   activeSection === id ? "text-primary" : "text-text-disabled"
                 )} />
                 {label}
+                {id === "documents" && hasMissingDocuments && (
+                  <AlertCircle className="size-4 text-destructive ml-auto" />
+                )}
               </button>
             ))}
           </nav>
@@ -647,6 +661,20 @@ export default function ClientDetails() {
                         ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                )}
+
+                {requiresSpouse(editForm.maritalStatus) && (
+                  <div className="space-y-3">
+                    <Label htmlFor="edit-weddingDate" className="text-sm font-medium">
+                      {editForm.maritalStatus === "married" ? "Data do Casamento" : "Desde"}
+                    </Label>
+                    <DateInput
+                      id="edit-weddingDate"
+                      value={editForm.weddingDate}
+                      onChange={(e) => setEditForm({ ...editForm, weddingDate: e.target.value })}
+                      className="h-10"
+                    />
                   </div>
                 )}
 

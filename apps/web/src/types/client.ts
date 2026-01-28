@@ -14,6 +14,25 @@ export type PropertyRegime =
   | "total_communion"
   | "total_separation"
 
+export type DocumentType =
+  | "cpf"
+  | "birth_certificate"
+  | "marriage_certificate"
+  | "identity"
+  | "address_proof"
+  | "other"
+
+export interface ClientDocument {
+  _id: Id<"clientDocuments">
+  name: string
+  type: DocumentType
+  storageId: Id<"_storage">
+  clientIds: Id<"clients">[]
+  mimeType: string
+  size: number
+  createdAt: number
+}
+
 export interface Client {
   _id: Id<"clients">
   name: string
@@ -24,6 +43,7 @@ export interface Client {
   maritalStatus?: MaritalStatus
   propertyRegime?: PropertyRegime
   spouseId?: Id<"clients">
+  weddingDate?: string
   fatherName?: string
   motherName?: string
   createdAt: number

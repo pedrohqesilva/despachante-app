@@ -258,6 +258,7 @@ export const update = mutation({
     propertyRegime: propertyRegimeValidator,
     spouseId: v.optional(v.id("clients")),
     removeSpouse: v.optional(v.boolean()),
+    weddingDate: v.optional(v.string()),
     fatherName: v.optional(v.string()),
     motherName: v.optional(v.string()),
   },
@@ -307,9 +308,19 @@ export const update = mutation({
           spouseId: id,
           maritalStatus: args.maritalStatus || currentClient.maritalStatus,
           propertyRegime: args.propertyRegime || currentClient.propertyRegime,
+          weddingDate: args.weddingDate || currentClient.weddingDate,
           updatedAt: now,
         });
       }
+    }
+    // Sincroniza dados com cônjuge existente
+    else if (currentClient.spouseId && (args.maritalStatus || args.propertyRegime || args.weddingDate)) {
+      await ctx.db.patch(currentClient.spouseId, {
+        maritalStatus: args.maritalStatus || currentClient.maritalStatus,
+        propertyRegime: args.propertyRegime || currentClient.propertyRegime,
+        weddingDate: args.weddingDate || currentClient.weddingDate,
+        updatedAt: now,
+      });
     }
 
     await ctx.db.patch(id, {

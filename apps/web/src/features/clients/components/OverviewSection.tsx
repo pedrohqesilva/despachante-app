@@ -1,4 +1,10 @@
 import { Mail, Copy, ExternalLink } from "lucide-react"
+import { formatTaxId, formatPhone } from "@/lib/format"
+import { Client, MaritalStatus, PropertyRegime } from "@/types/client"
+import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
+import { toast } from "sonner"
+import { useNavigate } from "react-router-dom"
 
 function WhatsAppIcon({ className }: { className?: string }) {
   return (
@@ -11,12 +17,6 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   )
 }
-import { formatTaxId, formatPhone } from "@/lib/format"
-import { Client, MaritalStatus, PropertyRegime } from "@/types/client"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { toast } from "sonner"
-import { useNavigate } from "react-router-dom"
 
 interface OverviewSectionProps {
   client: Client
@@ -39,11 +39,19 @@ const PROPERTY_REGIME_LABELS: Record<PropertyRegime, string> = {
 
 export function OverviewSection({ client, spouse }: OverviewSectionProps) {
   const navigate = useNavigate()
+
   const requiresSpouse = client.maritalStatus === "married" || client.maritalStatus === "common_law_marriage"
+  const isMarried = client.maritalStatus === "married"
+  const dateLabel = isMarried ? "Data do Casamento" : "Desde"
 
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
     toast.success(`${label} copiado!`)
+  }
+
+  const formatDisplayDate = (dateStr: string) => {
+    const [year, month, day] = dateStr.split("-")
+    return `${day}/${month}/${year}`
   }
 
   return (
@@ -143,48 +151,58 @@ export function OverviewSection({ client, spouse }: OverviewSectionProps) {
             <div>
               <p className="text-xs text-muted-foreground">Situação</p>
               <p className="text-sm font-medium text-text-primary">
-                {client.maritalStatus ? MARITAL_STATUS_LABELS[client.maritalStatus] : "Não informado"}
+                {requiresSpouse && client.maritalStatus && client.propertyRegime
+                  ? (
+                    <>
+                      {MARITAL_STATUS_LABELS[client.maritalStatus]}
+                      <span className="text-muted-foreground"> | </span>
+                      {PROPERTY_REGIME_LABELS[client.propertyRegime]}
+                    </>
+                  )
+                  : client.maritalStatus
+                    ? MARITAL_STATUS_LABELS[client.maritalStatus]
+                    : "Não informado"}
               </p>
             </div>
             {requiresSpouse && (
               <div>
-                <p className="text-xs text-muted-foreground">Regime de Bens</p>
+                <p className="text-xs text-muted-foreground">{dateLabel}</p>
                 <p className="text-sm font-medium text-text-primary">
-                  {client.propertyRegime ? PROPERTY_REGIME_LABELS[client.propertyRegime] : "Não informado"}
+                  {client.weddingDate ? formatDisplayDate(client.weddingDate) : "Não informado"}
                 </p>
               </div>
             )}
           </div>
         </div>
-      </div>
 
-      {/* Spouse Card */}
-      {requiresSpouse && spouse && (
-        <div
-          className="p-5 rounded-xl border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors group"
-          onClick={() => navigate(`/clientes/${spouse._id}`)}
-        >
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="size-12 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                <span className="text-lg font-semibold text-primary">
-                  {spouse.name.charAt(0).toUpperCase()}
-                </span>
+        {/* Cônjuge */}
+        {spouse && (
+          <div
+            className="mt-4 mx-2 p-4 rounded-xl border border-primary/20 bg-primary/5 cursor-pointer hover:bg-primary/10 transition-colors group"
+            onClick={() => navigate(`/clientes/${spouse._id}`)}
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                  <span className="text-base font-semibold text-primary">
+                    {spouse.name.charAt(0).toUpperCase()}
+                  </span>
+                </div>
+                <div>
+                  <p className="text-xs text-muted-foreground">Cônjuge</p>
+                  <p className="text-sm font-semibold text-text-primary">
+                    {spouse.name}
+                  </p>
+                  <p className="text-xs text-muted-foreground font-mono">
+                    {formatTaxId(spouse.taxId)}
+                  </p>
+                </div>
               </div>
-              <div>
-                <p className="text-xs text-muted-foreground mb-0.5">Cônjuge</p>
-                <p className="text-sm font-semibold text-text-primary">
-                  {spouse.name}
-                </p>
-                <p className="text-xs text-muted-foreground font-mono">
-                  {formatTaxId(spouse.taxId)}
-                </p>
-              </div>
+              <ExternalLink className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
             </div>
-            <ExternalLink className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
           </div>
-        </div>
-      )}
+        )}
+      </div>
     </div>
   )
 }

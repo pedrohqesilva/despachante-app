@@ -38,6 +38,7 @@ export default defineSchema({
       )
     ),
     spouseId: v.optional(v.id("clients")),
+    weddingDate: v.optional(v.string()),
     fatherName: v.optional(v.string()),
     motherName: v.optional(v.string()),
     createdAt: v.number(),
@@ -97,4 +98,21 @@ export default defineSchema({
     .index("city", ["city"])
     .index("type", ["type"])
     .index("zipCode", ["zipCode"]),
+  clientDocuments: defineTable({
+    name: v.string(),
+    type: v.union(
+      v.literal("cpf"),
+      v.literal("birth_certificate"),
+      v.literal("marriage_certificate"),
+      v.literal("identity"),
+      v.literal("address_proof"),
+      v.literal("other")
+    ),
+    storageId: v.id("_storage"),
+    clientIds: v.array(v.id("clients")),
+    mimeType: v.string(),
+    size: v.number(),
+    createdAt: v.number(),
+  })
+    .index("type", ["type"]),
 });

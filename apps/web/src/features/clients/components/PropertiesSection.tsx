@@ -1,10 +1,11 @@
 import { useQuery } from "convex/react"
 import { api } from "../../../../convex/_generated/api"
 import { Id } from "../../../../convex/_generated/dataModel"
-import { Building, Building2, Home, Trees, MapPin, Plus, Ruler, DollarSign, LucideIcon } from "lucide-react"
+import { Building, Building2, Home, Trees, Plus, ExternalLink, LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
+import { formatCurrency, formatArea } from "@/lib/format"
+import { cn } from "@/lib/utils"
 
 interface PropertiesSectionProps {
   clientId: Id<"clients">
@@ -17,11 +18,10 @@ const TYPE_CONFIG: Record<string, { label: string; icon: LucideIcon }> = {
   building: { label: "Prédio", icon: Building2 },
 }
 
-function formatCurrency(value: number): string {
-  return value.toLocaleString("pt-BR", {
-    style: "currency",
-    currency: "BRL",
-  })
+const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
+  active: { label: "Ativo", className: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" },
+  pending: { label: "Pendente", className: "bg-amber-500/10 text-amber-500 border-amber-500/20" },
+  inactive: { label: "Inativo", className: "bg-zinc-500/10 text-zinc-500 border-zinc-500/20" },
 }
 
 export function PropertiesSection({ clientId }: PropertiesSectionProps) {
@@ -80,39 +80,52 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
 
       <div className="space-y-3">
         {properties.map((property) => {
-          const address = `${property.street}, ${property.number}, ${property.neighborhood}, ${property.city}/${property.state} - ${property.zipCode}`
           const typeConfig = TYPE_CONFIG[property.type] || { label: property.type, icon: Building2 }
+          const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.pending
           const TypeIcon = typeConfig.icon
 
           return (
             <div
               key={property._id}
-              className="group p-4 rounded-xl border border-border/50 hover:border-border hover:bg-accent/30 transition-colors cursor-pointer"
+              className="group p-4 rounded-xl border border-border bg-accent/50 hover:bg-accent hover:border-border transition-all cursor-pointer relative"
             >
               <div className="flex items-center gap-4">
-                <div className="size-12 rounded-xl bg-accent border border-border flex items-center justify-center shrink-0">
+                <div className="size-12 rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
                   <TypeIcon className="size-6 text-text-tertiary" />
                 </div>
-                <div className="flex-1 min-w-0 space-y-1">
-                  <div className="flex items-center gap-1.5">
-                    <MapPin className="size-3.5 text-muted-foreground shrink-0" />
-                    <p className="text-sm font-medium text-text-primary truncate">
-                      {address}
-                    </p>
-                  </div>
-                  <div className="flex items-center gap-3 text-xs text-muted-foreground">
-                    <Badge variant="outline" className="text-xs">
-                      {typeConfig.label}
-                    </Badge>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-text-secondary truncate">
+                    {property.street}, {property.number}
+                    {property.complement && ` - ${property.complement}`}, {property.neighborhood}, {property.city}/{property.state}
+                  </p>
+                  <p className="text-xs text-muted-foreground truncate">
 
-                    <div className="flex items-center gap-1">
-                      <span>{formatCurrency(property.value)}</span>
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Ruler className="size-3" />
-                      <span>{property.area.toLocaleString("pt-BR")} m²</span>
-                    </div>
+                  </p>
+
+                  <div className="flex items-center gap-2 mt-2">
+                    <span className={cn(
+                      "text-[10px] font-medium px-1.5 py-0.5 rounded border",
+                      statusConfig.className
+                    )}>
+                      {statusConfig.label}
+                    </span>
+                    <span className="text-xs font-medium text-muted-foreground bg-accent px-1.5 py-0.5 rounded border border-border">
+                      {typeConfig.label}
+                    </span>
                   </div>
+                </div>
+                <div className="flex flex-col items-end gap-1 shrink-0 opacity-100 group-hover:opacity-0 transition-opacity duration-200 absolute right-4">
+                  <span className="text-sm font-semibold text-text-secondary">{formatCurrency(property.value)}</span>
+                  <span className="text-xs text-muted-foreground">{formatArea(property.area)}</span>
+                </div>
+                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="size-8"
+                  >
+                    <ExternalLink className="size-4" />
+                  </Button>
                 </div>
               </div>
             </div>
