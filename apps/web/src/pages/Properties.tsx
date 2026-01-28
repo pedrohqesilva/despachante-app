@@ -1,9 +1,11 @@
-import { useState, useMemo, useCallback, useRef } from "react"
+import { useState, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees, Users, ExternalLink, AlertTriangle } from "lucide-react"
+import {
+  Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Users, ExternalLink, AlertTriangle,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -48,10 +50,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import { Label } from "@/components/ui/label"
 import { TrashButton } from "@/components/ui/trash-button"
 import { PropertiesTableActions } from "@/components/properties/PropertiesTableActions"
 import { ExportButton } from "@/components/properties/ExportButton"
+import { PropertyDialog, type PropertyDialogSaveData } from "@/features/properties"
+import {
+  getPropertyTypeLabel,
+  getPropertyStatusLabel,
+  getPropertyStatusBadgeVariant,
+  getPropertyStatusBadgeClassName,
+} from "@/lib/constants"
 import { formatZipCode, formatCurrency, formatArea, formatTaxId } from "@/lib/format"
 import { Property, PropertyStatus, PropertyType } from "@/types/property"
 import { Client } from "@/types/client"
@@ -64,10 +72,6 @@ type SortOrder = "asc" | "desc"
 function PropertyRow({
   property,
   owners,
-  getTypeLabel,
-  getStatusBadgeVariant,
-  getStatusBadgeClassName,
-  getStatusLabel,
   onEdit,
   onDelete,
   onRowClick,
@@ -78,10 +82,6 @@ function PropertyRow({
 }: {
   property: Property
   owners: Client[]
-  getTypeLabel: (type: PropertyType) => string
-  getStatusBadgeVariant: (status: PropertyStatus) => "default" | "secondary" | "outline"
-  getStatusBadgeClassName: (status: PropertyStatus) => string
-  getStatusLabel: (status: PropertyStatus) => string
   onEdit: (property: Property) => void
   onDelete: (property: Property) => Promise<void>
   onRowClick: (property: Property) => void
@@ -110,7 +110,7 @@ function PropertyRow({
       onClick={handleRowClick}
     >
       <TableCell className="text-text-tertiary">
-        {getTypeLabel(property.type)}
+        {getPropertyTypeLabel(property.type)}
       </TableCell>
       <TableCell className="text-text-secondary">
         {property.street}, {property.number}
@@ -215,10 +215,10 @@ function PropertyRow({
       </TableCell>
       <TableCell>
         <Badge
-          variant={getStatusBadgeVariant(property.status)}
-          className={getStatusBadgeClassName(property.status)}
+          variant={getPropertyStatusBadgeVariant(property.status)}
+          className={getPropertyStatusBadgeClassName(property.status)}
         >
-          {getStatusLabel(property.status)}
+          {getPropertyStatusLabel(property.status)}
         </Badge>
       </TableCell>
       <TableCell className="text-right" data-actions>
@@ -243,9 +243,10 @@ export default function Properties() {
   const [pageSize, setPageSize] = useState(10)
   const [sortBy, setSortBy] = useState<SortField>("createdAt")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
-  const [isNewPropertyDialogOpen, setIsNewPropertyDialogOpen] = useState(false)
+  const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false)
   const [editingProperty, setEditingProperty] = useState<Property | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [pendingPropertyData, setPendingPropertyData] = useState<PropertyDialogSaveData | null>(null)
   const [isRemovingOwner, setIsRemovingOwner] = useState(false)
   const [ownerToRemove, setOwnerToRemove] = useState<{
     propertyId: Id<"properties">
@@ -253,67 +254,7 @@ export default function Properties() {
     ownerName: string
     currentOwnerIds: Id<"clients">[]
   } | null>(null)
-  const [ownerSearch, setOwnerSearch] = useState("")
-  const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<{
-    zipCode?: boolean
-    street?: boolean
-    number?: boolean
-    neighborhood?: boolean
-    city?: boolean
-    state?: boolean
-    type?: boolean
-    area?: boolean
-    value?: boolean
-    ownerIds?: boolean
-  }>({})
-  const [newPropertyForm, setNewPropertyForm] = useState({
-    zipCode: "",
-    street: "",
-    number: "",
-    complement: "",
-    neighborhood: "",
-    city: "",
-    state: "",
-    type: "" as PropertyType | "",
-    area: "",
-    value: "",
-    ownerIds: [] as Id<"clients">[],
-  })
-  const [isLoadingCep, setIsLoadingCep] = useState(false)
-  const numberInputRef = useRef<HTMLInputElement>(null)
-
-  const fetchAddressByCep = useCallback(async (cep: string) => {
-    const cleanedCep = cep.replace(/\D/g, "")
-    if (cleanedCep.length !== 8) return
-
-    setIsLoadingCep(true)
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`)
-      const data = await response.json()
-
-      if (data.erro) {
-        toast.error("CEP não encontrado")
-        return
-      }
-
-      setNewPropertyForm(prev => ({
-        ...prev,
-        street: data.logradouro || prev.street,
-        neighborhood: data.bairro || prev.neighborhood,
-        city: data.localidade || prev.city,
-        state: data.uf || prev.state,
-        complement: data.complemento || prev.complement,
-      }))
-      setTimeout(() => numberInputRef.current?.focus(), 0)
-    } catch (error) {
-      toast.error("Erro ao buscar CEP")
-      console.error(error)
-    } finally {
-      setIsLoadingCep(false)
-    }
-  }, [])
 
   const propertiesData = useQuery(
     propertiesApi.queries.list,
@@ -330,26 +271,23 @@ export default function Properties() {
 
   const activeClients = useQuery(
     clientsApi.queries.list,
-    {
-      page: 1,
-      pageSize: 10000,
-    }
+    { page: 1, pageSize: 10000 }
+  )
+
+  const duplicateCheck = useQuery(
+    propertiesApi.queries.checkDuplicates,
+    pendingPropertyData && !editingProperty
+      ? {
+        street: pendingPropertyData.data.street,
+        number: pendingPropertyData.data.number,
+        zipCode: pendingPropertyData.data.zipCode,
+      }
+      : "skip"
   )
 
   const deletePropertyMutation = useMutation(propertiesApi.mutations.deleteProperty)
   const createPropertyMutation = useMutation(propertiesApi.mutations.create)
   const updatePropertyMutation = useMutation(propertiesApi.mutations.update)
-
-  const duplicateCheck = useQuery(
-    propertiesApi.queries.checkDuplicates,
-    isNewPropertyDialogOpen && !editingProperty && newPropertyForm.street.trim() && newPropertyForm.number.trim() && newPropertyForm.zipCode.trim()
-      ? {
-        street: newPropertyForm.street.trim(),
-        number: newPropertyForm.number.trim(),
-        zipCode: newPropertyForm.zipCode.replace(/\D/g, ""),
-      }
-      : "skip"
-  )
 
   const handleSort = (field: SortField) => {
     if (sortBy === field) {
@@ -409,187 +347,53 @@ export default function Properties() {
 
   const handleEdit = (property: Property) => {
     setEditingProperty(property)
-    setNewPropertyForm({
-      zipCode: formatZipCode(property.zipCode),
-      street: property.street || "",
-      number: property.number || "",
-      complement: property.complement || "",
-      neighborhood: property.neighborhood || "",
-      city: property.city,
-      state: property.state,
-      type: property.type,
-      area: property.area.toString(),
-      value: Math.round(property.value * 100).toString(),
-      ownerIds: property.ownerIds,
-    })
-    setIsNewPropertyDialogOpen(true)
+    setIsPropertyDialogOpen(true)
   }
 
-  const handleZipCodeChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, "")
-    let formatted = value
-
-    if (cleaned.length <= 8) {
-      if (cleaned.length <= 5) {
-        formatted = cleaned
-      } else {
-        formatted = `${cleaned.slice(0, 5)}-${cleaned.slice(5)}`
-      }
-    }
-
-    setNewPropertyForm({ ...newPropertyForm, zipCode: formatted })
-
-    // Buscar endereço quando CEP estiver completo
-    if (cleaned.length === 8) {
-      fetchAddressByCep(cleaned)
-    }
+  const handleOpenNewDialog = () => {
+    setEditingProperty(null)
+    setIsPropertyDialogOpen(true)
   }
 
-  const handleCurrencyChange = (value: string) => {
-    const cleaned = value.replace(/\D/g, "")
-    setNewPropertyForm({ ...newPropertyForm, value: cleaned })
-  }
-
-  const formatCurrencyInput = (value: string): string => {
-    if (!value) return ""
-    const numValue = Number(value)
-    if (isNaN(numValue)) return ""
-    return (numValue / 100).toLocaleString("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    })
-  }
-
-  const handleCreateProperty = async (skipDuplicateCheck?: boolean) => {
-    const shouldSkipCheck = skipDuplicateCheck ?? false
-
-    // Validação de campos obrigatórios
-    const errors: typeof fieldErrors = {}
-    if (!newPropertyForm.zipCode.trim()) errors.zipCode = true
-    if (!newPropertyForm.street.trim()) errors.street = true
-    if (!newPropertyForm.number.trim()) errors.number = true
-    if (!newPropertyForm.neighborhood.trim()) errors.neighborhood = true
-    if (!newPropertyForm.city.trim()) errors.city = true
-    if (!newPropertyForm.state) errors.state = true
-    if (!newPropertyForm.type) errors.type = true
-    if (!newPropertyForm.area.trim()) errors.area = true
-    if (!newPropertyForm.value.trim()) errors.value = true
-    if (newPropertyForm.ownerIds.length === 0) errors.ownerIds = true
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
-      return
-    }
-
-    setFieldErrors({})
-
-    // Check for duplicates if creating new property
-    if (!editingProperty && !shouldSkipCheck && duplicateCheck?.duplicate) {
+  const handleSaveProperty = useCallback(async (saveData: PropertyDialogSaveData) => {
+    if (!saveData.isEditing && duplicateCheck?.duplicate) {
+      setPendingPropertyData(saveData)
       setIsConfirmDialogOpen(true)
       return
     }
 
+    await executePropertySave(saveData)
+  }, [duplicateCheck])
+
+  const executePropertySave = async (saveData: PropertyDialogSaveData, _skipDuplicateCheck?: boolean) => {
     setIsSubmitting(true)
     try {
-      const propertyData = {
-        zipCode: newPropertyForm.zipCode.replace(/\D/g, ""),
-        street: newPropertyForm.street.trim(),
-        number: newPropertyForm.number.trim(),
-        complement: newPropertyForm.complement.trim() || undefined,
-        neighborhood: newPropertyForm.neighborhood.trim(),
-        city: newPropertyForm.city.trim(),
-        state: newPropertyForm.state,
-        type: newPropertyForm.type as PropertyType,
-        area: Number(newPropertyForm.area),
-        value: Number(newPropertyForm.value) / 100,
-        ownerIds: newPropertyForm.ownerIds,
-      }
-
       if (editingProperty) {
         await updatePropertyMutation({
           id: editingProperty._id,
-          ...propertyData,
+          ...saveData.data,
         })
         toast.success("Imóvel atualizado com sucesso")
       } else {
-        await createPropertyMutation(propertyData)
+        await createPropertyMutation(saveData.data)
         toast.success("Imóvel criado com sucesso")
       }
-      setIsNewPropertyDialogOpen(false)
+      setIsPropertyDialogOpen(false)
       setIsConfirmDialogOpen(false)
       setEditingProperty(null)
-      setFieldErrors({})
-      setNewPropertyForm({
-        zipCode: "",
-        street: "",
-        number: "",
-        complement: "",
-        neighborhood: "",
-        city: "",
-        state: "",
-        type: "" as PropertyType | "",
-        area: "",
-        value: "",
-        ownerIds: [],
-      })
-      setOwnerSearch("")
+      setPendingPropertyData(null)
     } catch (error) {
       toast.error(editingProperty ? "Erro ao atualizar imóvel" : "Erro ao criar imóvel")
       console.error(error)
+      throw error
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
-  const getStatusBadgeVariant = (status: PropertyStatus) => {
-    switch (status) {
-      case "active":
-        return "default"
-      case "inactive":
-        return "secondary"
-      case "pending":
-        return "outline"
-      default:
-        return "secondary"
-    }
-  }
-
-  const getStatusBadgeClassName = (status: PropertyStatus) => {
-    switch (status) {
-      case "active":
-        return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
-      case "inactive":
-        return "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
-      case "pending":
-        return "bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
-      default:
-        return ""
-    }
-  }
-
-  const getStatusLabel = (status: PropertyStatus) => {
-    switch (status) {
-      case "active":
-        return "Ativo"
-      case "inactive":
-        return "Inativo"
-      case "pending":
-        return "Pendente"
-      default:
-        return status
-    }
-  }
-
-  const getTypeLabel = (type: PropertyType) => {
-    switch (type) {
-      case "house":
-        return "Casa"
-      case "apartment":
-        return "Apartamento"
-      case "land":
-        return "Terreno"
-      case "building":
-        return "Prédio"
-      default:
-        return type
+  const handleConfirmDuplicate = async () => {
+    if (pendingPropertyData) {
+      await executePropertySave(pendingPropertyData, true)
     }
   }
 
@@ -602,73 +406,6 @@ export default function Properties() {
     ) : (
       <ArrowDown className="ml-2 h-4 w-4" />
     )
-  }
-
-  // Função para normalizar strings removendo acentos e convertendo para minúsculas
-  const normalizeString = (str: string): string => {
-    return str
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-  }
-
-  // Calculate loading state during render instead of using useEffect
-  const isSearchingClients = ownerSearch.trim() !== "" && activeClients?.clients !== undefined
-
-  // Filtro de clientes com busca case-insensitive e accent-insensitive
-  const filteredClients = useMemo(() => {
-    if (!activeClients?.clients) return []
-
-    if (!ownerSearch.trim()) {
-      return activeClients.clients
-    }
-
-    const searchNormalized = normalizeString(ownerSearch.trim())
-    const searchCleaned = ownerSearch.replace(/\D/g, "")
-    const searchWords = searchNormalized.split(/\s+/).filter((w) => w.length > 0)
-
-    return activeClients.clients.filter((client) => {
-      const clientNameNormalized = normalizeString(client.name)
-      const clientTaxIdCleaned = client.taxId.replace(/\D/g, "")
-      const clientPhoneCleaned = client.phone?.replace(/\D/g, "") || ""
-
-      // Busca por nome (qualquer palavra deve estar presente)
-      const nameMatch = searchWords.length === 0 || searchWords.some((word) =>
-        clientNameNormalized.includes(word)
-      )
-
-      // Busca por CPF/CNPJ
-      const taxIdMatch = searchCleaned.length > 0 &&
-        clientTaxIdCleaned.includes(searchCleaned)
-
-      // Busca por telefone
-      const phoneMatch = searchCleaned.length > 0 &&
-        clientPhoneCleaned.length > 0 &&
-        clientPhoneCleaned.includes(searchCleaned)
-
-      return nameMatch || taxIdMatch || phoneMatch
-    })
-  }, [activeClients?.clients, ownerSearch])
-
-  const selectedOwners = activeClients?.clients?.filter((client) =>
-    newPropertyForm.ownerIds.includes(client._id)
-  ) || []
-
-  const toggleOwner = (clientId: Id<"clients">) => {
-    if (newPropertyForm.ownerIds.includes(clientId)) {
-      setNewPropertyForm({
-        ...newPropertyForm,
-        ownerIds: newPropertyForm.ownerIds.filter((id) => id !== clientId),
-      })
-    } else {
-      setNewPropertyForm({
-        ...newPropertyForm,
-        ownerIds: [...newPropertyForm.ownerIds, clientId],
-      })
-      if (fieldErrors.ownerIds) {
-        setFieldErrors({ ...fieldErrors, ownerIds: false })
-      }
-    }
   }
 
   const isLoading = propertiesData === undefined
@@ -686,26 +423,7 @@ export default function Properties() {
               Gerencie os imóveis cadastrados.
             </p>
           </div>
-          <Button
-            onClick={() => {
-              setEditingProperty(null)
-              setNewPropertyForm({
-                zipCode: "",
-                street: "",
-                number: "",
-                complement: "",
-                neighborhood: "",
-                city: "",
-                state: "",
-                type: "" as PropertyType | "",
-                area: "",
-                value: "",
-                ownerIds: [],
-              })
-              setOwnerSearch("")
-              setIsNewPropertyDialogOpen(true)
-            }}
-          >
+          <Button onClick={handleOpenNewDialog}>
             <Plus className="mr-2 h-4 w-4" />
             Novo Imóvel
           </Button>
@@ -837,34 +555,20 @@ export default function Properties() {
               {isLoading ? (
                 Array.from({ length: 5 }).map((_, i) => (
                   <TableRow key={i}>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[80px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[350px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[100px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[80px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[50px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[80px]" />
-                    </TableCell>
-                    <TableCell>
-                      <Skeleton className="h-4 w-[60px]" />
-                    </TableCell>
+                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[350px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[50px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                    <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
                   </TableRow>
                 ))
               ) : properties.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="h-72 text-center">
                     <button
-                      onClick={() => setIsNewPropertyDialogOpen(true)}
+                      onClick={handleOpenNewDialog}
                       className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
                     >
                       <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
@@ -882,8 +586,8 @@ export default function Properties() {
                   </TableCell>
                 </TableRow>
               ) : (
-                properties.map((property) => {
-                  const owners = activeClients?.clients?.filter((client) =>
+                properties.map((property: Property) => {
+                  const owners = activeClients?.clients?.filter((client: Client) =>
                     property.ownerIds.includes(client._id)
                   ) || []
                   return (
@@ -891,10 +595,6 @@ export default function Properties() {
                       key={property._id}
                       property={property}
                       owners={owners}
-                      getTypeLabel={getTypeLabel}
-                      getStatusBadgeVariant={getStatusBadgeVariant}
-                      getStatusBadgeClassName={getStatusBadgeClassName}
-                      getStatusLabel={getStatusLabel}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
                       onRowClick={handleRowClick}
@@ -960,453 +660,13 @@ export default function Properties() {
         )}
       </div>
 
-      {/* New Property Dialog */}
-      <Dialog
-        open={isNewPropertyDialogOpen}
-        onOpenChange={(open) => {
-          setIsNewPropertyDialogOpen(open)
-          if (!open) {
-            setEditingProperty(null)
-            setFieldErrors({})
-            setNewPropertyForm({
-              zipCode: "",
-              street: "",
-              number: "",
-              complement: "",
-              neighborhood: "",
-              city: "",
-              state: "",
-              type: "" as PropertyType | "",
-              area: "",
-              value: "",
-              ownerIds: [],
-            })
-            setOwnerSearch("")
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center gap-gap p-6 border-b border-border/50">
-            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-              <Building2 className="size-icon-md text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg font-semibold">
-                {editingProperty ? "Editar Imóvel" : "Novo Imóvel"}
-              </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-                {editingProperty
-                  ? "Atualize os dados do imóvel selecionado"
-                  : "Preencha os dados para cadastrar um novo imóvel"}
-              </DialogDescription>
-            </div>
-          </div>
-
-          {/* Form Content */}
-          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-            {/* Property Data Section */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Dados do Imóvel
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Tipo <span className="text-destructive">*</span>
-                  </Label>
-                  <div className={cn(
-                    "grid grid-cols-4 gap-3 p-1 rounded-xl transition-all duration-200",
-                    fieldErrors.type && "bg-destructive/5 ring-1 ring-destructive/20"
-                  )}>
-                    {[
-                      { value: "land" as PropertyType, icon: Trees, label: "Terreno" },
-                      { value: "house" as PropertyType, icon: Home, label: "Casa" },
-                      { value: "apartment" as PropertyType, icon: Building, label: "Apartamento" },
-                      { value: "building" as PropertyType, icon: Building2, label: "Prédio" },
-                    ].map(({ value, icon: Icon, label }) => {
-                      const isSelected = newPropertyForm.type === value
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => {
-                            setNewPropertyForm({ ...newPropertyForm, type: value })
-                            if (fieldErrors.type) {
-                              setFieldErrors({ ...fieldErrors, type: false })
-                            }
-                          }}
-                          className={cn(
-                            "relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl text-center transition-all cursor-pointer aspect-square",
-                            isSelected
-                              ? "border-2 border-primary bg-primary/10 shadow-sm"
-                              : "border border-border bg-accent/50 hover:bg-accent hover:border-muted-foreground/30"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "size-10 rounded-lg flex items-center justify-center transition-colors",
-                              isSelected
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-background border border-border text-text-tertiary"
-                            )}
-                          >
-                            <Icon className="size-5" />
-                          </div>
-                          <p
-                            className={cn(
-                              "text-sm font-medium",
-                              isSelected ? "text-text-primary" : "text-text-secondary"
-                            )}
-                          >
-                            {label}
-                          </p>
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 size-5 rounded-full bg-primary flex items-center justify-center">
-                              <Check className="size-3 text-primary-foreground" />
-                            </div>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="area" className="text-sm font-medium">
-                      Área <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="area"
-                        type="text"
-                        placeholder="0"
-                        value={newPropertyForm.area ? Number(newPropertyForm.area).toLocaleString("pt-BR") : ""}
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/\D/g, "")
-                          setNewPropertyForm({ ...newPropertyForm, area: rawValue })
-                          if (fieldErrors.area) {
-                            setFieldErrors({ ...fieldErrors, area: false })
-                          }
-                        }}
-                        className="h-10 pr-10"
-                        aria-invalid={fieldErrors.area}
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none pointer-events-none">
-                        m²
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="value" className="text-sm font-medium">
-                      Valor <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        id="value"
-                        placeholder="0,00"
-                        value={formatCurrencyInput(newPropertyForm.value)}
-                        onChange={(e) => {
-                          const cleaned = e.target.value.replace(/\D/g, "")
-                          handleCurrencyChange(cleaned)
-                          if (fieldErrors.value) {
-                            setFieldErrors({ ...fieldErrors, value: false })
-                          }
-                        }}
-                        className="h-10 pl-9"
-                        aria-invalid={fieldErrors.value}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Location Section */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Localização
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="zipCode" className="text-sm font-medium">
-                    CEP <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative w-32">
-                    <Input
-                      id="zipCode"
-                      placeholder="00000-000"
-                      value={newPropertyForm.zipCode}
-                      onChange={(e) => {
-                        handleZipCodeChange(e.target.value)
-                        if (fieldErrors.zipCode) {
-                          setFieldErrors({ ...fieldErrors, zipCode: false })
-                        }
-                      }}
-                      maxLength={9}
-                      className="h-10 pr-8"
-                      aria-invalid={fieldErrors.zipCode}
-                    />
-                    {isLoadingCep && (
-                      <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                    )}
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor="street" className="text-sm font-medium">
-                      Logradouro <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="street"
-                      placeholder="Rua Exemplo"
-                      value={newPropertyForm.street}
-                      onChange={(e) => {
-                        setNewPropertyForm({ ...newPropertyForm, street: e.target.value })
-                        if (fieldErrors.street) {
-                          setFieldErrors({ ...fieldErrors, street: false })
-                        }
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.street}
-                    />
-                  </div>
-                  <div className="col-span-1 space-y-2">
-                    <Label htmlFor="number" className="text-sm font-medium">
-                      Número <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      ref={numberInputRef}
-                      id="number"
-                      placeholder="123"
-                      value={newPropertyForm.number}
-                      onChange={(e) => {
-                        setNewPropertyForm({ ...newPropertyForm, number: e.target.value })
-                        if (fieldErrors.number) {
-                          setFieldErrors({ ...fieldErrors, number: false })
-                        }
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.number}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="complement" className="text-sm font-medium">
-                      Complemento
-                    </Label>
-                    <Input
-                      id="complement"
-                      placeholder="Apto 101, Bloco A"
-                      value={newPropertyForm.complement}
-                      onChange={(e) =>
-                        setNewPropertyForm({ ...newPropertyForm, complement: e.target.value })
-                      }
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="neighborhood" className="text-sm font-medium">
-                      Bairro <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="neighborhood"
-                      placeholder="Centro"
-                      value={newPropertyForm.neighborhood}
-                      onChange={(e) => {
-                        setNewPropertyForm({ ...newPropertyForm, neighborhood: e.target.value })
-                        if (fieldErrors.neighborhood) {
-                          setFieldErrors({ ...fieldErrors, neighborhood: false })
-                        }
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.neighborhood}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor="city" className="text-sm font-medium">
-                      Cidade <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="city"
-                      placeholder="Belo Horizonte"
-                      value={newPropertyForm.city}
-                      onChange={(e) => {
-                        setNewPropertyForm({ ...newPropertyForm, city: e.target.value })
-                        if (fieldErrors.city) {
-                          setFieldErrors({ ...fieldErrors, city: false })
-                        }
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.city}
-                    />
-                  </div>
-                  <div className="col-span-1 space-y-2">
-                    <Label htmlFor="state" className="text-sm font-medium">
-                      UF <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="state"
-                      placeholder="MG"
-                      value={newPropertyForm.state}
-                      onChange={(e) => {
-                        setNewPropertyForm({ ...newPropertyForm, state: e.target.value.toUpperCase() })
-                        if (fieldErrors.state) {
-                          setFieldErrors({ ...fieldErrors, state: false })
-                        }
-                      }}
-                      maxLength={2}
-                      className="h-10 uppercase"
-                      aria-invalid={fieldErrors.state}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Owners Section */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Proprietários <span className="text-destructive">*</span>
-              </p>
-              <div className="space-y-3">
-                <Popover open={isOwnerPopoverOpen} onOpenChange={setIsOwnerPopoverOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full justify-between h-10"
-                      type="button"
-                      aria-invalid={fieldErrors.ownerIds}
-                    >
-                      <span className="text-muted-foreground">
-                        {selectedOwners.length > 0
-                          ? `${selectedOwners.length} proprietário(s) selecionado(s)`
-                          : "Selecione os proprietários"}
-                      </span>
-                      <ChevronDown className="h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
-                    <div className="flex items-center border-b px-3">
-                      <Search className="h-4 w-4 shrink-0 opacity-50" />
-                      <Input
-                        placeholder="Buscar cliente..."
-                        value={ownerSearch}
-                        onChange={(e) => setOwnerSearch(e.target.value)}
-                        className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
-                        autoComplete="off"
-                      />
-                    </div>
-                    <div className="max-h-[300px] overflow-y-auto">
-                      {/* Separador com label */}
-                      <div className="px-2 py-1.5">
-                        <p className="text-xs font-medium text-muted-foreground px-2">Clientes</p>
-                      </div>
-
-                      {/* Lista de resultados */}
-                      <div className="p-1 pt-0">
-                        {activeClients === undefined || isSearchingClients ? (
-                          <div className="flex items-center justify-center py-6">
-                            <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                          </div>
-                        ) : filteredClients.length === 0 ? (
-                          <p className="py-6 text-center text-sm text-muted-foreground">
-                            {ownerSearch.trim() ? "Nenhum cliente encontrado." : "Nenhum cliente cadastrado."}
-                          </p>
-                        ) : (
-                          filteredClients.map((client) => {
-                            const isSelected = newPropertyForm.ownerIds.includes(client._id)
-                            return (
-                              <div
-                                key={client._id}
-                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
-                                onClick={() => toggleOwner(client._id)}
-                              >
-                                <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                                  <span className="text-xs font-medium">
-                                    {client.name.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <p className="text-sm font-medium truncate">{client.name}</p>
-                                  <p className="text-xs text-muted-foreground">
-                                    {formatTaxId(client.taxId)}
-                                  </p>
-                                </div>
-                                {isSelected && (
-                                  <Check className="h-4 w-4 text-primary shrink-0" />
-                                )}
-                              </div>
-                            )
-                          })
-                        )}
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-                {selectedOwners.length > 0 && (
-                  <div className="rounded-xl border border-border/50 overflow-hidden divide-y divide-border/50">
-                    {selectedOwners.map((owner) => (
-                      <div
-                        key={owner._id}
-                        className="group flex items-center gap-3 px-3 py-2.5 bg-accent/30 hover:bg-accent/60 transition-colors"
-                      >
-                        <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-                          <span className="text-sm font-semibold text-primary">
-                            {owner.name.charAt(0).toUpperCase()}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-text-primary truncate">
-                            {owner.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {formatTaxId(owner.taxId)}
-                          </p>
-                        </div>
-                        <button
-                          type="button"
-                          className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
-                          onClick={() => toggleOwner(owner._id)}
-                        >
-                          <X className="size-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Footer */}
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
-            <Button
-              variant="outline"
-              onClick={() => setIsNewPropertyDialogOpen(false)}
-              disabled={isSubmitting}
-            >
-              Cancelar
-            </Button>
-            <Button onClick={() => handleCreateProperty()} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Property Dialog */}
+      <PropertyDialog
+        open={isPropertyDialogOpen}
+        onOpenChange={setIsPropertyDialogOpen}
+        property={editingProperty}
+        onSave={handleSaveProperty}
+      />
 
       {/* Confirm Duplicate Dialog */}
       <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
@@ -1418,18 +678,20 @@ export default function Properties() {
             </DialogDescription>
           </DialogHeader>
           <div className="py-2">
-            <ul className="list-disc list-inside space-y-2">
-              <li className="text-sm">
-                <strong>Endereço:</strong> {newPropertyForm.street}, {newPropertyForm.number}
-                {newPropertyForm.complement && `, ${newPropertyForm.complement}`}
-              </li>
-              <li className="text-sm">
-                <strong>Bairro:</strong> {newPropertyForm.neighborhood}
-              </li>
-              <li className="text-sm">
-                <strong>CEP:</strong> {formatZipCode(newPropertyForm.zipCode)}
-              </li>
-            </ul>
+            {pendingPropertyData && (
+              <ul className="list-disc list-inside space-y-2">
+                <li className="text-sm">
+                  <strong>Endereço:</strong> {pendingPropertyData.data.street}, {pendingPropertyData.data.number}
+                  {pendingPropertyData.data.complement && `, ${pendingPropertyData.data.complement}`}
+                </li>
+                <li className="text-sm">
+                  <strong>Bairro:</strong> {pendingPropertyData.data.neighborhood}
+                </li>
+                <li className="text-sm">
+                  <strong>CEP:</strong> {formatZipCode(pendingPropertyData.data.zipCode)}
+                </li>
+              </ul>
+            )}
             <p className="mt-6 text-sm text-muted-foreground">
               Deseja realmente criar este imóvel?
             </p>
@@ -1439,25 +701,20 @@ export default function Properties() {
               variant="outline"
               onClick={() => {
                 setIsConfirmDialogOpen(false)
+                setPendingPropertyData(null)
               }}
               disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button onClick={() => handleCreateProperty(true)} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Sim, criar mesmo assim"
-              )}
+            <Button onClick={handleConfirmDuplicate} disabled={isSubmitting}>
+              Sim, criar mesmo assim
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
+      {/* Remove Owner Dialog */}
       <AlertDialog open={!!ownerToRemove} onOpenChange={(open) => !open && setOwnerToRemove(null)}>
         <AlertDialogContent>
           <AlertDialogHeader>

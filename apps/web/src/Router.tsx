@@ -8,7 +8,7 @@ import ClientDetails from './pages/ClientDetails'
 import Properties from './pages/Properties'
 import PropertyDetails from './pages/PropertyDetails'
 import Settings from './pages/Settings'
-import Cartorios from './pages/Cartorios'
+import NotaryOffices from './pages/NotaryOffices'
 import StyleGuide from './pages/StyleGuide'
 
 export default function Router() {
@@ -22,7 +22,7 @@ export default function Router() {
                     <Route path="imoveis" element={<Properties />} />
                     <Route path="imoveis/:id" element={<PropertyDetails />} />
                     <Route path="configuracoes" element={<Settings />} />
-                    <Route path="cadastros/cartorios" element={<Cartorios />} />
+                    <Route path="cadastros/cartorios" element={<NotaryOffices />} />
                     <Route path="style-guide" element={<StyleGuide />} />
                 </Route>
                 <Route path="*" element={<NotMatch />} />

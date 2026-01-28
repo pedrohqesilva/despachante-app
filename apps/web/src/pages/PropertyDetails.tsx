@@ -4,43 +4,28 @@ import { useQuery, useMutation } from "convex/react"
 import { propertiesApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import {
-  Home,
   Building2,
-  LandPlot,
-  Building,
   FileText,
   ArrowLeft,
   Pencil,
   Users,
   Eye,
-  Loader2,
-  LucideIcon,
-  Trees,
-  Check,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import { PageSidebar, type SidebarSection } from "@/components/page-sidebar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog"
 import { toast } from "sonner"
 import {
   OverviewSection,
   OwnersSection,
   DocumentsSection,
+  PropertyDialog,
+  type PropertyDialogSaveData,
 } from "@/features/properties"
+import { getPropertyTypeLabel } from "@/lib/constants"
+import type { PropertyType } from "@/types/property"
 
 type PropertySection = "overview" | "owners" | "documents"
-
-type PropertyType = "house" | "apartment" | "land" | "building"
-type PropertyStatus = "active" | "inactive" | "pending"
 
 const sections: SidebarSection<PropertySection>[] = [
   { id: "overview", label: "Visão Geral", icon: Eye, description: "Informações do imóvel" },
@@ -48,52 +33,11 @@ const sections: SidebarSection<PropertySection>[] = [
   { id: "documents", label: "Documentos", icon: FileText, description: "Documentos do imóvel" },
 ]
 
-const TYPE_CONFIG: Record<PropertyType, { label: string; icon: LucideIcon }> = {
-  house: { label: "Casa", icon: Home },
-  apartment: { label: "Apartamento", icon: Building2 },
-  land: { label: "Terreno", icon: LandPlot },
-  building: { label: "Predio", icon: Building },
-}
-
-
-
-const BRAZILIAN_STATES = [
-  "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA",
-  "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN",
-  "RS", "RO", "RR", "SC", "SP", "SE", "TO",
-]
-
 export default function PropertyDetails() {
   const { id } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const [activeSection, setActiveSection] = useState<PropertySection>("overview")
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [fieldErrors, setFieldErrors] = useState<{
-    zipCode?: boolean
-    street?: boolean
-    number?: boolean
-    neighborhood?: boolean
-    city?: boolean
-    state?: boolean
-    type?: boolean
-    area?: boolean
-    value?: boolean
-  }>({})
-
-  const [editForm, setEditForm] = useState({
-    zipCode: "",
-    street: "",
-    number: "",
-    complement: "",
-    neighborhood: "",
-    city: "",
-    state: "",
-    type: "" as PropertyType | "",
-    area: "",
-    value: "",
-    status: "" as PropertyStatus | "",
-  })
 
   const property = useQuery(
     propertiesApi.queries.get,
@@ -104,100 +48,20 @@ export default function PropertyDetails() {
 
   const isLoading = property === undefined
 
-  const openEditDialog = () => {
+  const handleSaveProperty = async ({ data }: PropertyDialogSaveData) => {
     if (!property) return
-    setEditForm({
-      zipCode: formatZipCodeInput(property.zipCode),
-      street: property.street,
-      number: property.number,
-      complement: property.complement || "",
-      neighborhood: property.neighborhood,
-      city: property.city,
-      state: property.state,
-      type: property.type as PropertyType,
-      area: property.area.toString(),
-      value: formatCurrencyInput(Math.round(property.value * 100).toString()),
-      status: property.status as PropertyStatus,
-    })
-    setFieldErrors({})
-    setIsEditDialogOpen(true)
-  }
-
-  const formatZipCodeInput = (value: string): string => {
-    const cleaned = value.replace(/\D/g, "")
-    if (cleaned.length <= 5) return cleaned
-    return `${cleaned.slice(0, 5)}-${cleaned.slice(5, 8)}`
-  }
-
-  const handleZipCodeChange = (value: string) => {
-    setEditForm({ ...editForm, zipCode: formatZipCodeInput(value) })
-  }
-
-  const formatCurrencyInput = (value: string): string => {
-    const cleaned = value.replace(/\D/g, "")
-    if (!cleaned) return ""
-    const number = parseInt(cleaned, 10) / 100
-    return new Intl.NumberFormat("pt-BR", {
-      minimumFractionDigits: 2,
-      maximumFractionDigits: 2,
-    }).format(number)
-  }
-
-  const handleValueChange = (value: string) => {
-    setEditForm({ ...editForm, value: formatCurrencyInput(value) })
-  }
-
-  const parseCurrencyValue = (value: string): number => {
-    const cleaned = value.replace(/\./g, "").replace(",", ".")
-    return parseFloat(cleaned) || 0
-  }
-
-  const handleSave = async () => {
-    if (!property) return
-
-    const errors: typeof fieldErrors = {}
-    if (!editForm.zipCode.trim()) errors.zipCode = true
-    if (!editForm.street.trim()) errors.street = true
-    if (!editForm.number.trim()) errors.number = true
-    if (!editForm.neighborhood.trim()) errors.neighborhood = true
-    if (!editForm.city.trim()) errors.city = true
-    if (!editForm.state.trim()) errors.state = true
-    if (!editForm.type) errors.type = true
-    if (!editForm.area.trim() || parseFloat(editForm.area) <= 0) errors.area = true
-    if (!editForm.value.trim() || parseCurrencyValue(editForm.value) <= 0) errors.value = true
-
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors)
-      toast.error("Preencha todos os campos obrigatorios")
-      return
-    }
-
-    setFieldErrors({})
-    setIsSubmitting(true)
 
     try {
       await updatePropertyMutation({
         id: property._id,
-        zipCode: editForm.zipCode.replace(/\D/g, ""),
-        street: editForm.street.trim(),
-        number: editForm.number.trim(),
-        complement: editForm.complement.trim() || undefined,
-        neighborhood: editForm.neighborhood.trim(),
-        city: editForm.city.trim(),
-        state: editForm.state,
-        type: editForm.type as PropertyType,
-        area: parseFloat(editForm.area),
-        value: parseCurrencyValue(editForm.value),
-        status: editForm.status as PropertyStatus,
+        ...data,
       })
 
-      toast.success("Imovel atualizado com sucesso")
+      toast.success("Imóvel atualizado com sucesso")
       setIsEditDialogOpen(false)
     } catch (error) {
-      toast.error("Erro ao atualizar imovel")
-      console.error(error)
-    } finally {
-      setIsSubmitting(false)
+      toast.error("Erro ao atualizar imóvel")
+      throw error
     }
   }
 
@@ -217,8 +81,6 @@ export default function PropertyDetails() {
   }
 
   const currentSection = sections.find(s => s.id === activeSection)
-  const typeConfig = property ? TYPE_CONFIG[property.type as PropertyType] : null
-  const TypeIcon = typeConfig?.icon || Building2
 
   if (isLoading) {
     return (
@@ -259,14 +121,14 @@ export default function PropertyDetails() {
           <Building2 className="size-8 text-destructive" />
         </div>
         <p className="text-lg font-semibold text-text-secondary">
-          Imovel nao encontrado
+          Imóvel não encontrado
         </p>
         <p className="text-sm text-muted-foreground">
-          O imovel que voce esta procurando nao existe ou foi removido.
+          O imóvel que você está procurando não existe ou foi removido.
         </p>
         <Button variant="outline" onClick={() => navigate("/imoveis")}>
           <ArrowLeft className="size-4 mr-2" />
-          Voltar para Imoveis
+          Voltar para Imóveis
         </Button>
       </div>
     )
@@ -289,7 +151,7 @@ export default function PropertyDetails() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{propertyAddress}</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              {typeConfig?.label} - {property.neighborhood}, {property.city}/{property.state}
+              {getPropertyTypeLabel(property.type as PropertyType)} - {property.neighborhood}, {property.city}/{property.state}
             </p>
           </div>
         </div>
@@ -313,7 +175,7 @@ export default function PropertyDetails() {
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={openEditDialog}
+                  onClick={() => setIsEditDialogOpen(true)}
                 >
                   <Pencil className="size-4 mr-2" />
                   Editar
@@ -325,289 +187,13 @@ export default function PropertyDetails() {
         </main>
       </div>
 
-      <Dialog
+      <PropertyDialog
         open={isEditDialogOpen}
-        onOpenChange={(open) => {
-          setIsEditDialogOpen(open)
-          if (!open) {
-            setFieldErrors({})
-          }
-        }}
-      >
-        <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-          <div className="flex items-center gap-gap p-6 border-b border-border/50">
-            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-              <Building2 className="size-icon-md text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg font-semibold">
-                Editar Imóvel
-              </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-                Atualize os dados do imóvel selecionado
-              </DialogDescription>
-            </div>
-          </div>
-
-          <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
-            {/* Dados do Imóvel */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Dados do Imóvel
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    Tipo <span className="text-destructive">*</span>
-                  </Label>
-                  <div className={cn(
-                    "grid grid-cols-4 gap-3 p-1 rounded-xl transition-all duration-200",
-                    fieldErrors.type && "bg-destructive/5 ring-1 ring-destructive/20"
-                  )}>
-                    {[
-                      { value: "land" as PropertyType, icon: Trees, label: "Terreno" },
-                      { value: "house" as PropertyType, icon: Home, label: "Casa" },
-                      { value: "apartment" as PropertyType, icon: Building, label: "Apartamento" },
-                      { value: "building" as PropertyType, icon: Building2, label: "Prédio" },
-                    ].map(({ value, icon: Icon, label }) => {
-                      const isSelected = editForm.type === value
-                      return (
-                        <button
-                          key={value}
-                          type="button"
-                          onClick={() => {
-                            setEditForm({ ...editForm, type: value })
-                            if (fieldErrors.type) setFieldErrors({ ...fieldErrors, type: false })
-                          }}
-                          className={cn(
-                            "relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl text-center transition-all cursor-pointer aspect-square",
-                            isSelected
-                              ? "border-2 border-primary bg-primary/10 shadow-sm"
-                              : "border border-border bg-accent/50 hover:bg-accent hover:border-muted-foreground/30"
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "size-10 rounded-lg flex items-center justify-center transition-colors",
-                              isSelected
-                                ? "bg-primary text-primary-foreground shadow-sm"
-                                : "bg-background border border-border text-text-tertiary"
-                            )}
-                          >
-                            <Icon className="size-5" />
-                          </div>
-                          <p
-                            className={cn(
-                              "text-sm font-medium",
-                              isSelected ? "text-text-primary" : "text-text-secondary"
-                            )}
-                          >
-                            {label}
-                          </p>
-                          {isSelected && (
-                            <div className="absolute top-2 right-2 size-5 rounded-full bg-primary flex items-center justify-center">
-                              <Check className="size-3 text-primary-foreground" />
-                            </div>
-                          )}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-area" className="text-sm font-medium">
-                      Área <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="relative">
-                      <Input
-                        id="edit-area"
-                        type="text"
-                        placeholder="0"
-                        value={editForm.area ? Number(editForm.area).toLocaleString("pt-BR") : ""}
-                        onChange={(e) => {
-                          const rawValue = e.target.value.replace(/\D/g, "")
-                          setEditForm({ ...editForm, area: rawValue })
-                          if (fieldErrors.area) setFieldErrors({ ...fieldErrors, area: false })
-                        }}
-                        className="h-10 pr-10"
-                        aria-invalid={fieldErrors.area}
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none pointer-events-none">
-                        m²
-                      </span>
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-value" className="text-sm font-medium">
-                      Valor <span className="text-destructive">*</span>
-                    </Label>
-                    <div className="relative">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none pointer-events-none">
-                        R$
-                      </span>
-                      <Input
-                        id="edit-value"
-                        placeholder="0,00"
-                        value={editForm.value}
-                        onChange={(e) => {
-                          handleValueChange(e.target.value)
-                          if (fieldErrors.value) setFieldErrors({ ...fieldErrors, value: false })
-                        }}
-                        className="h-10 pl-9"
-                        aria-invalid={fieldErrors.value}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Localização */}
-            <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Localização
-              </p>
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="edit-zipCode" className="text-sm font-medium">
-                    CEP <span className="text-destructive">*</span>
-                  </Label>
-                  <div className="relative w-32">
-                    <Input
-                      id="edit-zipCode"
-                      placeholder="00000-000"
-                      value={editForm.zipCode}
-                      onChange={(e) => {
-                        handleZipCodeChange(e.target.value)
-                        if (fieldErrors.zipCode) setFieldErrors({ ...fieldErrors, zipCode: false })
-                      }}
-                      maxLength={9}
-                      className="h-10"
-                      aria-invalid={fieldErrors.zipCode}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor="edit-street" className="text-sm font-medium">
-                      Logradouro <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="edit-street"
-                      placeholder="Rua Exemplo"
-                      value={editForm.street}
-                      onChange={(e) => {
-                        setEditForm({ ...editForm, street: e.target.value })
-                        if (fieldErrors.street) setFieldErrors({ ...fieldErrors, street: false })
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.street}
-                    />
-                  </div>
-                  <div className="col-span-1 space-y-2">
-                    <Label htmlFor="edit-number" className="text-sm font-medium">
-                      Número <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="edit-number"
-                      placeholder="123"
-                      value={editForm.number}
-                      onChange={(e) => {
-                        setEditForm({ ...editForm, number: e.target.value })
-                        if (fieldErrors.number) setFieldErrors({ ...fieldErrors, number: false })
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.number}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-complement" className="text-sm font-medium">
-                      Complemento
-                    </Label>
-                    <Input
-                      id="edit-complement"
-                      placeholder="Apto 101, Bloco A"
-                      value={editForm.complement}
-                      onChange={(e) => setEditForm({ ...editForm, complement: e.target.value })}
-                      className="h-10"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="edit-neighborhood" className="text-sm font-medium">
-                      Bairro <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="edit-neighborhood"
-                      placeholder="Centro"
-                      value={editForm.neighborhood}
-                      onChange={(e) => {
-                        setEditForm({ ...editForm, neighborhood: e.target.value })
-                        if (fieldErrors.neighborhood) setFieldErrors({ ...fieldErrors, neighborhood: false })
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.neighborhood}
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-4 gap-4">
-                  <div className="col-span-3 space-y-2">
-                    <Label htmlFor="edit-city" className="text-sm font-medium">
-                      Cidade <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="edit-city"
-                      placeholder="Belo Horizonte"
-                      value={editForm.city}
-                      onChange={(e) => {
-                        setEditForm({ ...editForm, city: e.target.value })
-                        if (fieldErrors.city) setFieldErrors({ ...fieldErrors, city: false })
-                      }}
-                      className="h-10"
-                      aria-invalid={fieldErrors.city}
-                    />
-                  </div>
-                  <div className="col-span-1 space-y-2">
-                    <Label htmlFor="edit-state" className="text-sm font-medium">
-                      UF <span className="text-destructive">*</span>
-                    </Label>
-                    <Input
-                      id="edit-state"
-                      placeholder="MG"
-                      value={editForm.state}
-                      onChange={(e) => {
-                        setEditForm({ ...editForm, state: e.target.value.toUpperCase() })
-                        if (fieldErrors.state) setFieldErrors({ ...fieldErrors, state: false })
-                      }}
-                      maxLength={2}
-                      className="h-10 uppercase"
-                      aria-invalid={fieldErrors.state}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-border/50">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)} disabled={isSubmitting}>
-              Cancelar
-            </Button>
-            <Button onClick={handleSave} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
-                  Salvando...
-                </>
-              ) : (
-                "Salvar"
-              )}
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
+        onOpenChange={setIsEditDialogOpen}
+        property={property}
+        onSave={handleSaveProperty}
+        showOwnerSelector={false}
+      />
     </div>
   )
 }

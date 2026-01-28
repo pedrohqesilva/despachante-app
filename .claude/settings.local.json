@@ -17,7 +17,10 @@
       "mcp__shadcn__get_project_registries",
       "mcp__shadcn__list_items_in_registries",
       "mcp__convex__status",
-      "mcp__convex__data"
+      "mcp__convex__data",
+      "Bash(dir:*)",
+      "Bash(pnpm build:*)",
+      "Bash(pnpm --filter web build:*)"
     ]
   }
 }
