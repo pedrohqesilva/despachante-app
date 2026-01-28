@@ -54,10 +54,10 @@ export function AppearanceSection() {
             type="button"
             onClick={() => handleThemeChange(value)}
             className={cn(
-              "w-full flex items-center gap-gap p-card min-h-card rounded-xl text-left transition-all cursor-pointer",
+              "w-full flex items-center gap-gap p-card min-h-card rounded-xl text-left transition-all cursor-pointer border-2",
               isSelected
-                ? "border-2 border-primary bg-primary/10 shadow-sm"
-                : "border border-border bg-accent/50 hover:bg-accent hover:border-border"
+                ? "border-primary bg-primary/10 shadow-sm"
+                : "border-transparent bg-accent/50 hover:bg-accent ring-1 ring-border hover:ring-border"
             )}
           >
             <div

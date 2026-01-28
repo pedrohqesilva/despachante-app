@@ -391,10 +391,10 @@ export default function ClientDetails() {
                 key={id}
                 onClick={() => setActiveSection(id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer",
+                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer border",
                   activeSection === id
-                    ? "bg-primary/10 text-primary border border-primary/20"
-                    : "text-text-tertiary hover:text-text-primary hover:bg-accent"
+                    ? "bg-primary/10 text-primary border-primary/20"
+                    : "text-text-tertiary hover:text-text-primary hover:bg-accent border-transparent"
                 )}
               >
                 <Icon className={cn(
