@@ -17,6 +17,7 @@
     "convex:deploy": "pnpm --filter @despachante/convex deploy"
   },
   "devDependencies": {
+    "shadcn": "^3.7.0",
     "turbo": "^2.3.0"
   },
   "engines": {

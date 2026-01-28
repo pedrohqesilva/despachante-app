@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "shadcn": {
+      "command": "npx",
+      "args": ["shadcn@latest", "mcp"]
+    },
+    "convex": {
+      "command": "npx",
+      "args": ["convex", "mcp", "start", "--url", "https://optimistic-duck-494.convex.cloud"]
+    },
+    "context7": {
+      "command": "npx",
+      "args": ["-y", "@upstash/context7-mcp", "--api-key", "ctx7sk-71fad460-d618-4dc4-9b72-24de154f7ed9"]
+    }
+  }
+}
