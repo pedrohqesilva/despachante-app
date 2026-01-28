@@ -4,12 +4,8 @@ import { useQuery } from "convex/react"
 import { clientsApi } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { DialogHeaderWithIcon } from "@/components/ui/dialog-header-icon"
 import { toast } from "sonner"
 import { PropertyTypeSelector } from "./PropertyTypeSelector"
 import { PropertyFormFields } from "./PropertyFormFields"
@@ -125,22 +121,13 @@ export function PropertyDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-gap p-6 border-b border-border/50">
-          <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-            <Building2 className="size-icon-md text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <DialogTitle className="text-lg font-semibold">
-              {isEditing ? "Editar Imóvel" : "Novo Imóvel"}
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-              {isEditing
-                ? "Atualize os dados do imóvel selecionado"
-                : "Preencha os dados para cadastrar um novo imóvel"}
-            </DialogDescription>
-          </div>
-        </div>
+        <DialogHeaderWithIcon
+          icon={Building2}
+          title={isEditing ? "Editar Imóvel" : "Novo Imóvel"}
+          description={isEditing
+            ? "Atualize os dados do imóvel selecionado"
+            : "Preencha os dados para cadastrar um novo imóvel"}
+        />
 
         {/* Form Content */}
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">

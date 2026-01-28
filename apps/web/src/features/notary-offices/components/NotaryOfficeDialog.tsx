@@ -1,12 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from "react"
 import { Building2, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { DialogHeaderWithIcon } from "@/components/ui/dialog-header-icon"
 import { toast } from "sonner"
 import { NotaryOfficeFormFields } from "./NotaryOfficeFormFields"
 import { useNotaryOfficeForm, type NotaryOfficeSubmitData } from "../hooks/useNotaryOfficeForm"
@@ -111,22 +107,13 @@ export function NotaryOfficeDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-        {/* Header */}
-        <div className="flex items-center gap-gap p-6 border-b border-border/50">
-          <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-            <Building2 className="size-icon-md text-primary" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <DialogTitle className="text-lg font-semibold">
-              {isEditing ? "Editar Cartório" : "Novo Cartório"}
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-              {isEditing
-                ? "Atualize os dados do cartório selecionado"
-                : "Preencha os dados para cadastrar um novo cartório"}
-            </DialogDescription>
-          </div>
-        </div>
+        <DialogHeaderWithIcon
+          icon={Building2}
+          title={isEditing ? "Editar Cartório" : "Novo Cartório"}
+          description={isEditing
+            ? "Atualize os dados do cartório selecionado"
+            : "Preencha os dados para cadastrar um novo cartório"}
+        />
 
         {/* Form Content */}
         <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">

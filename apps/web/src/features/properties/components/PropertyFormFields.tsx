@@ -2,6 +2,7 @@ import { RefObject } from "react"
 import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormSection } from "@/components/ui/form-section"
 import type { PropertyFormData, PropertyFormErrors } from "../hooks/usePropertyForm"
 
 interface PropertyFormFieldsProps {
@@ -33,11 +34,7 @@ export function PropertyFormFields({
 }: PropertyFormFieldsProps) {
   return (
     <>
-      {/* Property Data Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Dados do Imóvel
-        </p>
+      <FormSection title="Dados do Imóvel">
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-2">
             <Label htmlFor="area" className="text-sm font-medium">
@@ -79,14 +76,9 @@ export function PropertyFormFields({
             </div>
           </div>
         </div>
-      </div>
+      </FormSection>
 
-      {/* Location Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-          Localização
-        </p>
-        <div className="space-y-4">
+      <FormSection title="Localização">
           <div className="space-y-2">
             <Label htmlFor="zipCode" className="text-sm font-medium">
               CEP <span className="text-destructive">*</span>
@@ -196,10 +188,9 @@ export function PropertyFormFields({
                 aria-invalid={errors.state}
                 disabled={disabled}
               />
-            </div>
           </div>
         </div>
-      </div>
+      </FormSection>
     </>
   )
 }

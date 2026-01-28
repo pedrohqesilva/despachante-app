@@ -2,6 +2,7 @@ import { RefObject } from "react"
 import { Loader2 } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { FormSection } from "@/components/ui/form-section"
 import {
   Select,
   SelectContent,
@@ -38,100 +39,89 @@ export function NotaryOfficeFormFields({
 }: NotaryOfficeFormFieldsProps) {
   return (
     <>
-      {/* Identification Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Identificação</p>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="code" className="text-sm font-medium">
-              Código <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="code"
-              placeholder="Exemplo: 1º OFICIO"
-              value={formData.code}
-              onChange={(e) => onFieldChange("code", e.target.value)}
-              autoComplete="off"
-              disabled={disabled}
-              className="h-10"
-              aria-invalid={errors.code}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="name" className="text-sm font-medium">
-              Nome <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="name"
-              placeholder="Exemplo: Cartório de Registro de Imóveis"
-              value={formData.name}
-              onChange={(e) => onFieldChange("name", e.target.value)}
-              autoComplete="off"
-              disabled={disabled}
-              className="h-10"
-              aria-invalid={errors.name}
-            />
-          </div>
-          {isEditing && (
-            <div className="space-y-2">
-              <Label htmlFor="status" className="text-sm font-medium">Status</Label>
-              <Select
-                value={formData.status}
-                onValueChange={(value: "active" | "inactive") => onFieldChange("status", value)}
-                disabled={disabled}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Ativo</SelectItem>
-                  <SelectItem value="inactive">Inativo</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+      <FormSection title="Identificação">
+        <div className="space-y-2">
+          <Label htmlFor="code" className="text-sm font-medium">
+            Código <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="code"
+            placeholder="Exemplo: 1º OFICIO"
+            value={formData.code}
+            onChange={(e) => onFieldChange("code", e.target.value)}
+            autoComplete="off"
+            disabled={disabled}
+            className="h-10"
+            aria-invalid={errors.code}
+          />
         </div>
-      </div>
-
-      {/* Contact Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contato</p>
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="phone" className="text-sm font-medium">
-              Telefone <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id="phone"
-              placeholder="(00) 00000-0000"
-              value={formData.phone}
-              onChange={(e) => onPhoneChange(e.target.value)}
-              autoComplete="off"
-              disabled={disabled}
-              className="h-10"
-              aria-invalid={errors.phone}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="email" className="text-sm font-medium">Email</Label>
-            <Input
-              id="email"
-              type="email"
-              placeholder="email@exemplo.com"
-              value={formData.email}
-              onChange={(e) => onFieldChange("email", e.target.value)}
-              autoComplete="off"
-              disabled={disabled}
-              className="h-10"
-            />
-          </div>
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-sm font-medium">
+            Nome <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="name"
+            placeholder="Exemplo: Cartório de Registro de Imóveis"
+            value={formData.name}
+            onChange={(e) => onFieldChange("name", e.target.value)}
+            autoComplete="off"
+            disabled={disabled}
+            className="h-10"
+            aria-invalid={errors.name}
+          />
         </div>
-      </div>
+        {isEditing && (
+          <div className="space-y-2">
+            <Label htmlFor="status" className="text-sm font-medium">Status</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "active" | "inactive") => onFieldChange("status", value)}
+              disabled={disabled}
+            >
+              <SelectTrigger className="h-10">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Ativo</SelectItem>
+                <SelectItem value="inactive">Inativo</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        )}
+      </FormSection>
 
-      {/* Location Section */}
-      <div className="space-y-4">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Localização</p>
-        <div className="space-y-4">
+      <FormSection title="Contato">
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-medium">
+            Telefone <span className="text-destructive">*</span>
+          </Label>
+          <Input
+            id="phone"
+            placeholder="(00) 00000-0000"
+            value={formData.phone}
+            onChange={(e) => onPhoneChange(e.target.value)}
+            autoComplete="off"
+            disabled={disabled}
+            className="h-10"
+            aria-invalid={errors.phone}
+          />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium">Email</Label>
+          <Input
+            id="email"
+            type="email"
+            placeholder="email@exemplo.com"
+            value={formData.email}
+            onChange={(e) => onFieldChange("email", e.target.value)}
+            autoComplete="off"
+            disabled={disabled}
+            className="h-10"
+          />
+        </div>
+      </FormSection>
+
+      <FormSection title="Localização">
           <div className="space-y-2">
             <Label htmlFor="zipCode" className="text-sm font-medium">
               CEP <span className="text-destructive">*</span>
@@ -248,8 +238,7 @@ export function NotaryOfficeFormFields({
               />
             </div>
           </div>
-        </div>
-      </div>
+      </FormSection>
     </>
   )
 }

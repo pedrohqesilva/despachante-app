@@ -3,9 +3,9 @@ import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, Users, X } from "lucide-react"
+import { Plus, Users } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
+import { SearchInput } from "@/components/ui/search-input"
 import {
   Table,
   TableBody,
@@ -265,32 +265,14 @@ export default function Clients() {
       <div className="flex-1 space-y-4 p-6">
         {/* Filters */}
         <div className="flex items-center gap-4">
-          <div className="relative flex-1 max-w-sm">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Buscar por nome, telefone ou CPF/CNPJ..."
-              value={search}
-              onChange={(e) => {
-                setSearch(e.target.value)
-                setPage(1)
-              }}
-              className="pl-9 pr-9"
-              autoComplete="off"
-            />
-            {search && (
-              <button
-                onClick={() => {
-                  setSearch("")
-                  setPage(1)
-                }}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-                type="button"
-                aria-label="Limpar busca"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
-          </div>
+          <SearchInput
+            value={search}
+            onChange={(value) => {
+              setSearch(value)
+              setPage(1)
+            }}
+            placeholder="Pesquise aqui ..."
+          />
           <Select
             value={statusFilter}
             onValueChange={(value) => {

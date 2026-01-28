@@ -5,12 +5,8 @@ import { Id } from "@despachante/convex/_generated/dataModel"
 import { clientsApi } from "@/lib/api"
 import { requiresSpouse } from "@/lib/constants"
 import { Button } from "@/components/ui/button"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogTitle,
-} from "@/components/ui/dialog"
+import { Dialog, DialogContent } from "@/components/ui/dialog"
+import { DialogHeaderWithIcon } from "@/components/ui/dialog-header-icon"
 import { toast } from "sonner"
 import { ClientFormFields } from "./ClientFormFields"
 import { MaritalStatusSelector } from "./MaritalStatusSelector"
@@ -143,22 +139,13 @@ export function ClientDialog({
     <>
       <Dialog open={open} onOpenChange={handleClose}>
         <DialogContent className="sm:max-w-[600px] p-0 gap-0 overflow-hidden">
-          {/* Header */}
-          <div className="flex items-center gap-gap p-6 border-b border-border/50">
-            <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
-              <User className="size-icon-md text-primary" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <DialogTitle className="text-lg font-semibold">
-                {isEditing ? "Editar Cliente" : "Novo Cliente"}
-              </DialogTitle>
-              <DialogDescription className="text-sm text-muted-foreground mt-0.5">
-                {isEditing
-                  ? "Atualize os dados do cliente selecionado"
-                  : "Preencha os dados para cadastrar um novo cliente"}
-              </DialogDescription>
-            </div>
-          </div>
+          <DialogHeaderWithIcon
+            icon={User}
+            title={isEditing ? "Editar Cliente" : "Novo Cliente"}
+            description={isEditing
+              ? "Atualize os dados do cliente selecionado"
+              : "Preencha os dados para cadastrar um novo cliente"}
+          />
 
           {/* Form Content */}
           <div className="p-6 space-y-6 max-h-[60vh] overflow-y-auto">
