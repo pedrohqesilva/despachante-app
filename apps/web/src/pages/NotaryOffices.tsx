@@ -2,14 +2,13 @@ import { useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import { notaryOfficesApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X } from "lucide-react"
+import { Search, Plus, Building2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
@@ -21,7 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { TablePagination } from "@/components/ui/table-pagination"
+import { SortableTableHead, TableHeadPlain } from "@/components/ui/sortable-table-head"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
   NotaryOfficeDialog,
   type NotaryOfficeDialogSaveData,
@@ -113,17 +115,6 @@ export default function NotaryOffices() {
     }
   }
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortBy !== field) {
-      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-    }
-    return sortOrder === "asc" ? (
-      <ArrowUp className="ml-2 h-4 w-4" />
-    ) : (
-      <ArrowDown className="ml-2 h-4 w-4" />
-    )
-  }
-
   const isLoading = notaryOfficesData === undefined
   const notaryOffices = notaryOfficesData?.data ?? []
   const total = notaryOfficesData?.total ?? 0
@@ -195,71 +186,61 @@ export default function NotaryOffices() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="w-[150px]">
-                  <button
-                    onClick={() => handleSort("code")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Código
-                    <SortIcon field="code" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[300px]">
-                  <button
-                    onClick={() => handleSort("name")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Nome
-                    <SortIcon field="name" />
-                  </button>
-                </TableHead>
-                <TableHead className="font-semibold">Cidade/Estado</TableHead>
-                <TableHead className="font-semibold">Telefone</TableHead>
-                <TableHead className="font-semibold">Email</TableHead>
-                <TableHead className="w-[120px]">
-                  <button
-                    onClick={() => handleSort("status")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Status
-                    <SortIcon field="status" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[100px] text-right font-semibold">Ações</TableHead>
+                <SortableTableHead
+                  field="code"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[150px]"
+                >
+                  Código
+                </SortableTableHead>
+                <SortableTableHead
+                  field="name"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[300px]"
+                >
+                  Nome
+                </SortableTableHead>
+                <TableHeadPlain>Cidade/Estado</TableHeadPlain>
+                <TableHeadPlain>Telefone</TableHeadPlain>
+                <TableHeadPlain>Email</TableHeadPlain>
+                <SortableTableHead
+                  field="status"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[120px]"
+                >
+                  Status
+                </SortableTableHead>
+                <TableHeadPlain className="w-[100px] text-right">Ações</TableHeadPlain>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[180px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
-                  </TableRow>
-                ))
+                <TableSkeleton
+                  columns={[
+                    { width: "w-[120px]" },
+                    { width: "w-[200px]" },
+                    { width: "w-[150px]" },
+                    { width: "w-[120px]" },
+                    { width: "w-[180px]" },
+                    { width: "w-[80px]" },
+                    { width: "w-[60px]" },
+                  ]}
+                />
               ) : notaryOffices.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-72 text-center">
-                    <button
+                  <TableCell colSpan={7}>
+                    <EmptyState
+                      icon={Building2}
+                      title="Nenhum cartório encontrado"
+                      description="Clique para adicionar um novo cartório"
                       onClick={handleOpenDialog}
-                      className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
-                    >
-                      <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
-                        <Building2 className="size-8 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
-                          Nenhum cartório encontrado
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Clique para adicionar um novo cartório
-                        </p>
-                      </div>
-                    </button>
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -297,51 +278,19 @@ export default function NotaryOffices() {
         </div>
 
         {!isLoading && totalPages > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Mostrando {notaryOffices.length} de {total} cartório(s)
-            </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => {
-                  setPageSize(Number(value))
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Anterior
-                </Button>
-                <div className="text-sm">
-                  Página {page} de {totalPages}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Próxima
-                </Button>
-              </div>
-            </div>
-          </div>
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={total}
+            itemsOnPage={notaryOffices.length}
+            itemLabel="cartório(s)"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+          />
         )}
       </div>
 

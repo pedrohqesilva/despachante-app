@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X } from "lucide-react"
+import { Search, Plus, Users, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
@@ -22,7 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
 import {
   Dialog,
   DialogContent,
@@ -31,6 +29,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { EmptyState } from "@/components/ui/empty-state"
+import { TablePagination } from "@/components/ui/table-pagination"
+import { SortableTableHead, TableHeadPlain } from "@/components/ui/sortable-table-head"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
   ClientDialog,
   type ClientDialogSaveData,
@@ -237,17 +239,6 @@ export default function Clients() {
     await executeSave(pendingSaveData.clientData, pendingSaveData.spouseData, false)
   }
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortBy !== field) {
-      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-    }
-    return sortOrder === "asc" ? (
-      <ArrowUp className="ml-2 h-4 w-4" />
-    ) : (
-      <ArrowDown className="ml-2 h-4 w-4" />
-    )
-  }
-
   const isLoading = clientsData === undefined
   const clients = clientsData?.clients ?? []
   const total = clientsData?.total ?? 0
@@ -325,69 +316,58 @@ export default function Clients() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="w-[400px]">
-                  <button
-                    onClick={() => handleSort("name")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Nome
-                    <SortIcon field="name" />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    onClick={() => handleSort("email")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Email
-                    <SortIcon field="email" />
-                  </button>
-                </TableHead>
-                <TableHead className="font-semibold">Telefone</TableHead>
-                <TableHead className="font-semibold">CPF/CNPJ</TableHead>
-                <TableHead className="w-[120px]">
-                  <button
-                    onClick={() => handleSort("status")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Status
-                    <SortIcon field="status" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[100px] text-right font-semibold">Ações</TableHead>
+                <SortableTableHead
+                  field="name"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[400px]"
+                >
+                  Nome
+                </SortableTableHead>
+                <SortableTableHead
+                  field="email"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                >
+                  Email
+                </SortableTableHead>
+                <TableHeadPlain>Telefone</TableHeadPlain>
+                <TableHeadPlain>CPF/CNPJ</TableHeadPlain>
+                <SortableTableHead
+                  field="status"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[120px]"
+                >
+                  Status
+                </SortableTableHead>
+                <TableHeadPlain className="w-[100px] text-right">Ações</TableHeadPlain>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[180px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[120px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[140px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
-                  </TableRow>
-                ))
+                <TableSkeleton
+                  columns={[
+                    { width: "w-[200px]" },
+                    { width: "w-[180px]" },
+                    { width: "w-[120px]" },
+                    { width: "w-[140px]" },
+                    { width: "w-[80px]" },
+                    { width: "w-[60px]" },
+                  ]}
+                />
               ) : clients.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-72 text-center">
-                    <button
+                  <TableCell colSpan={6}>
+                    <EmptyState
+                      icon={Users}
+                      title="Nenhum cliente encontrado"
+                      description="Clique para adicionar um novo cliente"
                       onClick={handleOpenNewClient}
-                      className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
-                    >
-                      <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
-                        <Users className="size-8 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
-                          Nenhum cliente encontrado
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Clique para adicionar um novo cliente
-                        </p>
-                      </div>
-                    </button>
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -426,53 +406,20 @@ export default function Clients() {
           </Table>
         </div>
 
-        {/* Pagination */}
         {!isLoading && totalPages > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Mostrando {clients.length} de {total} cliente(s)
-            </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => {
-                  setPageSize(Number(value))
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Anterior
-                </Button>
-                <div className="text-sm">
-                  Página {page} de {totalPages}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Próxima
-                </Button>
-              </div>
-            </div>
-          </div>
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={total}
+            itemsOnPage={clients.length}
+            itemLabel="cliente(s)"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+          />
         )}
       </div>
 

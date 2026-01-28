@@ -3,14 +3,13 @@ import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, AlertTriangle } from "lucide-react"
+import { Search, Plus, Building2, X, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
@@ -21,7 +20,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Skeleton } from "@/components/ui/skeleton"
+import { EmptyState } from "@/components/ui/empty-state"
+import { TablePagination } from "@/components/ui/table-pagination"
+import { SortableTableHead, TableHeadPlain } from "@/components/ui/sortable-table-head"
+import { TableSkeleton } from "@/components/ui/table-skeleton"
 import {
   Dialog,
   DialogContent,
@@ -219,17 +221,6 @@ export default function Properties() {
     }
   }
 
-  const SortIcon = ({ field }: { field: SortField }) => {
-    if (sortBy !== field) {
-      return <ArrowUpDown className="ml-2 h-4 w-4 opacity-50" />
-    }
-    return sortOrder === "asc" ? (
-      <ArrowUp className="ml-2 h-4 w-4" />
-    ) : (
-      <ArrowDown className="ml-2 h-4 w-4" />
-    )
-  }
-
   const isLoading = propertiesData === undefined
   const properties = propertiesData?.properties ?? []
   const total = propertiesData?.total ?? 0
@@ -322,89 +313,74 @@ export default function Properties() {
           <Table>
             <TableHeader>
               <TableRow className="bg-muted/30 hover:bg-muted/30">
-                <TableHead className="w-[100px]">
-                  <button
-                    onClick={() => handleSort("type")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Tipo
-                    <SortIcon field="type" />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    onClick={() => handleSort("address")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Endereço
-                    <SortIcon field="address" />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    onClick={() => handleSort("value")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Valor
-                    <SortIcon field="value" />
-                  </button>
-                </TableHead>
-                <TableHead>
-                  <button
-                    onClick={() => handleSort("area")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Área
-                    <SortIcon field="area" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[120px]">
-                  <span className="font-semibold">Proprietários</span>
-                </TableHead>
-                <TableHead className="w-[120px]">
-                  <button
-                    onClick={() => handleSort("status")}
-                    className="flex items-center hover:text-foreground cursor-pointer font-semibold"
-                  >
-                    Status
-                    <SortIcon field="status" />
-                  </button>
-                </TableHead>
-                <TableHead className="w-[100px] text-right font-semibold">Ações</TableHead>
+                <SortableTableHead
+                  field="type"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[100px]"
+                >
+                  Tipo
+                </SortableTableHead>
+                <SortableTableHead
+                  field="address"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                >
+                  Endereço
+                </SortableTableHead>
+                <SortableTableHead
+                  field="value"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                >
+                  Valor
+                </SortableTableHead>
+                <SortableTableHead
+                  field="area"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                >
+                  Área
+                </SortableTableHead>
+                <TableHeadPlain className="w-[120px]">Proprietários</TableHeadPlain>
+                <SortableTableHead
+                  field="status"
+                  currentSortField={sortBy}
+                  currentSortOrder={sortOrder}
+                  onSort={handleSort}
+                  className="w-[120px]"
+                >
+                  Status
+                </SortableTableHead>
+                <TableHeadPlain className="w-[100px] text-right">Ações</TableHeadPlain>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                Array.from({ length: 5 }).map((_, i) => (
-                  <TableRow key={i}>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[350px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[50px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
-                    <TableCell><Skeleton className="h-4 w-[60px]" /></TableCell>
-                  </TableRow>
-                ))
+                <TableSkeleton
+                  columns={[
+                    { width: "w-[80px]" },
+                    { width: "w-[350px]" },
+                    { width: "w-[100px]" },
+                    { width: "w-[80px]" },
+                    { width: "w-[50px]" },
+                    { width: "w-[80px]" },
+                    { width: "w-[60px]" },
+                  ]}
+                />
               ) : properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="h-72 text-center">
-                    <button
+                  <TableCell colSpan={7}>
+                    <EmptyState
+                      icon={Building2}
+                      title="Nenhum imóvel encontrado"
+                      description="Clique para adicionar um novo imóvel"
                       onClick={handleOpenNewDialog}
-                      className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
-                    >
-                      <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
-                        <Building2 className="size-8 text-primary" />
-                      </div>
-                      <div>
-                        <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
-                          Nenhum imóvel encontrado
-                        </p>
-                        <p className="text-sm text-muted-foreground mt-1">
-                          Clique para adicionar um novo imóvel
-                        </p>
-                      </div>
-                    </button>
+                    />
                   </TableCell>
                 </TableRow>
               ) : (
@@ -432,53 +408,20 @@ export default function Properties() {
           </Table>
         </div>
 
-        {/* Pagination */}
         {!isLoading && totalPages > 0 && (
-          <div className="flex items-center justify-between">
-            <div className="text-sm text-muted-foreground">
-              Mostrando {properties.length} de {total} imóvel(is)
-            </div>
-            <div className="flex items-center gap-2">
-              <Select
-                value={String(pageSize)}
-                onValueChange={(value) => {
-                  setPageSize(Number(value))
-                  setPage(1)
-                }}
-              >
-                <SelectTrigger className="w-[100px]">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="10">10</SelectItem>
-                  <SelectItem value="25">25</SelectItem>
-                  <SelectItem value="50">50</SelectItem>
-                  <SelectItem value="100">100</SelectItem>
-                </SelectContent>
-              </Select>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.max(1, p - 1))}
-                  disabled={page === 1}
-                >
-                  Anterior
-                </Button>
-                <div className="text-sm">
-                  Página {page} de {totalPages}
-                </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={page === totalPages}
-                >
-                  Próxima
-                </Button>
-              </div>
-            </div>
-          </div>
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            pageSize={pageSize}
+            totalItems={total}
+            itemsOnPage={properties.length}
+            itemLabel="imóvel(is)"
+            onPageChange={setPage}
+            onPageSizeChange={(size) => {
+              setPageSize(size)
+              setPage(1)
+            }}
+          />
         )}
       </div>
 

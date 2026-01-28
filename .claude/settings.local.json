@@ -20,7 +20,8 @@
       "mcp__convex__data",
       "Bash(dir:*)",
       "Bash(pnpm build:*)",
-      "Bash(pnpm --filter web build:*)"
+      "Bash(pnpm --filter web build:*)",
+      "Bash(pnpm typecheck:*)"
     ]
   }
 }
