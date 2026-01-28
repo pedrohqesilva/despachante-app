@@ -9,6 +9,7 @@ import {
   Search,
   Loader2,
   ExternalLink,
+  AlertTriangle,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -20,6 +21,18 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+  AlertDialogBody,
+} from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { formatTaxId } from "@/lib/format"
 import { TrashButton } from "@/components/ui/trash-button"
@@ -51,6 +64,7 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
   const [isPopoverOpen, setIsPopoverOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
+  const [ownerToRemove, setOwnerToRemove] = useState<{ id: Id<"clients">; name: string } | null>(null)
 
   const ownersData = useQuery(
     clientsApi.queries.list,
@@ -94,9 +108,12 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
     }
   }
 
-  const handleRemoveOwner = async (clientId: Id<"clients">) => {
+  const handleRemoveOwner = async () => {
+    if (!ownerToRemove) return
+
     if (ownerIds.length <= 1) {
       toast.error("O imovel deve ter pelo menos um proprietario")
+      setOwnerToRemove(null)
       return
     }
 
@@ -104,7 +121,7 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
     try {
       await updatePropertyMutation({
         id: propertyId,
-        ownerIds: ownerIds.filter(id => id !== clientId),
+        ownerIds: ownerIds.filter(id => id !== ownerToRemove.id),
       })
       toast.success("Proprietario removido com sucesso")
     } catch (error) {
@@ -112,6 +129,7 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
       console.error(error)
     } finally {
       setIsUpdating(false)
+      setOwnerToRemove(null)
     }
   }
 
@@ -314,9 +332,9 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
                     <ExternalLink className="size-4" />
                   </Button>
                   <TrashButton
-                    onClick={() => handleRemoveOwner(owner._id)}
+                    onClick={() => setOwnerToRemove({ id: owner._id, name: owner.name })}
                     disabled={ownerIds.length <= 1}
-                    isLoading={isUpdating}
+                    isLoading={isUpdating && ownerToRemove?.id === owner._id}
                     title={ownerIds.length <= 1 ? "O imóvel deve ter pelo menos um proprietário" : "Remover proprietário"}
                   />
                 </div>
@@ -325,6 +343,32 @@ export function OwnersSection({ propertyId, ownerIds }: OwnersSectionProps) {
           )
         })}
       </div>
+
+      <AlertDialog open={!!ownerToRemove} onOpenChange={(open) => !open && setOwnerToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive">
+              <AlertTriangle />
+            </AlertDialogMedia>
+            <AlertDialogBody>
+              <AlertDialogTitle>Remover proprietário</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover <span className="font-medium text-foreground">{ownerToRemove?.name}</span> como proprietário deste imóvel?
+              </AlertDialogDescription>
+            </AlertDialogBody>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isUpdating}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveOwner}
+              disabled={isUpdating}
+              variant="destructive"
+            >
+              {isUpdating ? "Removendo..." : "Remover"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

@@ -1,4 +1,4 @@
-import { MoreHorizontal, Eye, Edit, Trash2 } from "lucide-react"
+import { MoreHorizontal, Eye, Edit, Trash2, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -8,13 +8,17 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog"
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+  AlertDialogBody,
+} from "@/components/ui/alert-dialog"
 import { useState } from "react"
 import { Client } from "@/types/client"
 
@@ -85,33 +89,32 @@ export function ClientsTableActions({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirmar exclusão</DialogTitle>
-            <DialogDescription>
-              Tem certeza que deseja excluir o cliente{" "}
-              <strong>{client.name}</strong>? Esta ação não pode ser desfeita.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={isDeleting}
-            >
-              Cancelar
-            </Button>
-            <Button
-              variant="destructive"
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive">
+              <AlertTriangle />
+            </AlertDialogMedia>
+            <AlertDialogBody>
+              <AlertDialogTitle>Excluir cliente</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja excluir o cliente{" "}
+                <span className="font-medium text-foreground">{client.name}</span>? Esta ação não pode ser desfeita.
+              </AlertDialogDescription>
+            </AlertDialogBody>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
               onClick={handleDelete}
               disabled={isDeleting}
+              variant="destructive"
             >
               {isDeleting ? "Excluindo..." : "Excluir"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }

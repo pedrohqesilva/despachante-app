@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees, Users, ExternalLink } from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees, Users, ExternalLink, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -31,6 +31,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+  AlertDialogBody,
+} from "@/components/ui/alert-dialog"
 import {
   Popover,
   PopoverContent,
@@ -60,8 +72,9 @@ function PropertyRow({
   onDelete,
   onRowClick,
   onNavigateToClient,
-  onRemoveOwner,
+  onRemoveOwnerRequest,
   isRemovingOwner,
+  removingOwnerId,
 }: {
   property: Property
   owners: Client[]
@@ -73,8 +86,9 @@ function PropertyRow({
   onDelete: (property: Property) => Promise<void>
   onRowClick: (property: Property) => void
   onNavigateToClient: (clientId: Id<"clients">) => void
-  onRemoveOwner: (propertyId: Id<"properties">, clientId: Id<"clients">, currentOwnerIds: Id<"clients">[]) => Promise<void>
+  onRemoveOwnerRequest: (propertyId: Id<"properties">, ownerId: Id<"clients">, ownerName: string, currentOwnerIds: Id<"clients">[]) => void
   isRemovingOwner: boolean
+  removingOwnerId: Id<"clients"> | null
 }) {
   const [isOwnersPopoverOpen, setIsOwnersPopoverOpen] = useState(false)
 
@@ -184,11 +198,11 @@ function PropertyRow({
                       <TrashButton
                         onClick={() => {
                           if (owners.length > 1) {
-                            onRemoveOwner(property._id, owner._id, property.ownerIds)
+                            onRemoveOwnerRequest(property._id, owner._id, owner.name, property.ownerIds)
                           }
                         }}
                         disabled={owners.length <= 1}
-                        isLoading={isRemovingOwner}
+                        isLoading={isRemovingOwner && removingOwnerId === owner._id}
                         title={owners.length <= 1 ? "O imóvel deve ter pelo menos um proprietário" : "Remover proprietário"}
                       />
                     </div>
@@ -233,6 +247,12 @@ export default function Properties() {
   const [editingProperty, setEditingProperty] = useState<Property | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
   const [isRemovingOwner, setIsRemovingOwner] = useState(false)
+  const [ownerToRemove, setOwnerToRemove] = useState<{
+    propertyId: Id<"properties">
+    ownerId: Id<"clients">
+    ownerName: string
+    currentOwnerIds: Id<"clients">[]
+  } | null>(null)
   const [ownerSearch, setOwnerSearch] = useState("")
   const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false)
   const [isSearchingClients, setIsSearchingClients] = useState(false)
@@ -359,17 +379,24 @@ export default function Properties() {
     navigate(`/clientes/${clientId}`)
   }
 
-  const handleRemoveOwner = async (propertyId: Id<"properties">, clientId: Id<"clients">, currentOwnerIds: Id<"clients">[]) => {
-    if (currentOwnerIds.length <= 1) {
+  const handleRemoveOwnerRequest = (propertyId: Id<"properties">, ownerId: Id<"clients">, ownerName: string, currentOwnerIds: Id<"clients">[]) => {
+    setOwnerToRemove({ propertyId, ownerId, ownerName, currentOwnerIds })
+  }
+
+  const handleRemoveOwnerConfirm = async () => {
+    if (!ownerToRemove) return
+
+    if (ownerToRemove.currentOwnerIds.length <= 1) {
       toast.error("O imóvel deve ter pelo menos um proprietário")
+      setOwnerToRemove(null)
       return
     }
 
     setIsRemovingOwner(true)
     try {
       await updatePropertyMutation({
-        id: propertyId,
-        ownerIds: currentOwnerIds.filter(id => id !== clientId),
+        id: ownerToRemove.propertyId,
+        ownerIds: ownerToRemove.currentOwnerIds.filter(id => id !== ownerToRemove.ownerId),
       })
       toast.success("Proprietário removido com sucesso")
     } catch (error) {
@@ -377,6 +404,7 @@ export default function Properties() {
       console.error(error)
     } finally {
       setIsRemovingOwner(false)
+      setOwnerToRemove(null)
     }
   }
 
@@ -882,8 +910,9 @@ export default function Properties() {
                       onDelete={handleDelete}
                       onRowClick={handleRowClick}
                       onNavigateToClient={handleNavigateToClient}
-                      onRemoveOwner={handleRemoveOwner}
+                      onRemoveOwnerRequest={handleRemoveOwnerRequest}
                       isRemovingOwner={isRemovingOwner}
+                      removingOwnerId={ownerToRemove?.ownerId ?? null}
                     />
                   )
                 })
@@ -1440,6 +1469,31 @@ export default function Properties() {
         </DialogContent>
       </Dialog>
 
+      <AlertDialog open={!!ownerToRemove} onOpenChange={(open) => !open && setOwnerToRemove(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive">
+              <AlertTriangle />
+            </AlertDialogMedia>
+            <AlertDialogBody>
+              <AlertDialogTitle>Remover proprietário</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover <span className="font-medium text-foreground">{ownerToRemove?.ownerName}</span> como proprietário deste imóvel?
+              </AlertDialogDescription>
+            </AlertDialogBody>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isRemovingOwner}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemoveOwnerConfirm}
+              disabled={isRemovingOwner}
+              variant="destructive"
+            >
+              {isRemovingOwner ? "Removendo..." : "Remover"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

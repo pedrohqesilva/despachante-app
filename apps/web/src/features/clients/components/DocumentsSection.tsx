@@ -1,5 +1,5 @@
 import { useState, useCallback, DragEvent } from "react"
-import { FileText, Upload, Download, AlertCircle, IdCard, FileCheck, Heart, MapPin } from "lucide-react"
+import { FileText, Upload, Download, AlertCircle, IdCard, FileCheck, Heart, MapPin, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -9,6 +9,18 @@ import {
   DialogDescription,
   DialogTitle,
 } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogMedia,
+  AlertDialogBody,
+} from "@/components/ui/alert-dialog"
 import {
   Select,
   SelectContent,
@@ -31,7 +43,7 @@ interface DocumentsSectionProps {
 
 interface DocumentRowProps {
   doc: ClientDocument
-  onDelete: (id: Id<"clientDocuments">) => void
+  onDelete: (id: Id<"clientDocuments">, name: string) => void
 }
 
 interface PendingFile {
@@ -129,7 +141,7 @@ function DocumentRow({ doc, onDelete }: DocumentRowProps) {
           <Download className="size-4" />
         </Button>
         <TrashButton
-          onClick={() => onDelete(doc._id)}
+          onClick={() => onDelete(doc._id, doc.name)}
           title="Remover documento"
         />
       </div>
@@ -145,6 +157,8 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
   const [fileQueue, setFileQueue] = useState<File[]>([])
   const [totalFiles, setTotalFiles] = useState(0)
   const [currentFileIndex, setCurrentFileIndex] = useState(0)
+  const [documentToDelete, setDocumentToDelete] = useState<{ id: Id<"clientDocuments">; name: string } | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
 
   const documents = useQuery(clientDocumentsApi.queries.listByClient, { clientId })
   const missingDocuments = useQuery(clientDocumentsApi.queries.getMissingRequired, { clientId })
@@ -262,15 +276,21 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
     input.click()
   }, [openUploadDialog])
 
-  const handleDelete = useCallback(async (documentId: Id<"clientDocuments">) => {
+  const handleDelete = useCallback(async () => {
+    if (!documentToDelete) return
+
+    setIsDeleting(true)
     try {
-      await removeDocument({ id: documentId })
+      await removeDocument({ id: documentToDelete.id })
       toast.success("Documento removido")
     } catch (error) {
       toast.error("Erro ao remover documento")
       console.error("Delete error:", error)
+    } finally {
+      setIsDeleting(false)
+      setDocumentToDelete(null)
     }
-  }, [removeDocument])
+  }, [removeDocument, documentToDelete])
 
   const hasDocuments = documents && documents.length > 0
   const hasMissingDocuments = missingDocuments && missingDocuments.length > 0
@@ -350,7 +370,7 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
             <DocumentRow
               key={doc._id}
               doc={doc as ClientDocument}
-              onDelete={handleDelete}
+              onDelete={(id, name) => setDocumentToDelete({ id, name })}
             />
           ))}
         </div>
@@ -465,6 +485,32 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!documentToDelete} onOpenChange={(open) => !open && setDocumentToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogMedia className="bg-destructive/10 text-destructive">
+              <AlertTriangle />
+            </AlertDialogMedia>
+            <AlertDialogBody>
+              <AlertDialogTitle>Remover documento</AlertDialogTitle>
+              <AlertDialogDescription>
+                Tem certeza que deseja remover o documento <span className="font-medium text-foreground">{documentToDelete?.name}</span>?
+              </AlertDialogDescription>
+            </AlertDialogBody>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDelete}
+              disabled={isDeleting}
+              variant="destructive"
+            >
+              {isDeleting ? "Removendo..." : "Remover"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

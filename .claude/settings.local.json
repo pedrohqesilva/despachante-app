@@ -10,7 +10,10 @@
       "Bash(pnpm install:*)",
       "Bash(npx tsc:*)",
       "Bash(npx:*)",
-      "Bash(npx convex:*)"
+      "Bash(npx convex:*)",
+      "Bash(yarn tsc:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(pnpm dlx shadcn@latest add:*)"
     ]
   }
 }
