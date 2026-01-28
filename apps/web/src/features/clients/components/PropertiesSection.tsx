@@ -1,6 +1,6 @@
 import { useQuery } from "convex/react"
-import { api } from "../../../../convex/_generated/api"
-import { Id } from "../../../../convex/_generated/dataModel"
+import { api } from "@despachante/convex/_generated/api"
+import { Id } from "@despachante/convex/_generated/dataModel"
 import { Building, Building2, Home, Trees, Plus, ExternalLink, LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"

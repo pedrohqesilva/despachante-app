@@ -1,4 +1,4 @@
-import { Id } from "../../convex/_generated/dataModel"
+import { Id } from "@despachante/convex/_generated/dataModel"
 
 export type ClientStatus = "active" | "inactive" | "pending"
 

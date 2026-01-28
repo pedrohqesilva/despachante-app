@@ -2,54 +2,15 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "React Server (Debug)",
+      "name": "🚀 Dev (Turbo)",
       "type": "node",
       "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
-      "cwd": "${workspaceFolder}/react/server",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": ["dev"],
+      "cwd": "${workspaceFolder}",
       "skipFiles": ["<node_internals>/**"],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen"
-    },
-    {
-      "name": "React Client (Debug)",
-      "type": "chrome",
-      "request": "launch",
-      "url": "http://localhost:5173",
-      "webRoot": "${workspaceFolder}/react",
-      "skipFiles": ["<node_internals>/**"]
-    },
-    {
-      "name": "Convex Dev (Debug)",
-      "type": "node",
-      "request": "launch",
-      "runtimeExecutable": "npx",
-      "runtimeArgs": ["convex", "dev"],
-      "cwd": "${workspaceFolder}/react",
-      "env": {
-        "PWD": "${workspaceFolder}/react"
-      },
-      "skipFiles": ["<node_internals>/**"],
-      "console": "integratedTerminal",
-      "internalConsoleOptions": "neverOpen"
-    }
-  ],
-  "compounds": [
-    {
-      "name": "🚀 All Dev Servers",
-      "configurations": [
-        "React Server (Debug)",
-        "Convex Dev (Debug)",
-        "React Client (Debug)"
-      ],
-      "preLaunchTask": "Run All Dev Servers",
-      "stopAll": true,
-      "presentation": {
-        "hidden": false,
-        "group": "dev",
-        "order": 1
-      }
     }
   ]
 }

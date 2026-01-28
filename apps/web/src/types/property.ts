@@ -1,4 +1,4 @@
-import { Id } from "../../convex/_generated/dataModel"
+import { Id } from "@despachante/convex/_generated/dataModel"
 
 export type PropertyType = "house" | "apartment" | "land" | "building"
 export type PropertyStatus = "active" | "inactive" | "pending"

@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "../../convex/_generated/api"
+import { api } from "@despachante/convex/_generated/api"
 import { toast } from "sonner"
 import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Building2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"

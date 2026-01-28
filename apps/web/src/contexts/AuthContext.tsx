@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useAuthActions, useAuthToken } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { api } from "../../convex/_generated/api";
+import { api } from "@despachante/convex/_generated/api";
 
 type AuthContextType = {
   isLoading: boolean;

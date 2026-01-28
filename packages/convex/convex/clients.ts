@@ -46,19 +46,19 @@ export const list = query({
       clients.sort((a, b) => {
         const aValue = a[args.sortBy as keyof typeof a];
         const bValue = b[args.sortBy as keyof typeof b];
-        
+
         if (aValue === undefined || bValue === undefined) return 0;
-        
+
         if (typeof aValue === "string" && typeof bValue === "string") {
           return order === "asc"
             ? aValue.localeCompare(bValue)
             : bValue.localeCompare(aValue);
         }
-        
+
         if (typeof aValue === "number" && typeof bValue === "number") {
           return order === "asc" ? aValue - bValue : bValue - aValue;
         }
-        
+
         return 0;
       });
     }

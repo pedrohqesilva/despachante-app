@@ -9,7 +9,11 @@
  */
 
 import type * as auth from "../auth.js";
+import type * as clientDocuments from "../clientDocuments.js";
+import type * as clients from "../clients.js";
 import type * as http from "../http.js";
+import type * as notaryOffices from "../notaryOffices.js";
+import type * as properties from "../properties.js";
 import type * as users from "../users.js";
 
 import type {
@@ -20,7 +24,11 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   auth: typeof auth;
+  clientDocuments: typeof clientDocuments;
+  clients: typeof clients;
   http: typeof http;
+  notaryOffices: typeof notaryOffices;
+  properties: typeof properties;
   users: typeof users;
 }>;
 

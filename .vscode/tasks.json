@@ -2,12 +2,12 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "label": "Run React Server",
+      "label": "Dev (Turbo)",
       "type": "shell",
-      "command": "npm",
-      "args": ["run", "dev"],
+      "command": "pnpm",
+      "args": ["dev"],
       "options": {
-        "cwd": "${workspaceFolder}/react/server"
+        "cwd": "${workspaceFolder}"
       },
       "isBackground": true,
       "problemMatcher": {
@@ -27,87 +27,10 @@
         "echo": true,
         "reveal": "always",
         "focus": false,
-        "panel": "dedicated",
+        "panel": "shared",
         "showReuseMessage": false,
-        "clear": false,
-        "group": "dev-servers"
+        "clear": true
       }
-    },
-    {
-      "label": "Run React Client",
-      "type": "shell",
-      "command": "npm",
-      "args": ["run", "dev"],
-      "options": {
-        "cwd": "${workspaceFolder}/react"
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "pattern": {
-          "regexp": "^.*$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": ".*",
-          "endsPattern": ".*"
-        }
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": false,
-        "group": "dev-servers"
-      }
-    },
-    {
-      "label": "Run Convex Dev",
-      "type": "shell",
-      "command": "npx",
-      "args": ["convex", "dev"],
-      "options": {
-        "cwd": "${workspaceFolder}/react",
-        "env": {
-          "PWD": "${workspaceFolder}/react"
-        }
-      },
-      "isBackground": true,
-      "problemMatcher": {
-        "pattern": {
-          "regexp": "^.*$",
-          "file": 1,
-          "location": 2,
-          "message": 3
-        },
-        "background": {
-          "activeOnStart": true,
-          "beginsPattern": ".*",
-          "endsPattern": ".*"
-        }
-      },
-      "presentation": {
-        "echo": true,
-        "reveal": "always",
-        "focus": false,
-        "panel": "dedicated",
-        "showReuseMessage": false,
-        "clear": false,
-        "group": "dev-servers"
-      }
-    },
-    {
-      "label": "Run All Dev Servers",
-      "dependsOn": [
-        "Run React Server",
-        "Run React Client",
-        "Run Convex Dev"
-      ],
-      "problemMatcher": []
     }
   ]
 }

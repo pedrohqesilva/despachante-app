@@ -16,11 +16,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import { Id } from "../../../../convex/_generated/dataModel"
+import { Id } from "@despachante/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "../../../../convex/_generated/api"
+import { api } from "@despachante/convex/_generated/api"
 import { DocumentType, ClientDocument } from "@/types/client"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
 

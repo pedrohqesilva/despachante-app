@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
-import { api } from "../../../../convex/_generated/api"
+import { api } from "@despachante/convex/_generated/api"
 import { settingsService } from "../services/settings.service"
 import type { UpdateProfileDTO } from "../types/settings.types"
 
