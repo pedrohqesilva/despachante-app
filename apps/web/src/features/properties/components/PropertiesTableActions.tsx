@@ -93,7 +93,7 @@ export function PropertiesTableActions({
             <DialogTitle>Confirmar exclusão</DialogTitle>
             <DialogDescription>
               Tem certeza que deseja excluir o imóvel localizado em{" "}
-              <strong>{property.address}</strong>? Esta ação não pode ser desfeita.
+              <strong>{property.street}, {property.number}</strong>? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

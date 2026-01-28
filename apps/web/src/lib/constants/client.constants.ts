@@ -36,3 +36,29 @@ export function getPropertyRegimeLabel(regime: PropertyRegime): string {
 export function getClientStatusLabel(status: ClientStatus): string {
   return CLIENT_STATUS_OPTIONS.find(opt => opt.value === status)?.label ?? status
 }
+
+export function getClientStatusBadgeVariant(status: ClientStatus): "default" | "secondary" | "outline" {
+  switch (status) {
+    case "active":
+      return "default"
+    case "pending":
+      return "outline"
+    case "inactive":
+      return "secondary"
+    default:
+      return "secondary"
+  }
+}
+
+export function getClientStatusBadgeClassName(status: ClientStatus): string {
+  switch (status) {
+    case "active":
+      return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
+    case "pending":
+      return "bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
+    case "inactive":
+      return "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
+    default:
+      return ""
+  }
+}

@@ -1,11 +1,19 @@
 import { Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Property } from "@/types/property"
-import { formatZipCode, formatCurrency, formatArea, formatDateOnly } from "@/lib/format"
+import { formatZipCode, formatCurrency, formatDateOnly } from "@/lib/format"
+import { getPropertyTypeLabel, getPropertyStatusLabel } from "@/lib/constants"
 
 interface ExportButtonProps {
   properties: Property[]
   disabled?: boolean
+}
+
+function buildPropertyAddress(property: Property): string {
+  let address = `${property.street}, ${property.number}`
+  if (property.complement) address += ` - ${property.complement}`
+  address += `, ${property.neighborhood}`
+  return address
 }
 
 export function ExportButton({ properties, disabled }: ExportButtonProps) {
@@ -25,26 +33,14 @@ export function ExportButton({ properties, disabled }: ExportButtonProps) {
       "Data de Cadastro",
     ]
     const rows = properties.map((property) => [
-      property.address,
+      buildPropertyAddress(property),
       formatZipCode(property.zipCode),
       property.city,
       property.state,
-      property.type === "house"
-        ? "Casa"
-        : property.type === "apartment"
-        ? "Apartamento"
-        : property.type === "land"
-        ? "Terreno"
-        : property.type === "building"
-        ? "Prédio"
-        : property.type,
+      getPropertyTypeLabel(property.type),
       property.area.toString(),
       formatCurrency(property.value),
-      property.status === "active"
-        ? "Ativo"
-        : property.status === "inactive"
-        ? "Inativo"
-        : "Pendente",
+      getPropertyStatusLabel(property.status),
       property.ownerIds.length.toString(),
       formatDateOnly(property.createdAt),
     ])

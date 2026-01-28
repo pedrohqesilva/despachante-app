@@ -3,9 +3,7 @@ import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import {
-  Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Users, ExternalLink, AlertTriangle,
-} from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -16,7 +14,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import {
   Select,
   SelectContent,
@@ -46,193 +43,18 @@ import {
   AlertDialogBody,
 } from "@/components/ui/alert-dialog"
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover"
-import { TrashButton } from "@/components/ui/trash-button"
-import { PropertiesTableActions } from "@/components/properties/PropertiesTableActions"
-import { ExportButton } from "@/components/properties/ExportButton"
-import { PropertyDialog, type PropertyDialogSaveData } from "@/features/properties"
-import {
-  getPropertyTypeLabel,
-  getPropertyStatusLabel,
-  getPropertyStatusBadgeVariant,
-  getPropertyStatusBadgeClassName,
-} from "@/lib/constants"
-import { formatZipCode, formatCurrency, formatArea, formatTaxId } from "@/lib/format"
+  PropertyDialog,
+  type PropertyDialogSaveData,
+  ExportButton,
+  PropertyTableRow,
+} from "@/features/properties"
+import { formatZipCode } from "@/lib/format"
 import { Property, PropertyStatus, PropertyType } from "@/types/property"
 import { Client } from "@/types/client"
 import { Id } from "@despachante/convex/_generated/dataModel"
-import { cn } from "@/lib/utils"
 
 type SortField = "address" | "city" | "type" | "area" | "value" | "createdAt" | "status"
 type SortOrder = "asc" | "desc"
-
-function PropertyRow({
-  property,
-  owners,
-  onEdit,
-  onDelete,
-  onRowClick,
-  onNavigateToClient,
-  onRemoveOwnerRequest,
-  isRemovingOwner,
-  removingOwnerId,
-}: {
-  property: Property
-  owners: Client[]
-  onEdit: (property: Property) => void
-  onDelete: (property: Property) => Promise<void>
-  onRowClick: (property: Property) => void
-  onNavigateToClient: (clientId: Id<"clients">) => void
-  onRemoveOwnerRequest: (propertyId: Id<"properties">, ownerId: Id<"clients">, ownerName: string, currentOwnerIds: Id<"clients">[]) => void
-  isRemovingOwner: boolean
-  removingOwnerId: Id<"clients"> | null
-}) {
-  const [isOwnersPopoverOpen, setIsOwnersPopoverOpen] = useState(false)
-
-  const handleRowClick = (e: React.MouseEvent) => {
-    const target = e.target as HTMLElement
-    if (target.closest('[data-actions]') || target.closest('[data-owners-badge]')) return
-    onRowClick(property)
-  }
-
-  const handleMenuOpenChange = (open: boolean) => {
-    if (open) {
-      setIsOwnersPopoverOpen(false)
-    }
-  }
-
-  return (
-    <TableRow
-      className="hover:bg-muted/50 cursor-pointer"
-      onClick={handleRowClick}
-    >
-      <TableCell className="text-text-tertiary">
-        {getPropertyTypeLabel(property.type)}
-      </TableCell>
-      <TableCell className="text-text-secondary">
-        {property.street}, {property.number}
-        {property.complement && `, ${property.complement}`}
-        , {property.neighborhood}, {property.city}/{property.state} - {formatZipCode(property.zipCode)}
-      </TableCell>
-      <TableCell className="text-text-tertiary">
-        {formatCurrency(property.value)}
-      </TableCell>
-      <TableCell className="text-text-tertiary">
-        {formatArea(property.area)}
-      </TableCell>
-      <TableCell data-owners-badge>
-        <Popover open={isOwnersPopoverOpen} onOpenChange={setIsOwnersPopoverOpen}>
-          <PopoverTrigger asChild>
-            <button
-              type="button"
-              onClick={(e) => e.stopPropagation()}
-              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent hover:bg-accent/80 border border-border hover:border-border/80 transition-colors cursor-pointer"
-            >
-              <Users className="size-3.5 text-muted-foreground" />
-              <span className="text-sm font-medium text-text-secondary">{owners.length}</span>
-            </button>
-          </PopoverTrigger>
-          <PopoverContent className="w-80 p-0" align="start" sideOffset={4}>
-            <div className="p-3 border-b border-border/50">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                Proprietários
-              </p>
-            </div>
-            <div className="max-h-[300px] overflow-y-auto p-2 space-y-1">
-              {owners.length === 0 ? (
-                <p className="py-4 text-center text-sm text-muted-foreground">
-                  Nenhum proprietário vinculado
-                </p>
-              ) : (
-                owners.map((owner) => (
-                  <div
-                    key={owner._id}
-                    onClick={(e) => {
-                      const target = e.target as HTMLElement
-                      if (target.closest('[data-actions]')) return
-                      setIsOwnersPopoverOpen(false)
-                      onNavigateToClient(owner._id)
-                    }}
-                    className="group/owner flex items-center gap-2 p-2 rounded-lg hover:bg-accent cursor-pointer relative"
-                  >
-                    <div className="size-8 rounded-lg bg-background border border-border flex items-center justify-center shrink-0">
-                      <span className="text-xs font-medium text-text-tertiary">
-                        {owner.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()}
-                      </span>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-text-primary truncate">{owner.name}</p>
-                      <p className="text-xs text-muted-foreground">{formatTaxId(owner.taxId)}</p>
-                    </div>
-                    <div className="shrink-0 opacity-100 group-hover/owner:opacity-0 transition-opacity duration-200 absolute right-2">
-                      <Badge
-                        variant={owner.status === "active" ? "default" : owner.status === "pending" ? "outline" : "secondary"}
-                        className={cn(
-                          "text-[10px]",
-                          owner.status === "active"
-                            ? "bg-status-success-muted text-status-success-foreground border-status-success-border"
-                            : owner.status === "pending"
-                              ? "bg-status-warning-muted text-status-warning-foreground border-status-warning-border"
-                              : "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border"
-                        )}
-                      >
-                        {owner.status === "active" ? "Ativo" : owner.status === "pending" ? "Pendente" : "Inativo"}
-                      </Badge>
-                    </div>
-                    <div data-actions className="flex items-center gap-1 shrink-0 opacity-0 group-hover/owner:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-8"
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onNavigateToClient(owner._id)
-                          setIsOwnersPopoverOpen(false)
-                        }}
-                      >
-                        <ExternalLink className="size-4 text-muted-foreground" />
-                      </Button>
-                      <TrashButton
-                        onClick={() => {
-                          if (owners.length > 1) {
-                            onRemoveOwnerRequest(property._id, owner._id, owner.name, property.ownerIds)
-                          }
-                        }}
-                        disabled={owners.length <= 1}
-                        isLoading={isRemovingOwner && removingOwnerId === owner._id}
-                        title={owners.length <= 1 ? "O imóvel deve ter pelo menos um proprietário" : "Remover proprietário"}
-                      />
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </PopoverContent>
-        </Popover>
-      </TableCell>
-      <TableCell>
-        <Badge
-          variant={getPropertyStatusBadgeVariant(property.status)}
-          className={getPropertyStatusBadgeClassName(property.status)}
-        >
-          {getPropertyStatusLabel(property.status)}
-        </Badge>
-      </TableCell>
-      <TableCell className="text-right" data-actions>
-        <PropertiesTableActions
-          property={property}
-          onView={() => onRowClick(property)}
-          onEdit={onEdit}
-          onDelete={onDelete}
-          onMenuOpenChange={handleMenuOpenChange}
-        />
-      </TableCell>
-    </TableRow>
-  )
-}
 
 export default function Properties() {
   const navigate = useNavigate()
@@ -591,7 +413,7 @@ export default function Properties() {
                     property.ownerIds.includes(client._id)
                   ) || []
                   return (
-                    <PropertyRow
+                    <PropertyTableRow
                       key={property._id}
                       property={property}
                       owners={owners}

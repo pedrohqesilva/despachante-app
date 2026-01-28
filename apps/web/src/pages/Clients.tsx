@@ -31,41 +31,25 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ClientsTableActions } from "@/components/clients/ClientsTableActions"
-import { ExportButton } from "@/components/clients/ExportButton"
-import { ClientDialog, type ClientDialogSaveData, type ClientSubmitData, type SpouseFormData } from "@/features/clients"
+import {
+  ClientDialog,
+  type ClientDialogSaveData,
+  type ClientSubmitData,
+  type SpouseFormData,
+  ClientsTableActions,
+  ExportButton,
+} from "@/features/clients"
 import { formatTaxId, formatPhone } from "@/lib/format"
-import { requiresSpouse } from "@/lib/constants"
+import {
+  requiresSpouse,
+  getClientStatusLabel,
+  getClientStatusBadgeVariant,
+  getClientStatusBadgeClassName,
+} from "@/lib/constants"
 import type { Client, ClientStatus } from "@/types/client"
 
 type SortField = "name" | "email" | "createdAt" | "status"
 type SortOrder = "asc" | "desc"
-
-function getStatusBadgeClassName(status: ClientStatus): string {
-  switch (status) {
-    case "active":
-      return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
-    case "inactive":
-      return "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border font-medium"
-    case "pending":
-      return "bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
-    default:
-      return ""
-  }
-}
-
-function getStatusLabel(status: ClientStatus): string {
-  switch (status) {
-    case "active":
-      return "Ativo"
-    case "inactive":
-      return "Inativo"
-    case "pending":
-      return "Pendente"
-    default:
-      return status
-  }
-}
 
 export default function Clients() {
   const navigate = useNavigate()
@@ -421,10 +405,10 @@ export default function Clients() {
                     <TableCell className="text-text-tertiary">{formatTaxId(client.taxId)}</TableCell>
                     <TableCell>
                       <Badge
-                        variant="outline"
-                        className={getStatusBadgeClassName(client.status)}
+                        variant={getClientStatusBadgeVariant(client.status)}
+                        className={getClientStatusBadgeClassName(client.status)}
                       >
-                        {getStatusLabel(client.status)}
+                        {getClientStatusLabel(client.status)}
                       </Badge>
                     </TableCell>
                     <TableCell className="text-right">

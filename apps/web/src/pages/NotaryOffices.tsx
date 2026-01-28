@@ -22,10 +22,10 @@ import {
   SelectValue,
 } from "@/components/ui/select"
 import { Skeleton } from "@/components/ui/skeleton"
-import { NotaryOfficesTableActions } from "@/components/notary-offices/NotaryOfficesTableActions"
 import {
   NotaryOfficeDialog,
   type NotaryOfficeDialogSaveData,
+  NotaryOfficesTableActions,
 } from "@/features/notary-offices"
 import {
   getNotaryOfficeStatusLabel,

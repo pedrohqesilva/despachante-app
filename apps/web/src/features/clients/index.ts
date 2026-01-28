@@ -7,6 +7,8 @@ export { ClientFormFields } from "./components/ClientFormFields"
 export { MaritalStatusSelector } from "./components/MaritalStatusSelector"
 export { SpouseSelector } from "./components/SpouseSelector"
 export { CreateSpouseDialog } from "./components/CreateSpouseDialog"
+export { ClientsTableActions } from "./components/ClientsTableActions"
+export { ExportButton } from "./components/ExportButton"
 
 // Hooks
 export { useClientForm } from "./hooks/useClientForm"

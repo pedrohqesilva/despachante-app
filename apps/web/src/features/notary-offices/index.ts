@@ -1,6 +1,7 @@
 // Components
 export { NotaryOfficeDialog } from "./components/NotaryOfficeDialog"
 export { NotaryOfficeFormFields } from "./components/NotaryOfficeFormFields"
+export { NotaryOfficesTableActions } from "./components/NotaryOfficesTableActions"
 
 // Hooks
 export { useNotaryOfficeForm } from "./hooks/useNotaryOfficeForm"
