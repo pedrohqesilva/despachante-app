@@ -1,4 +1,4 @@
-import { ReactNode, useState, useEffect } from "react";
+import { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { AuthDialog } from "./auth/AuthDialog";
 import { Loader2 } from "lucide-react";
@@ -9,18 +9,10 @@ type ProtectedRouteProps = {
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const { isLoading, isAuthenticated } = useAuth();
-  const [showAuthDialog, setShowAuthDialog] = useState(false);
 
-  useEffect(() => {
-    if (!isLoading && !isAuthenticated) {
-      setShowAuthDialog(true);
-    } else if (isAuthenticated) {
-      setShowAuthDialog(false);
-    }
-  }, [isLoading, isAuthenticated]);
-
-  // Show loading spinner while checking auth state
-  if (isLoading) {
+  // Show loading spinner while checking auth state (but only if not authenticated)
+  // If authenticated, render content immediately even if still loading user data
+  if (isLoading && !isAuthenticated) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <Loader2 className="size-8 animate-spin text-primary" />
@@ -33,8 +25,11 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
     return (
       <>
         <AuthDialog
-          open={showAuthDialog}
-          onOpenChange={setShowAuthDialog}
+          open={true}
+          onOpenChange={() => {
+            // Dialog should only close when user becomes authenticated
+            // This is handled by AuthDialog internally
+          }}
           defaultMode="login"
         />
         <div className="flex items-center justify-center min-h-screen">

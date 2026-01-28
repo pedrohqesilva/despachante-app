@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { Sun, Moon, Monitor, Check } from "lucide-react"
 import { useTheme } from "@/contexts/ThemeContext"
 import { settingsService } from "../services/settings.service"
@@ -12,11 +12,8 @@ export function AppearanceSection() {
     settingsService.getSystemSettings()
   )
 
-  useEffect(() => {
-    if (settings.theme !== theme) {
-      setSettings((prev) => ({ ...prev, theme: theme as SystemSettings["theme"] }))
-    }
-  }, [theme, settings.theme])
+  // Calculate theme during render instead of syncing in useEffect
+  const currentTheme = (theme as SystemSettings["theme"]) || settings.theme
 
   const handleThemeChange = (value: SystemSettings["theme"]) => {
     setTheme(value)
@@ -50,7 +47,7 @@ export function AppearanceSection() {
   return (
     <div className="space-y-3">
       {themes.map(({ value, icon: Icon, label, description }) => {
-        const isSelected = settings.theme === value
+        const isSelected = currentTheme === value
         return (
           <button
             key={value}

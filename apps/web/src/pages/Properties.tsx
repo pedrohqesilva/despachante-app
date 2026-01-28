@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useState, useMemo, useCallback, useRef } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
@@ -255,7 +255,6 @@ export default function Properties() {
   } | null>(null)
   const [ownerSearch, setOwnerSearch] = useState("")
   const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false)
-  const [isSearchingClients, setIsSearchingClients] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [fieldErrors, setFieldErrors] = useState<{
     zipCode?: boolean
@@ -613,18 +612,8 @@ export default function Properties() {
       .replace(/[\u0300-\u036f]/g, "")
   }
 
-  // Efeito para gerenciar o estado de loading durante a busca
-  useEffect(() => {
-    if (ownerSearch.trim() && activeClients?.clients) {
-      setIsSearchingClients(true)
-      const timer = setTimeout(() => {
-        setIsSearchingClients(false)
-      }, 200)
-      return () => clearTimeout(timer)
-    } else {
-      setIsSearchingClients(false)
-    }
-  }, [ownerSearch, activeClients])
+  // Calculate loading state during render instead of using useEffect
+  const isSearchingClients = ownerSearch.trim() !== "" && activeClients?.clients !== undefined
 
   // Filtro de clientes com busca case-insensitive e accent-insensitive
   const filteredClients = useMemo(() => {

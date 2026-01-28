@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useEffect, useState } from "react";
+import { createContext, ReactNode, useContext, useState, useEffect } from "react";
 import { useAuthActions, useAuthToken } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
 import { usersApi } from "@/lib/api";
@@ -31,6 +31,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const isAuthenticated = !!authToken;
   const isLoading = authToken === undefined || isAuthenticating;
 
+  // Reset isAuthenticating when authToken becomes available after authentication
+  // This is a valid use of useEffect - synchronizing with external auth state
+  useEffect(() => {
+    if (authToken && isAuthenticating) {
+      setIsAuthenticating(false);
+    }
+  }, [authToken, isAuthenticating]);
+
   const signIn = async (provider: string, formData: FormData) => {
     setIsAuthenticating(true);
     try {
@@ -55,17 +63,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
 
       await authSignIn("password", formData);
+      setIsAuthenticating(false);
     } catch (error) {
       setIsAuthenticating(false);
       throw error;
     }
   };
-
-  useEffect(() => {
-    if (authToken && isAuthenticating) {
-      setIsAuthenticating(false);
-    }
-  }, [authToken, isAuthenticating]);
 
   const signOut = async () => {
     await authSignOut();

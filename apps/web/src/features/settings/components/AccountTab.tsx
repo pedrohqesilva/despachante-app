@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { ProfileForm } from "./ProfileForm"
 import { ChangePasswordDialog } from "./ChangePasswordDialog"
 import { Button } from "@/components/ui/button"
@@ -19,11 +19,11 @@ export function AccountTab() {
     settingsService.getSystemSettings()
   )
 
-  useEffect(() => {
-    if (settings.theme !== theme) {
-      setSettings((prev) => ({ ...prev, theme: theme as SystemSettings["theme"] }))
-    }
-  }, [theme])
+  // Calculate theme during render instead of syncing in useEffect
+  const currentSettings: SystemSettings = {
+    ...settings,
+    theme: (theme as SystemSettings["theme"]) || settings.theme,
+  }
 
   const handleThemeChange = (value: SystemSettings["theme"]) => {
     setTheme(value)
@@ -110,12 +110,12 @@ export function AccountTab() {
                 <Button
                   key={value}
                   type="button"
-                  variant={settings.theme === value ? "default" : "outline"}
+                  variant={currentSettings.theme === value ? "default" : "outline"}
                   size="icon"
                   onClick={() => handleThemeChange(value)}
                   className={cn(
                     "h-10 w-10",
-                    settings.theme === value && "bg-primary text-primary-foreground"
+                    currentSettings.theme === value && "bg-primary text-primary-foreground"
                   )}
                   title={label}
                 >
@@ -145,7 +145,7 @@ export function AccountTab() {
             </div>
             <Switch
               id="notifications"
-              checked={settings.notifications}
+              checked={currentSettings.notifications}
               onCheckedChange={handleNotificationsChange}
             />
           </div>
@@ -159,7 +159,7 @@ export function AccountTab() {
             </div>
             <Switch
               id="emailNotifications"
-              checked={settings.emailNotifications}
+              checked={currentSettings.emailNotifications}
               onCheckedChange={handleEmailNotificationsChange}
             />
           </div>
