@@ -259,3 +259,23 @@ export const deleteProperty = mutation({
     return args.id;
   },
 });
+
+export const listByClient = query({
+  args: {
+    clientId: v.id("clients"),
+  },
+  handler: async (ctx, args) => {
+    const userId = await auth.getUserId(ctx);
+    if (!userId) {
+      throw new Error("Not authenticated");
+    }
+
+    const properties = await ctx.db.query("properties").collect();
+
+    return properties.filter(
+      (property) =>
+        property.status !== "inactive" &&
+        property.ownerIds.includes(args.clientId)
+    );
+  },
+});

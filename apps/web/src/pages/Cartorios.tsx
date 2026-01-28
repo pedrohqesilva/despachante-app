@@ -62,6 +62,17 @@ export default function Cartorios() {
   })
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isLoadingCep, setIsLoadingCep] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: boolean
+    code?: boolean
+    phone?: boolean
+    zipCode?: boolean
+    street?: boolean
+    number?: boolean
+    neighborhood?: boolean
+    city?: boolean
+    state?: boolean
+  }>({})
   const numberInputRef = useRef<HTMLInputElement>(null)
 
   const notaryOfficesData = useQuery(api.notaryOffices.list, {
@@ -168,6 +179,7 @@ export default function Cartorios() {
   const handleCloseDialog = () => {
     setIsDialogOpen(false)
     setEditingNotaryOffice(null)
+    setFieldErrors({})
     setFormData({
       name: "",
       code: "",
@@ -185,21 +197,36 @@ export default function Cartorios() {
   }
 
   const handleSubmit = async () => {
-    if (!formData.name.trim() || !formData.code.trim()) {
+    // Validação de campos obrigatórios
+    const errors: typeof fieldErrors = {}
+    if (!formData.name.trim()) errors.name = true
+    if (!formData.code.trim()) errors.code = true
+    if (!formData.phone.trim()) errors.phone = true
+    if (!formData.zipCode.trim()) errors.zipCode = true
+    if (!formData.street.trim()) errors.street = true
+    if (!formData.number.trim()) errors.number = true
+    if (!formData.neighborhood.trim()) errors.neighborhood = true
+    if (!formData.city.trim()) errors.city = true
+    if (!formData.state.trim()) errors.state = true
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       toast.error("Preencha os campos obrigatórios")
       return
     }
 
+    setFieldErrors({})
+
     setIsSubmitting(true)
     try {
       const locationData = {
-        zipCode: formData.zipCode.replace(/\D/g, "") || undefined,
-        street: formData.street.trim() || undefined,
-        number: formData.number.trim() || undefined,
+        zipCode: formData.zipCode.replace(/\D/g, ""),
+        street: formData.street.trim(),
+        number: formData.number.trim(),
         complement: formData.complement.trim() || undefined,
-        neighborhood: formData.neighborhood.trim() || undefined,
-        city: formData.city.trim() || undefined,
-        state: formData.state.trim() || undefined,
+        neighborhood: formData.neighborhood.trim(),
+        city: formData.city.trim(),
+        state: formData.state.trim(),
       }
 
       if (editingNotaryOffice) {
@@ -218,7 +245,7 @@ export default function Cartorios() {
           name: formData.name.trim(),
           code: formData.code.trim(),
           ...locationData,
-          phone: formData.phone.trim() || undefined,
+          phone: formData.phone.trim(),
           email: formData.email.trim() || undefined,
           status: "active",
         })
@@ -545,10 +572,16 @@ export default function Cartorios() {
                     id="code"
                     placeholder="Exemplo: 1º OFICIO"
                     value={formData.code}
-                    onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, code: e.target.value })
+                      if (fieldErrors.code) {
+                        setFieldErrors({ ...fieldErrors, code: false })
+                      }
+                    }}
                     autoComplete="off"
                     disabled={isSubmitting}
                     className="h-10"
+                    aria-invalid={fieldErrors.code}
                   />
                 </div>
                 <div className="space-y-2">
@@ -559,10 +592,16 @@ export default function Cartorios() {
                     id="name"
                     placeholder="Exemplo: Cartório de Registro de Imóveis"
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, name: e.target.value })
+                      if (fieldErrors.name) {
+                        setFieldErrors({ ...fieldErrors, name: false })
+                      }
+                    }}
                     autoComplete="off"
                     disabled={isSubmitting}
                     className="h-10"
+                    aria-invalid={fieldErrors.name}
                   />
                 </div>
                 {editingNotaryOffice && (
@@ -591,15 +630,23 @@ export default function Cartorios() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Contato</p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                  <Label htmlFor="phone" className="text-sm font-medium">
+                    Telefone <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="(00) 00000-0000"
                     value={formData.phone}
-                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    onChange={(e) => {
+                      setFormData({ ...formData, phone: e.target.value })
+                      if (fieldErrors.phone) {
+                        setFieldErrors({ ...fieldErrors, phone: false })
+                      }
+                    }}
                     autoComplete="off"
                     disabled={isSubmitting}
                     className="h-10"
+                    aria-invalid={fieldErrors.phone}
                   />
                 </div>
                 <div className="space-y-2">
@@ -623,7 +670,9 @@ export default function Cartorios() {
               <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Localização</p>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="zipCode" className="text-sm font-medium">CEP</Label>
+                  <Label htmlFor="zipCode" className="text-sm font-medium">
+                    CEP <span className="text-destructive">*</span>
+                  </Label>
                   <div className="relative w-32">
                     <Input
                       id="zipCode"
@@ -640,6 +689,9 @@ export default function Cartorios() {
                           }
                         }
                         setFormData({ ...formData, zipCode: formatted })
+                        if (fieldErrors.zipCode) {
+                          setFieldErrors({ ...fieldErrors, zipCode: false })
+                        }
                         if (cleaned.length === 8) {
                           fetchAddressByCep(cleaned)
                         }
@@ -648,6 +700,7 @@ export default function Cartorios() {
                       maxLength={9}
                       disabled={isSubmitting || isLoadingCep}
                       className="h-10 pr-8"
+                      aria-invalid={fieldErrors.zipCode}
                     />
                     {isLoadingCep && (
                       <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -656,28 +709,44 @@ export default function Cartorios() {
                 </div>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="col-span-3 space-y-2">
-                    <Label htmlFor="street" className="text-sm font-medium">Logradouro</Label>
+                    <Label htmlFor="street" className="text-sm font-medium">
+                      Logradouro <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="street"
                       placeholder="Rua Exemplo"
                       value={formData.street}
-                      onChange={(e) => setFormData({ ...formData, street: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, street: e.target.value })
+                        if (fieldErrors.street) {
+                          setFieldErrors({ ...fieldErrors, street: false })
+                        }
+                      }}
                       autoComplete="off"
                       disabled={isSubmitting}
                       className="h-10"
+                      aria-invalid={fieldErrors.street}
                     />
                   </div>
                   <div className="col-span-1 space-y-2">
-                    <Label htmlFor="number" className="text-sm font-medium">Número</Label>
+                    <Label htmlFor="number" className="text-sm font-medium">
+                      Número <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       ref={numberInputRef}
                       id="number"
                       placeholder="123"
                       value={formData.number}
-                      onChange={(e) => setFormData({ ...formData, number: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, number: e.target.value })
+                        if (fieldErrors.number) {
+                          setFieldErrors({ ...fieldErrors, number: false })
+                        }
+                      }}
                       autoComplete="off"
                       disabled={isSubmitting}
                       className="h-10"
+                      aria-invalid={fieldErrors.number}
                     />
                   </div>
                 </div>
@@ -695,42 +764,66 @@ export default function Cartorios() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="neighborhood" className="text-sm font-medium">Bairro</Label>
+                    <Label htmlFor="neighborhood" className="text-sm font-medium">
+                      Bairro <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="neighborhood"
                       placeholder="Centro"
                       value={formData.neighborhood}
-                      onChange={(e) => setFormData({ ...formData, neighborhood: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, neighborhood: e.target.value })
+                        if (fieldErrors.neighborhood) {
+                          setFieldErrors({ ...fieldErrors, neighborhood: false })
+                        }
+                      }}
                       autoComplete="off"
                       disabled={isSubmitting}
                       className="h-10"
+                      aria-invalid={fieldErrors.neighborhood}
                     />
                   </div>
                 </div>
                 <div className="grid grid-cols-4 gap-4">
                   <div className="col-span-3 space-y-2">
-                    <Label htmlFor="city" className="text-sm font-medium">Cidade</Label>
+                    <Label htmlFor="city" className="text-sm font-medium">
+                      Cidade <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="city"
                       placeholder="Belo Horizonte"
                       value={formData.city}
-                      onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, city: e.target.value })
+                        if (fieldErrors.city) {
+                          setFieldErrors({ ...fieldErrors, city: false })
+                        }
+                      }}
                       autoComplete="off"
                       disabled={isSubmitting}
                       className="h-10"
+                      aria-invalid={fieldErrors.city}
                     />
                   </div>
                   <div className="col-span-1 space-y-2">
-                    <Label htmlFor="state" className="text-sm font-medium">UF</Label>
+                    <Label htmlFor="state" className="text-sm font-medium">
+                      UF <span className="text-destructive">*</span>
+                    </Label>
                     <Input
                       id="state"
                       placeholder="MG"
                       value={formData.state}
-                      onChange={(e) => setFormData({ ...formData, state: e.target.value.toUpperCase() })}
+                      onChange={(e) => {
+                        setFormData({ ...formData, state: e.target.value.toUpperCase() })
+                        if (fieldErrors.state) {
+                          setFieldErrors({ ...fieldErrors, state: false })
+                        }
+                      }}
                       autoComplete="off"
                       maxLength={2}
                       disabled={isSubmitting}
                       className="h-10 uppercase"
+                      aria-invalid={fieldErrors.state}
                     />
                   </div>
                 </div>
@@ -749,10 +842,8 @@ export default function Cartorios() {
                   <Loader2 className="mr-2 size-4 animate-spin" />
                   Salvando...
                 </>
-              ) : editingNotaryOffice ? (
-                "Salvar alterações"
               ) : (
-                "Criar cartório"
+                "Salvar"
               )}
             </Button>
           </div>

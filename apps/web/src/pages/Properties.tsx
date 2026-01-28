@@ -71,7 +71,7 @@ function PropertyRow({
   getStatusLabel: (status: PropertyStatus) => string
   onView: (property: Property) => void
   onEdit: (property: Property) => void
-  onDelete: (property: Property) => void
+  onDelete: (property: Property) => Promise<void>
 }) {
   const [isTooltipOpen, setIsTooltipOpen] = useState(false)
 
@@ -177,6 +177,19 @@ export default function Properties() {
   const [ownerSearch, setOwnerSearch] = useState("")
   const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false)
   const [isSearchingClients, setIsSearchingClients] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{
+    zipCode?: boolean
+    street?: boolean
+    number?: boolean
+    neighborhood?: boolean
+    city?: boolean
+    state?: boolean
+    type?: boolean
+    area?: boolean
+    value?: boolean
+    ownerIds?: boolean
+  }>({})
   const [newPropertyForm, setNewPropertyForm] = useState({
     zipCode: "",
     street: "",
@@ -269,7 +282,7 @@ export default function Properties() {
     }
   }
 
-  const handleDelete = async (property: Property) => {
+  const handleDelete = async (property: Property): Promise<void> => {
     try {
       await deletePropertyMutation({ id: property._id })
       toast.success("Imóvel excluído com sucesso")
@@ -280,7 +293,7 @@ export default function Properties() {
   }
 
   const handleView = (property: Property) => {
-    toast.info(`Visualizando imóvel: ${property.address}`)
+    toast.info(`Visualizando imóvel: ${property.street}, ${property.number}`)
     // TODO: Implementar modal de visualização
   }
 
@@ -339,21 +352,26 @@ export default function Properties() {
 
   const handleCreateProperty = async (skipDuplicateCheck?: boolean) => {
     const shouldSkipCheck = skipDuplicateCheck ?? false
-    if (
-      !newPropertyForm.zipCode.trim() ||
-      !newPropertyForm.street.trim() ||
-      !newPropertyForm.number.trim() ||
-      !newPropertyForm.neighborhood.trim() ||
-      !newPropertyForm.city.trim() ||
-      !newPropertyForm.state ||
-      !newPropertyForm.type ||
-      !newPropertyForm.area.trim() ||
-      !newPropertyForm.value.trim() ||
-      newPropertyForm.ownerIds.length === 0
-    ) {
-      toast.error("Preencha todos os campos obrigatórios")
+
+    // Validação de campos obrigatórios
+    const errors: typeof fieldErrors = {}
+    if (!newPropertyForm.zipCode.trim()) errors.zipCode = true
+    if (!newPropertyForm.street.trim()) errors.street = true
+    if (!newPropertyForm.number.trim()) errors.number = true
+    if (!newPropertyForm.neighborhood.trim()) errors.neighborhood = true
+    if (!newPropertyForm.city.trim()) errors.city = true
+    if (!newPropertyForm.state) errors.state = true
+    if (!newPropertyForm.type) errors.type = true
+    if (!newPropertyForm.area.trim()) errors.area = true
+    if (!newPropertyForm.value.trim()) errors.value = true
+    if (newPropertyForm.ownerIds.length === 0) errors.ownerIds = true
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       return
     }
+
+    setFieldErrors({})
 
     // Check for duplicates if creating new property
     if (!editingProperty && !shouldSkipCheck && duplicateCheck?.duplicate) {
@@ -361,6 +379,7 @@ export default function Properties() {
       return
     }
 
+    setIsSubmitting(true)
     try {
       const propertyData = {
         zipCode: newPropertyForm.zipCode.replace(/\D/g, ""),
@@ -370,7 +389,7 @@ export default function Properties() {
         neighborhood: newPropertyForm.neighborhood.trim(),
         city: newPropertyForm.city.trim(),
         state: newPropertyForm.state,
-        type: newPropertyForm.type,
+        type: newPropertyForm.type as PropertyType,
         area: Number(newPropertyForm.area),
         value: Number(newPropertyForm.value) / 100,
         ownerIds: newPropertyForm.ownerIds,
@@ -389,6 +408,7 @@ export default function Properties() {
       setIsNewPropertyDialogOpen(false)
       setIsConfirmDialogOpen(false)
       setEditingProperty(null)
+      setFieldErrors({})
       setNewPropertyForm({
         zipCode: "",
         street: "",
@@ -498,7 +518,7 @@ export default function Properties() {
   // Filtro de clientes com busca case-insensitive e accent-insensitive
   const filteredClients = useMemo(() => {
     if (!activeClients?.clients) return []
-    
+
     if (!ownerSearch.trim()) {
       return activeClients.clients
     }
@@ -518,11 +538,11 @@ export default function Properties() {
       )
 
       // Busca por CPF/CNPJ
-      const taxIdMatch = searchCleaned.length > 0 && 
+      const taxIdMatch = searchCleaned.length > 0 &&
         clientTaxIdCleaned.includes(searchCleaned)
 
       // Busca por telefone
-      const phoneMatch = searchCleaned.length > 0 && 
+      const phoneMatch = searchCleaned.length > 0 &&
         clientPhoneCleaned.length > 0 &&
         clientPhoneCleaned.includes(searchCleaned)
 
@@ -545,6 +565,9 @@ export default function Properties() {
         ...newPropertyForm,
         ownerIds: [...newPropertyForm.ownerIds, clientId],
       })
+      if (fieldErrors.ownerIds) {
+        setFieldErrors({ ...fieldErrors, ownerIds: false })
+      }
     }
   }
 
@@ -602,7 +625,7 @@ export default function Properties() {
                 setPage(1)
               }}
               className="pl-9 pr-9"
-                          />
+            />
             {search && (
               <button
                 onClick={() => {
@@ -834,6 +857,7 @@ export default function Properties() {
           setIsNewPropertyDialogOpen(open)
           if (!open) {
             setEditingProperty(null)
+            setFieldErrors({})
             setNewPropertyForm({
               zipCode: "",
               street: "",
@@ -881,7 +905,10 @@ export default function Properties() {
                   <Label className="text-sm font-medium">
                     Tipo <span className="text-destructive">*</span>
                   </Label>
-                  <div className="grid grid-cols-4 gap-3">
+                  <div className={cn(
+                    "grid grid-cols-4 gap-3 p-1 rounded-xl transition-all duration-200",
+                    fieldErrors.type && "bg-destructive/5 ring-1 ring-destructive/20"
+                  )}>
                     {[
                       { value: "land" as PropertyType, icon: Trees, label: "Terreno" },
                       { value: "house" as PropertyType, icon: Home, label: "Casa" },
@@ -893,14 +920,17 @@ export default function Properties() {
                         <button
                           key={value}
                           type="button"
-                          onClick={() =>
+                          onClick={() => {
                             setNewPropertyForm({ ...newPropertyForm, type: value })
-                          }
+                            if (fieldErrors.type) {
+                              setFieldErrors({ ...fieldErrors, type: false })
+                            }
+                          }}
                           className={cn(
                             "relative flex flex-col items-center justify-center gap-2 p-4 rounded-xl text-center transition-all cursor-pointer aspect-square",
                             isSelected
                               ? "border-2 border-primary bg-primary/10 shadow-sm"
-                              : "border border-border bg-accent/50 hover:bg-accent hover:border-border"
+                              : "border border-border bg-accent/50 hover:bg-accent hover:border-muted-foreground/30"
                           )}
                         >
                           <div
@@ -945,8 +975,12 @@ export default function Properties() {
                         onChange={(e) => {
                           const rawValue = e.target.value.replace(/\D/g, "")
                           setNewPropertyForm({ ...newPropertyForm, area: rawValue })
+                          if (fieldErrors.area) {
+                            setFieldErrors({ ...fieldErrors, area: false })
+                          }
                         }}
-                                                className="h-10 pr-10"
+                        className="h-10 pr-10"
+                        aria-invalid={fieldErrors.area}
                       />
                       <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-muted-foreground select-none pointer-events-none">
                         m²
@@ -968,8 +1002,12 @@ export default function Properties() {
                         onChange={(e) => {
                           const cleaned = e.target.value.replace(/\D/g, "")
                           handleCurrencyChange(cleaned)
+                          if (fieldErrors.value) {
+                            setFieldErrors({ ...fieldErrors, value: false })
+                          }
                         }}
-                                                className="h-10 pl-9"
+                        className="h-10 pl-9"
+                        aria-invalid={fieldErrors.value}
                       />
                     </div>
                   </div>
@@ -992,9 +1030,15 @@ export default function Properties() {
                       id="zipCode"
                       placeholder="00000-000"
                       value={newPropertyForm.zipCode}
-                      onChange={(e) => handleZipCodeChange(e.target.value)}
-                                            maxLength={9}
+                      onChange={(e) => {
+                        handleZipCodeChange(e.target.value)
+                        if (fieldErrors.zipCode) {
+                          setFieldErrors({ ...fieldErrors, zipCode: false })
+                        }
+                      }}
+                      maxLength={9}
                       className="h-10 pr-8"
+                      aria-invalid={fieldErrors.zipCode}
                     />
                     {isLoadingCep && (
                       <Loader2 className="absolute right-2 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
@@ -1010,10 +1054,14 @@ export default function Properties() {
                       id="street"
                       placeholder="Rua Exemplo"
                       value={newPropertyForm.street}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewPropertyForm({ ...newPropertyForm, street: e.target.value })
-                      }
-                                            className="h-10"
+                        if (fieldErrors.street) {
+                          setFieldErrors({ ...fieldErrors, street: false })
+                        }
+                      }}
+                      className="h-10"
+                      aria-invalid={fieldErrors.street}
                     />
                   </div>
                   <div className="col-span-1 space-y-2">
@@ -1025,10 +1073,14 @@ export default function Properties() {
                       id="number"
                       placeholder="123"
                       value={newPropertyForm.number}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewPropertyForm({ ...newPropertyForm, number: e.target.value })
-                      }
-                                            className="h-10"
+                        if (fieldErrors.number) {
+                          setFieldErrors({ ...fieldErrors, number: false })
+                        }
+                      }}
+                      className="h-10"
+                      aria-invalid={fieldErrors.number}
                     />
                   </div>
                 </div>
@@ -1044,7 +1096,7 @@ export default function Properties() {
                       onChange={(e) =>
                         setNewPropertyForm({ ...newPropertyForm, complement: e.target.value })
                       }
-                                            className="h-10"
+                      className="h-10"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1055,10 +1107,14 @@ export default function Properties() {
                       id="neighborhood"
                       placeholder="Centro"
                       value={newPropertyForm.neighborhood}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewPropertyForm({ ...newPropertyForm, neighborhood: e.target.value })
-                      }
-                                            className="h-10"
+                        if (fieldErrors.neighborhood) {
+                          setFieldErrors({ ...fieldErrors, neighborhood: false })
+                        }
+                      }}
+                      className="h-10"
+                      aria-invalid={fieldErrors.neighborhood}
                     />
                   </div>
                 </div>
@@ -1071,10 +1127,14 @@ export default function Properties() {
                       id="city"
                       placeholder="Belo Horizonte"
                       value={newPropertyForm.city}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewPropertyForm({ ...newPropertyForm, city: e.target.value })
-                      }
-                                            className="h-10"
+                        if (fieldErrors.city) {
+                          setFieldErrors({ ...fieldErrors, city: false })
+                        }
+                      }}
+                      className="h-10"
+                      aria-invalid={fieldErrors.city}
                     />
                   </div>
                   <div className="col-span-1 space-y-2">
@@ -1085,11 +1145,15 @@ export default function Properties() {
                       id="state"
                       placeholder="MG"
                       value={newPropertyForm.state}
-                      onChange={(e) =>
+                      onChange={(e) => {
                         setNewPropertyForm({ ...newPropertyForm, state: e.target.value.toUpperCase() })
-                      }
-                                            maxLength={2}
+                        if (fieldErrors.state) {
+                          setFieldErrors({ ...fieldErrors, state: false })
+                        }
+                      }}
+                      maxLength={2}
                       className="h-10 uppercase"
+                      aria-invalid={fieldErrors.state}
                     />
                   </div>
                 </div>
@@ -1108,6 +1172,7 @@ export default function Properties() {
                       variant="outline"
                       className="w-full justify-between h-10"
                       type="button"
+                      aria-invalid={fieldErrors.ownerIds}
                     >
                       <span className="text-muted-foreground">
                         {selectedOwners.length > 0
@@ -1215,11 +1280,19 @@ export default function Properties() {
             <Button
               variant="outline"
               onClick={() => setIsNewPropertyDialogOpen(false)}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button onClick={() => handleCreateProperty()}>
-              {editingProperty ? "Salvar alterações" : "Criar imóvel"}
+            <Button onClick={() => handleCreateProperty()} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -1257,11 +1330,19 @@ export default function Properties() {
               onClick={() => {
                 setIsConfirmDialogOpen(false)
               }}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button onClick={() => handleCreateProperty(true)}>
-              Sim, criar mesmo assim
+            <Button onClick={() => handleCreateProperty(true)} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Sim, criar mesmo assim"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

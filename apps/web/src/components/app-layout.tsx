@@ -10,7 +10,7 @@ export function AppLayout() {
                 <div className='flex flex-grow flex-col'>
                     <Outlet />
                 </div>
-                <AppFooter />
+                {/* <AppFooter /> */}
             </div>
         </div>
     )

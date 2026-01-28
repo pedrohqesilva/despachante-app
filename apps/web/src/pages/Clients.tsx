@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { api } from "../../convex/_generated/api"
 import { Id } from "../../convex/_generated/dataModel"
@@ -65,6 +66,7 @@ type SortField = "name" | "email" | "createdAt" | "status"
 type SortOrder = "asc" | "desc"
 
 export default function Clients() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<ClientStatus | "all">("all")
   const [page, setPage] = useState(1)
@@ -96,6 +98,16 @@ export default function Clients() {
   const [spouseSearch, setSpouseSearch] = useState("")
   const [isSpousePopoverOpen, setIsSpousePopoverOpen] = useState(false)
   const [isCreatingSpouse, setIsCreatingSpouse] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: boolean
+    email?: boolean
+    taxId?: boolean
+    phone?: boolean
+    maritalStatus?: boolean
+    propertyRegime?: boolean
+    spouseId?: boolean
+  }>({})
   const [spouseForm, setSpouseForm] = useState({
     name: "",
     email: "",
@@ -170,8 +182,7 @@ export default function Clients() {
   }
 
   const handleView = (client: Client) => {
-    toast.info(`Visualizando cliente: ${client.name}`)
-    // TODO: Implementar modal de visualização
+    navigate(`/clientes/${client._id}`)
   }
 
   const handleEdit = (client: Client) => {
@@ -293,6 +304,9 @@ export default function Clients() {
     setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
     setIsSpousePopoverOpen(false)
     setSpouseSearch("")
+    if (fieldErrors.spouseId) {
+      setFieldErrors({ ...fieldErrors, spouseId: false })
+    }
   }
 
   const handleAddSpouse = () => {
@@ -304,15 +318,36 @@ export default function Clients() {
     // Limpa spouseId existente pois estamos criando um novo
     setNewClientForm({ ...newClientForm, spouseId: null })
     setIsCreatingSpouse(false)
+    if (fieldErrors.spouseId) {
+      setFieldErrors({ ...fieldErrors, spouseId: false })
+    }
     toast.success("Cônjuge adicionado. Será criado ao salvar o cliente.")
   }
 
   const handleCreateClient = async (skipDuplicateCheck?: boolean) => {
     const shouldSkipCheck = skipDuplicateCheck ?? false
-    if (!newClientForm.name.trim() || !newClientForm.email.trim() || !newClientForm.taxId.trim()) {
+
+    // Validação de campos obrigatórios
+    const errors: typeof fieldErrors = {}
+    if (!newClientForm.name.trim()) errors.name = true
+    if (!newClientForm.email.trim()) errors.email = true
+    if (!newClientForm.taxId.trim()) errors.taxId = true
+    if (!newClientForm.phone.trim()) errors.phone = true
+    if (!newClientForm.maritalStatus) errors.maritalStatus = true
+
+    // Validação condicional para estado civil que requer cônjuge
+    if (requiresSpouse(newClientForm.maritalStatus)) {
+      if (!newClientForm.propertyRegime) errors.propertyRegime = true
+      if (!newClientForm.spouseId && !spouseForm.name.trim()) errors.spouseId = true
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors)
       toast.error("Preencha todos os campos obrigatórios")
       return
     }
+
+    setFieldErrors({})
 
     // Check for duplicates if creating new client
     if (!editingClient && !shouldSkipCheck && duplicateCheck) {
@@ -336,7 +371,7 @@ export default function Clients() {
           email: spouseForm.email.trim(),
           phone: spouseForm.phone.replace(/\D/g, "") || undefined,
           taxId: spouseForm.taxId.replace(/\D/g, ""),
-          status: "pending",
+          status: "active",
           fatherName: spouseForm.fatherName.trim() || undefined,
           motherName: spouseForm.motherName.trim() || undefined,
           maritalStatus: newClientForm.maritalStatus as MaritalStatus,
@@ -354,7 +389,7 @@ export default function Clients() {
           id: editingClient._id,
           name: newClientForm.name.trim(),
           email: newClientForm.email.trim(),
-          phone: newClientForm.phone.replace(/\D/g, "") || undefined,
+          phone: newClientForm.phone.replace(/\D/g, ""),
           taxId: newClientForm.taxId.replace(/\D/g, ""),
           fatherName: newClientForm.fatherName.trim() || undefined,
           motherName: newClientForm.motherName.trim() || undefined,
@@ -369,9 +404,9 @@ export default function Clients() {
         await createClientMutation({
           name: newClientForm.name.trim(),
           email: newClientForm.email.trim(),
-          phone: newClientForm.phone.replace(/\D/g, "") || undefined,
+          phone: newClientForm.phone.replace(/\D/g, ""),
           taxId: newClientForm.taxId.replace(/\D/g, ""),
-          status: "pending",
+          status: "active",
           fatherName: newClientForm.fatherName.trim() || undefined,
           motherName: newClientForm.motherName.trim() || undefined,
           maritalStatus: newClientForm.maritalStatus || undefined,
@@ -384,6 +419,7 @@ export default function Clients() {
       setIsConfirmDialogOpen(false)
       setEditingClient(null)
       setDuplicateFields({})
+      setFieldErrors({})
       setNewClientForm({
         name: "",
         email: "",
@@ -400,6 +436,8 @@ export default function Clients() {
     } catch (error) {
       toast.error(editingClient ? "Erro ao atualizar cliente" : "Erro ao criar cliente")
       console.error(error)
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -624,7 +662,11 @@ export default function Clients() {
                 </TableRow>
               ) : (
                 clients.map((client) => (
-                  <TableRow key={client._id} className="hover:bg-muted/50">
+                  <TableRow
+                    key={client._id}
+                    className="hover:bg-muted/50 cursor-pointer"
+                    onClick={() => navigate(`/clientes/${client._id}`)}
+                  >
                     <TableCell className="font-semibold text-text-primary">{client.name}</TableCell>
                     <TableCell className="text-text-secondary">{client.email}</TableCell>
                     <TableCell className="text-text-tertiary">
@@ -711,6 +753,7 @@ export default function Clients() {
           setIsNewClientDialogOpen(open)
           if (!open) {
             setEditingClient(null)
+            setFieldErrors({})
             setNewClientForm({
               name: "",
               email: "",
@@ -760,11 +803,15 @@ export default function Clients() {
                     id="name"
                     placeholder="Nome completo"
                     value={newClientForm.name}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setNewClientForm({ ...newClientForm, name: e.target.value })
-                    }
+                      if (fieldErrors.name) {
+                        setFieldErrors({ ...fieldErrors, name: false })
+                      }
+                    }}
                     autoComplete="off"
                     className="h-10"
+                    aria-invalid={fieldErrors.name}
                   />
                 </div>
                 <div className="space-y-2">
@@ -775,10 +822,16 @@ export default function Clients() {
                     id="taxId"
                     placeholder="000.000.000-00 ou 00.000.000/0000-00"
                     value={newClientForm.taxId}
-                    onChange={(e) => handleTaxIdChange(e.target.value)}
+                    onChange={(e) => {
+                      handleTaxIdChange(e.target.value)
+                      if (fieldErrors.taxId) {
+                        setFieldErrors({ ...fieldErrors, taxId: false })
+                      }
+                    }}
                     autoComplete="off"
                     maxLength={18}
                     className="h-10"
+                    aria-invalid={fieldErrors.taxId}
                   />
                 </div>
                 <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Filiação</p>
@@ -828,23 +881,35 @@ export default function Clients() {
                     type="email"
                     placeholder="email@exemplo.com"
                     value={newClientForm.email}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       setNewClientForm({ ...newClientForm, email: e.target.value })
-                    }
+                      if (fieldErrors.email) {
+                        setFieldErrors({ ...fieldErrors, email: false })
+                      }
+                    }}
                     autoComplete="off"
                     className="h-10"
+                    aria-invalid={fieldErrors.email}
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="phone" className="text-sm font-medium">Telefone</Label>
+                  <Label htmlFor="phone" className="text-sm font-medium">
+                    Telefone <span className="text-destructive">*</span>
+                  </Label>
                   <Input
                     id="phone"
                     placeholder="(00) 00000-0000"
                     value={newClientForm.phone}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    onChange={(e) => {
+                      handlePhoneChange(e.target.value)
+                      if (fieldErrors.phone) {
+                        setFieldErrors({ ...fieldErrors, phone: false })
+                      }
+                    }}
                     autoComplete="off"
                     maxLength={15}
                     className="h-10"
+                    aria-invalid={fieldErrors.phone}
                   />
                 </div>
               </div>
@@ -852,9 +917,14 @@ export default function Clients() {
 
             {/* Marital Status Section */}
             <div className="space-y-4">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Estado Civil</p>
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Estado Civil <span className="text-destructive">*</span>
+              </p>
               <div className="space-y-4">
-                <div className="grid grid-cols-5 gap-2">
+                <div className={cn(
+                  "grid grid-cols-5 gap-2 p-1 rounded-xl transition-all duration-200",
+                  fieldErrors.maritalStatus && "bg-destructive/5 ring-1 ring-destructive/20"
+                )}>
                   {MARITAL_STATUS_OPTIONS.map(({ value, icon: Icon, label }) => {
                     const isSelected = newClientForm.maritalStatus === value
                     return (
@@ -870,6 +940,9 @@ export default function Clients() {
                               : "",
                             spouseId: requiresSpouse(value) ? newClientForm.spouseId : null,
                           })
+                          if (fieldErrors.maritalStatus) {
+                            setFieldErrors({ ...fieldErrors, maritalStatus: false })
+                          }
                           if (!requiresSpouse(value)) {
                             setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
                           }
@@ -878,7 +951,7 @@ export default function Clients() {
                           "relative flex flex-col items-center justify-center gap-1.5 p-3 rounded-xl text-center transition-all cursor-pointer aspect-square",
                           isSelected
                             ? "border-2 border-primary bg-primary/10 shadow-sm"
-                            : "border border-border bg-accent/50 hover:bg-accent hover:border-border"
+                            : "border border-border bg-accent/50 hover:bg-accent hover:border-muted-foreground/30"
                         )}
                       >
                         <div
@@ -912,14 +985,22 @@ export default function Clients() {
                 {/* Property Regime Selection */}
                 {requiresSpouse(newClientForm.maritalStatus) && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">Regime de Bens</Label>
+                    <Label className="text-sm font-medium">
+                      Regime de Bens <span className="text-destructive">*</span>
+                    </Label>
                     <Select
                       value={newClientForm.propertyRegime}
-                      onValueChange={(value) =>
+                      onValueChange={(value) => {
                         setNewClientForm({ ...newClientForm, propertyRegime: value as PropertyRegime })
-                      }
+                        if (fieldErrors.propertyRegime) {
+                          setFieldErrors({ ...fieldErrors, propertyRegime: false })
+                        }
+                      }}
                     >
-                      <SelectTrigger className="w-full !h-10">
+                      <SelectTrigger
+                        className="w-full h-10"
+                        aria-invalid={fieldErrors.propertyRegime}
+                      >
                         <SelectValue placeholder="Selecione o regime de bens" />
                       </SelectTrigger>
                       <SelectContent>
@@ -936,7 +1017,9 @@ export default function Clients() {
                 {/* Spouse Selection */}
                 {requiresSpouse(newClientForm.maritalStatus) && (
                   <div className="space-y-3">
-                    <Label className="text-sm font-medium">Cônjuge</Label>
+                    <Label className="text-sm font-medium">
+                      Cônjuge <span className="text-destructive">*</span>
+                    </Label>
 
                     {/* Spouse Search Popover - Hidden when spouse is selected */}
                     {!selectedSpouse && !spouseForm.name && (
@@ -946,6 +1029,7 @@ export default function Clients() {
                             variant="outline"
                             className="w-full justify-between h-10"
                             type="button"
+                            aria-invalid={fieldErrors.spouseId}
                           >
                             <span className="text-muted-foreground">
                               Selecione o cônjuge
@@ -953,91 +1037,91 @@ export default function Clients() {
                             <ChevronDown className="h-4 w-4 opacity-50" />
                           </Button>
                         </PopoverTrigger>
-                      <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
-                        <div className="flex items-center border-b px-3">
-                          <Search className="h-4 w-4 shrink-0 opacity-50" />
-                          <Input
-                            placeholder="Buscar cliente..."
-                            value={spouseSearch}
-                            onChange={(e) => setSpouseSearch(e.target.value)}
-                            className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
-                            autoComplete="off"
-                          />
-                        </div>
-                        <div className="max-h-[300px] overflow-y-auto">
-                          {/* Ação: Criar novo */}
-                          <div className="p-1">
-                            <div
-                              className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
-                              onClick={() => {
-                                setIsSpousePopoverOpen(false)
-                                setIsCreatingSpouse(true)
-                              }}
-                            >
-                              <div className="size-8 rounded-md bg-primary/10 flex items-center justify-center">
-                                <Plus className="h-4 w-4 text-primary" />
-                              </div>
-                              <div className="flex-1">
-                                <p className="text-sm font-medium">Criar novo cliente</p>
-                                <p className="text-xs text-muted-foreground">Adicionar como cônjuge</p>
+                        <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
+                          <div className="flex items-center border-b px-3">
+                            <Search className="h-4 w-4 shrink-0 opacity-50" />
+                            <Input
+                              placeholder="Buscar cliente..."
+                              value={spouseSearch}
+                              onChange={(e) => setSpouseSearch(e.target.value)}
+                              className="h-10 border-0 bg-transparent dark:bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 px-2"
+                              autoComplete="off"
+                            />
+                          </div>
+                          <div className="max-h-[300px] overflow-y-auto">
+                            {/* Ação: Criar novo */}
+                            <div className="p-1">
+                              <div
+                                className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
+                                onClick={() => {
+                                  setIsSpousePopoverOpen(false)
+                                  setIsCreatingSpouse(true)
+                                }}
+                              >
+                                <div className="size-8 rounded-md bg-primary/10 flex items-center justify-center">
+                                  <Plus className="h-4 w-4 text-primary" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium">Criar novo cliente</p>
+                                  <p className="text-xs text-muted-foreground">Adicionar como cônjuge</p>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Separador com label */}
-                          <div className="px-2 py-1.5">
-                            <p className="text-xs font-medium text-muted-foreground px-2">Clientes existentes</p>
-                          </div>
+                            {/* Separador com label */}
+                            <div className="px-2 py-1.5">
+                              <p className="text-xs font-medium text-muted-foreground px-2">Clientes existentes</p>
+                            </div>
 
-                          {/* Lista de resultados */}
-                          <div className="p-1 pt-0">
-                            {spouseSearchResults === undefined ? (
-                              <div className="flex items-center justify-center py-6">
-                                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                              </div>
-                            ) : spouseSearchResults.length === 0 ? (
-                              <p className="py-6 text-center text-sm text-muted-foreground">
-                                Nenhum cliente encontrado.
-                              </p>
-                            ) : (
-                              spouseSearchResults.map((client) => {
-                                const isSelected = newClientForm.spouseId === client._id
-                                const hasSpouse = !!client.spouseId
-                                return (
-                                  <div
-                                    key={client._id}
-                                    className={cn(
-                                      "flex items-center gap-2 px-2 py-2 rounded-md",
-                                      hasSpouse
-                                        ? "opacity-50 cursor-not-allowed"
-                                        : "hover:bg-accent cursor-pointer"
-                                    )}
-                                    onClick={() => !hasSpouse && handleSelectSpouse(client._id)}
-                                  >
-                                    <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
-                                      <span className="text-xs font-medium">
-                                        {client.name.charAt(0).toUpperCase()}
-                                      </span>
+                            {/* Lista de resultados */}
+                            <div className="p-1 pt-0">
+                              {spouseSearchResults === undefined ? (
+                                <div className="flex items-center justify-center py-6">
+                                  <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                                </div>
+                              ) : spouseSearchResults.length === 0 ? (
+                                <p className="py-6 text-center text-sm text-muted-foreground">
+                                  Nenhum cliente encontrado.
+                                </p>
+                              ) : (
+                                spouseSearchResults.map((client) => {
+                                  const isSelected = newClientForm.spouseId === client._id
+                                  const hasSpouse = !!client.spouseId
+                                  return (
+                                    <div
+                                      key={client._id}
+                                      className={cn(
+                                        "flex items-center gap-2 px-2 py-2 rounded-md",
+                                        hasSpouse
+                                          ? "opacity-50 cursor-not-allowed"
+                                          : "hover:bg-accent cursor-pointer"
+                                      )}
+                                      onClick={() => !hasSpouse && handleSelectSpouse(client._id)}
+                                    >
+                                      <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                                        <span className="text-xs font-medium">
+                                          {client.name.charAt(0).toUpperCase()}
+                                        </span>
+                                      </div>
+                                      <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-medium truncate">{client.name}</p>
+                                        <p className="text-xs text-muted-foreground">
+                                          {hasSpouse ? "Já possui cônjuge vinculado" : formatTaxId(client.taxId)}
+                                        </p>
+                                      </div>
+                                      {hasSpouse && (
+                                        <Heart className="h-3.5 w-3.5 text-rose-500 shrink-0" />
+                                      )}
+                                      {isSelected && (
+                                        <Check className="h-4 w-4 text-primary shrink-0" />
+                                      )}
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                      <p className="text-sm font-medium truncate">{client.name}</p>
-                                      <p className="text-xs text-muted-foreground">
-                                        {hasSpouse ? "Já possui cônjuge vinculado" : formatTaxId(client.taxId)}
-                                      </p>
-                                    </div>
-                                    {hasSpouse && (
-                                      <Heart className="h-3.5 w-3.5 text-rose-500 shrink-0" />
-                                    )}
-                                    {isSelected && (
-                                      <Check className="h-4 w-4 text-primary shrink-0" />
-                                    )}
-                                  </div>
-                                )
-                              })
-                            )}
+                                  )
+                                })
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </PopoverContent>
+                        </PopoverContent>
                       </Popover>
                     )}
 
@@ -1108,11 +1192,19 @@ export default function Clients() {
             <Button
               variant="outline"
               onClick={() => setIsNewClientDialogOpen(false)}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
-            <Button onClick={() => handleCreateClient()}>
-              {editingClient ? "Salvar alterações" : "Criar cliente"}
+            <Button onClick={() => handleCreateClient()} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Salvar"
+              )}
             </Button>
           </div>
         </DialogContent>
@@ -1161,13 +1253,22 @@ export default function Clients() {
                 setIsConfirmDialogOpen(false)
                 setDuplicateFields({})
               }}
+              disabled={isSubmitting}
             >
               Cancelar
             </Button>
             <Button
               onClick={() => handleCreateClient(true)}
+              disabled={isSubmitting}
             >
-              Sim, criar mesmo assim
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                "Sim, criar mesmo assim"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1294,11 +1395,18 @@ export default function Clients() {
             <Button variant="outline" onClick={() => {
               setIsCreatingSpouse(false)
               setSpouseForm({ name: "", email: "", phone: "", taxId: "", fatherName: "", motherName: "" })
-            }}>
+            }} disabled={isSubmitting}>
               Cancelar
             </Button>
-            <Button onClick={handleAddSpouse}>
-              Adicionar
+            <Button onClick={handleAddSpouse} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  Adicionando...
+                </>
+              ) : (
+                "Adicionar"
+              )}
             </Button>
           </div>
         </DialogContent>

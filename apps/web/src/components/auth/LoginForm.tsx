@@ -39,7 +39,7 @@ export function LoginForm() {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5" autoComplete="off">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <div className="rounded-lg bg-destructive/10 p-3 text-sm text-destructive border border-destructive/20">
           {error}
@@ -59,7 +59,7 @@ export function LoginForm() {
           required
           disabled={isLoading}
           className="h-11"
-          autoComplete="off"
+          autoComplete="email"
         />
       </div>
 
@@ -77,7 +77,7 @@ export function LoginForm() {
             required
             disabled={isLoading}
             className="h-11 pr-11"
-            autoComplete="off"
+            autoComplete="current-password"
           />
           <Button
             type="button"
