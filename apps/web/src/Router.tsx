@@ -9,6 +9,7 @@ import Properties from './pages/Properties'
 import PropertyDetails from './pages/PropertyDetails'
 import Settings from './pages/Settings'
 import NotaryOffices from './pages/NotaryOffices'
+import ContractTemplates from './pages/ContractTemplates'
 import StyleGuide from './pages/StyleGuide'
 
 export default function Router() {
@@ -23,6 +24,7 @@ export default function Router() {
                     <Route path="imoveis/:id" element={<PropertyDetails />} />
                     <Route path="configuracoes" element={<Settings />} />
                     <Route path="cadastros/cartorios" element={<NotaryOffices />} />
+                    <Route path="cadastros/modelos-contrato" element={<ContractTemplates />} />
                     <Route path="style-guide" element={<StyleGuide />} />
                 </Route>
                 <Route path="*" element={<NotMatch />} />

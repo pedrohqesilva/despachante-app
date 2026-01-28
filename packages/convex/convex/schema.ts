@@ -10,6 +10,8 @@ import {
   propertyTypeValidator,
   documentTypeValidator,
   propertyDocumentTypeValidator,
+  contractTemplateStatusValidator,
+  contractStatusValidator,
 } from "./lib/validators"
 
 export default defineSchema({
@@ -101,7 +103,35 @@ export default defineSchema({
     mimeType: v.string(),
     size: v.number(),
     createdAt: v.number(),
+    contractId: v.optional(v.id("contracts")),
   })
     .index("type", ["type"])
-    .index("propertyId", ["propertyId"]),
+    .index("propertyId", ["propertyId"])
+    .index("contractId", ["contractId"]),
+
+  contractTemplates: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    content: v.string(),
+    status: contractTemplateStatusValidator,
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  }).index("status", ["status"]),
+
+  contracts: defineTable({
+    name: v.string(),
+    templateId: v.id("contractTemplates"),
+    propertyId: v.id("properties"),
+    clientId: v.id("clients"),
+    notaryOfficeId: v.optional(v.id("notaryOffices")),
+    content: v.string(),
+    status: contractStatusValidator,
+    pdfStorageId: v.optional(v.id("_storage")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("propertyId", ["propertyId"])
+    .index("clientId", ["clientId"])
+    .index("templateId", ["templateId"])
+    .index("status", ["status"]),
 })

@@ -33,12 +33,19 @@ import { cn } from "@/lib/utils"
 import { TrashButton } from "@/components/ui/trash-button"
 import { toast } from "sonner"
 import { useQuery, useMutation } from "convex/react"
-import { propertyDocumentsApi } from "@/lib/api"
+import { propertyDocumentsApi, contractsApi } from "@/lib/api"
 import { PropertyDocumentType, PropertyDocument } from "@/types/property"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
+import {
+  CreateContractCard,
+  ContractDialog,
+  ContractDocumentRow,
+} from "@/features/contracts"
+import type { Contract } from "@/types/contract"
 
 interface DocumentsSectionProps {
   propertyId: Id<"properties">
+  ownerIds: Id<"clients">[]
 }
 
 interface DocumentRowProps {
@@ -149,7 +156,7 @@ function DocumentRow({ doc, onDelete }: DocumentRowProps) {
   )
 }
 
-export function DocumentsSection({ propertyId }: DocumentsSectionProps) {
+export function DocumentsSection({ propertyId, ownerIds }: DocumentsSectionProps) {
   const [isDragging, setIsDragging] = useState(false)
   const [isUploading, setIsUploading] = useState(false)
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -159,8 +166,10 @@ export function DocumentsSection({ propertyId }: DocumentsSectionProps) {
   const [currentFileIndex, setCurrentFileIndex] = useState(0)
   const [documentToDelete, setDocumentToDelete] = useState<{ id: Id<"propertyDocuments">; name: string } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [isContractDialogOpen, setIsContractDialogOpen] = useState(false)
 
   const documents = useQuery(propertyDocumentsApi.queries.listByProperty, { propertyId })
+  const contracts = useQuery(contractsApi.queries.listByProperty, { propertyId })
   const generateUploadUrl = useMutation(propertyDocumentsApi.mutations.generateUploadUrl)
   const createDocument = useMutation(propertyDocumentsApi.mutations.create)
   const removeDocument = useMutation(propertyDocumentsApi.mutations.remove)
@@ -290,11 +299,15 @@ export function DocumentsSection({ propertyId }: DocumentsSectionProps) {
     }
   }, [removeDocument, documentToDelete])
 
+  
   const hasDocuments = documents && documents.length > 0
+  const hasContracts = contracts && contracts.length > 0
   const uploadedTypes = new Set(documents?.map((doc) => doc.type) || [])
 
   return (
     <div className="space-y-6">
+      <CreateContractCard onClick={() => setIsContractDialogOpen(true)} />
+
       <div
         className={cn(
           "flex flex-col items-center justify-center rounded-xl border-2 border-dashed transition-all duration-200 p-6 py-12",
@@ -341,15 +354,24 @@ export function DocumentsSection({ propertyId }: DocumentsSectionProps) {
         )}
       </div>
 
-      {hasDocuments && (
+      {(hasDocuments || hasContracts) && (
         <div className="space-y-3">
-          {[...documents].sort((a, b) => b.createdAt - a.createdAt).map((doc) => (
-            <DocumentRow
-              key={doc._id}
-              doc={doc as PropertyDocument}
-              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+          {contracts?.map((contract) => (
+            <ContractDocumentRow
+              key={contract._id}
+              contract={contract as Contract}
             />
           ))}
+          {documents
+            ?.filter((doc) => doc.type !== "contract")
+            .sort((a, b) => b.createdAt - a.createdAt)
+            .map((doc) => (
+              <DocumentRow
+                key={doc._id}
+                doc={doc as PropertyDocument}
+                onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              />
+            ))}
         </div>
       )}
 
@@ -486,6 +508,13 @@ export function DocumentsSection({ propertyId }: DocumentsSectionProps) {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <ContractDialog
+        propertyId={propertyId}
+        ownerIds={ownerIds}
+        open={isContractDialogOpen}
+        onOpenChange={setIsContractDialogOpen}
+      />
     </div>
   )
 }

@@ -74,7 +74,7 @@ export default function PropertyDetails() {
       case "owners":
         return <OwnersSection propertyId={property._id} ownerIds={property.ownerIds} />
       case "documents":
-        return <DocumentsSection propertyId={property._id} />
+        return <DocumentsSection propertyId={property._id} ownerIds={property.ownerIds} />
       default:
         return null
     }

@@ -29,3 +29,13 @@ export const usersApi = {
   queries: api["users/queries"],
   mutations: api["users/mutations"],
 }
+
+export const contractTemplatesApi = {
+  queries: api["contractTemplates/queries"],
+  mutations: api["contractTemplates/mutations"],
+}
+
+export const contractsApi = {
+  queries: api["contracts/queries"],
+  mutations: api["contracts/mutations"],
+}

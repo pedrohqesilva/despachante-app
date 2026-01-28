@@ -63,7 +63,21 @@ export const propertyDocumentTypeValidator = v.union(
   v.literal("property_tax"),
   v.literal("lien_certificate"),
   v.literal("blueprint"),
+  v.literal("contract"),
   v.literal("other")
+)
+
+// Contract template status validators
+export const contractTemplateStatusValidator = v.union(
+  v.literal("active"),
+  v.literal("inactive")
+)
+
+// Contract status validators
+export const contractStatusValidator = v.union(
+  v.literal("draft"),
+  v.literal("final"),
+  v.literal("signed")
 )
 
 // Sort order validator
@@ -77,5 +91,7 @@ export type MaritalStatus = "single" | "common_law_marriage" | "married" | "wido
 export type PropertyRegime = "partial_communion" | "total_communion" | "total_separation"
 export type PropertyType = "house" | "apartment" | "land" | "building"
 export type DocumentType = "cpf" | "birth_certificate" | "marriage_certificate" | "identity" | "address_proof" | "other"
-export type PropertyDocumentType = "deed" | "registration" | "property_tax" | "lien_certificate" | "blueprint" | "other"
+export type PropertyDocumentType = "deed" | "registration" | "property_tax" | "lien_certificate" | "blueprint" | "contract" | "other"
+export type ContractTemplateStatus = "active" | "inactive"
+export type ContractStatus = "draft" | "final" | "signed"
 export type SortOrder = "asc" | "desc"

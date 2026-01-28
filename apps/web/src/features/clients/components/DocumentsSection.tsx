@@ -33,9 +33,10 @@ import { cn } from "@/lib/utils"
 import { TrashButton } from "@/components/ui/trash-button"
 import { toast } from "sonner"
 import { useQuery, useMutation } from "convex/react"
-import { clientDocumentsApi } from "@/lib/api"
+import { clientDocumentsApi, contractsApi } from "@/lib/api"
 import { DocumentType, ClientDocument } from "@/types/client"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
+import { ContractsList } from "@/features/contracts"
 
 interface DocumentsSectionProps {
   clientId: Id<"clients">
@@ -162,6 +163,7 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
 
   const documents = useQuery(clientDocumentsApi.queries.listByClient, { clientId })
   const missingDocuments = useQuery(clientDocumentsApi.queries.getMissingRequired, { clientId })
+  const clientContracts = useQuery(contractsApi.queries.listByClient, { clientId })
   const generateUploadUrl = useMutation(clientDocumentsApi.mutations.generateUploadUrl)
   const createDocument = useMutation(clientDocumentsApi.mutations.create)
   const removeDocument = useMutation(clientDocumentsApi.mutations.remove)
@@ -294,6 +296,7 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
 
   const hasDocuments = documents && documents.length > 0
   const hasMissingDocuments = missingDocuments && missingDocuments.length > 0
+  const hasContracts = clientContracts && clientContracts.length > 0
   const uploadedTypes = new Set(documents?.map((doc) => doc.type) || [])
 
   return (
@@ -362,6 +365,11 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
           </Button>
         )}
       </div>
+
+      {/* Lista de contratos finalizados */}
+      {hasContracts && (
+        <ContractsList contracts={clientContracts} />
+      )}
 
       {/* Lista de documentos */}
       {hasDocuments && (

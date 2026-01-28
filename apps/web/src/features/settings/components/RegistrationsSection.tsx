@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom"
-import { Building2, ChevronRight } from "lucide-react"
+import { Building2, ChevronRight, FileText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 export function RegistrationsSection() {
@@ -12,6 +12,13 @@ export function RegistrationsSection() {
       label: "Cartórios",
       description: "Gerencie os cartórios cadastrados no sistema",
       route: "/cadastros/cartorios",
+    },
+    {
+      id: "modelos-contrato",
+      icon: FileText,
+      label: "Modelos de Contrato",
+      description: "Crie e gerencie modelos de contrato com placeholders",
+      route: "/cadastros/modelos-contrato",
     },
   ]
 
