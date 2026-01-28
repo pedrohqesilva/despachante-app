@@ -183,3 +183,4 @@ When writing or reviewing code, always ensure:
 5. Code is self-explanatory - prefer refactoring over adding comments
 6. Complex business logic includes Portuguese comments explaining the "why"
 7. Design patterns follow the guidelines in `design.mdc` and `StyleGuide.tsx`
+8. **When editing any file, remove unnecessary comments** - delete obvious, redundant, or outdated comments that don't add value

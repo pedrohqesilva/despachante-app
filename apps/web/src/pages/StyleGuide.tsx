@@ -46,13 +46,12 @@ const sections = [
   { id: "components" as Section, label: "Componentes", icon: Component },
 ]
 
-// Component groups for navigation
 const componentGroups = [
-  { id: "group-botoes", label: "Botões" },
+  { id: "group-buttons", label: "Botões" },
   { id: "group-cards", label: "Cards" },
   { id: "group-dialogs", label: "Dialogs" },
   { id: "group-popovers", label: "Popovers" },
-  { id: "group-estados", label: "Estados" },
+  { id: "group-states", label: "Estados" },
 ]
 
 function ColorSwatch({
@@ -65,8 +64,8 @@ function ColorSwatch({
   className: string
 }) {
   return (
-    <div className="flex items-center gap-3">
-      <div className={cn("size-12 rounded-lg border border-border shadow-sm", className)} />
+    <div className="flex items-center gap-gap">
+      <div className={cn("size-icon-container-md rounded-lg border border-border shadow-sm", className)} />
       <div>
         <p className="font-medium text-text-primary">{name}</p>
         <p className="text-sm text-text-muted font-mono">{variable}</p>
@@ -122,8 +121,8 @@ export default function StyleGuide() {
   }
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden -mb-20">
-      {/* Header - Fixed */}
+    <div className="h-[calc(100vh-4rem)] flex flex-col overflow-hidden">
+      {/* Cabecalho */}
       <div className="border-b backdrop-blur shrink-0">
         <div className="px-6 py-6">
           <h1 className="text-2xl font-semibold tracking-tight">Style Guide</h1>
@@ -133,9 +132,9 @@ export default function StyleGuide() {
         </div>
       </div>
 
-      {/* Content */}
+      {/* Conteudo */}
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Sidebar - Fixed */}
+        {/* Sidebar */}
         <aside className="w-sidebar border-r border-border/50 shrink-0 overflow-y-auto">
           <nav className="p-4 space-y-1">
             {sections.map(({ id, label, icon: Icon }) => {
@@ -152,7 +151,7 @@ export default function StyleGuide() {
                       }
                     }}
                     className={cn(
-                      "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
+                      "w-full flex items-center gap-gap px-3 py-2.5 rounded-lg text-sm font-medium transition-colors cursor-pointer",
                       isActive
                         ? "bg-primary/10 text-primary border border-primary/20"
                         : "text-text-tertiary hover:text-text-primary hover:bg-accent"
@@ -165,13 +164,13 @@ export default function StyleGuide() {
                     <span className="flex-1 text-left">{label}</span>
                     {isComponents && (
                       <ChevronDown className={cn(
-                        "size-4 transition-transform",
+                        "size-icon-sm transition-transform",
                         componentsExpanded && isActive ? "rotate-180" : ""
                       )} />
                     )}
                   </button>
 
-                  {/* Submenu for Components */}
+                  {/* Submenu de componentes */}
                   {isComponents && componentsExpanded && isActive && (
                     <div className="ml-6 mt-1 space-y-0.5 border-l border-border/50 pl-3">
                       {componentGroups.map(({ id: groupId, label: groupLabel }) => (
@@ -196,7 +195,7 @@ export default function StyleGuide() {
           </nav>
         </aside>
 
-        {/* Main Content */}
+        {/* Conteudo principal */}
         <main ref={mainRef} className="flex-1 overflow-auto">
           <div className="max-w-content-max mx-auto p-8 space-y-8">
             {renderSection()}
@@ -217,10 +216,10 @@ function ColorsSection() {
         </p>
       </div>
 
-      {/* Base Colors */}
+      {/* Cores base */}
       <div>
         <SubsectionTitle>Cores Base</SubsectionTitle>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-gap">
           <ColorSwatch name="Background" variable="--background" className="bg-background" />
           <ColorSwatch name="Foreground" variable="--foreground" className="bg-foreground" />
           <ColorSwatch name="Primary" variable="--primary" className="bg-primary" />
@@ -232,10 +231,10 @@ function ColorsSection() {
         </div>
       </div>
 
-      {/* Status Colors */}
+      {/* Cores de status */}
       <div>
         <SubsectionTitle>Cores de Status</SubsectionTitle>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 gap-gap">
           <ColorSwatch name="Success" variable="--status-success" className="bg-status-success" />
           <ColorSwatch name="Warning" variable="--status-warning" className="bg-status-warning" />
           <ColorSwatch name="Error" variable="--status-error" className="bg-status-error" />
@@ -244,7 +243,7 @@ function ColorsSection() {
         </div>
       </div>
 
-      {/* Usage Example */}
+      {/* Exemplo de uso */}
       <div>
         <SubsectionTitle>Uso em Tailwind</SubsectionTitle>
         <CodeBlock>{`// Cores de status
@@ -281,7 +280,7 @@ function StatusSection() {
         </p>
       </div>
 
-      {/* Status Badges */}
+      {/* Badges de status */}
       <div className="space-y-3">
         {statuses.map(({ status, label, description }) => (
           <div key={status} className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
@@ -292,7 +291,7 @@ function StatusSection() {
         ))}
       </div>
 
-      {/* Usage Example */}
+      {/* Exemplo de uso */}
       <div>
         <SubsectionTitle>Uso do Componente</SubsectionTitle>
         <CodeBlock>{`import { StatusBadge } from "@/components/ui/status-badge"
@@ -318,7 +317,7 @@ function TypographySection() {
         </p>
       </div>
 
-      {/* Text Hierarchy */}
+      {/* Hierarquia de texto */}
       <div className="space-y-3">
         <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent">
           <div className="flex-1 min-w-0">
@@ -361,7 +360,7 @@ function TypographySection() {
         </div>
       </div>
 
-      {/* Font Weights */}
+      {/* Pesos de fonte */}
       <div>
         <SubsectionTitle>Pesos de Fonte</SubsectionTitle>
         <div className="space-y-3">
@@ -392,10 +391,10 @@ function IconsSection() {
         </p>
       </div>
 
-      {/* Icon Sizes */}
+      {/* Tamanhos de icone */}
       <div>
         <SubsectionTitle>Tamanhos</SubsectionTitle>
-        <div className="flex items-end gap-6">
+        <div className="flex items-end gap-section">
           {sizes.map((size) => (
             <div key={size} className="flex flex-col items-center gap-2">
               <IconContainer size={size} icon={Users} />
@@ -406,10 +405,10 @@ function IconsSection() {
         </div>
       </div>
 
-      {/* Icon Variants */}
+      {/* Variantes de icone */}
       <div>
         <SubsectionTitle>Variantes</SubsectionTitle>
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-section">
           <div className="flex flex-col items-center gap-2">
             <IconContainer size="md" icon={Bell} variant="default" />
             <span className="text-sm text-text-muted">Default</span>
@@ -425,7 +424,7 @@ function IconsSection() {
         </div>
       </div>
 
-      {/* Usage Example */}
+      {/* Exemplo de uso */}
       <div>
         <SubsectionTitle>Uso do Componente</SubsectionTitle>
         <CodeBlock>{`import { IconContainer } from "@/components/ui/icon-container"
@@ -442,10 +441,10 @@ import { Users, Bell, Shield } from "lucide-react"
 <IconContainer icon={Settings} variant="muted" />`}</CodeBlock>
       </div>
 
-      {/* CSS Variables */}
+      {/* Variaveis CSS */}
       <div>
         <SubsectionTitle>Tokens de Tamanho</SubsectionTitle>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-2 gap-gap">
           <div className="p-card rounded-xl bg-accent/50">
             <code className="text-sm font-mono">size-icon-sm: 1rem (16px)</code>
           </div>
@@ -480,7 +479,7 @@ function SpacingSection() {
         </p>
       </div>
 
-      {/* Spacing Tokens */}
+      {/* Tokens de padding */}
       <div>
         <SubsectionTitle>Padding de Cards</SubsectionTitle>
         <div className="space-y-3">
@@ -508,7 +507,7 @@ function SpacingSection() {
         </div>
       </div>
 
-      {/* Card Height */}
+      {/* Altura de cards */}
       <div>
         <SubsectionTitle>Altura Mínima de Cards</SubsectionTitle>
         <div className="space-y-3">
@@ -522,7 +521,7 @@ function SpacingSection() {
         </div>
       </div>
 
-      {/* Gap */}
+      {/* Gap entre elementos */}
       <div>
         <SubsectionTitle>Gap entre Elementos</SubsectionTitle>
         <div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent">
@@ -534,7 +533,7 @@ function SpacingSection() {
         </div>
       </div>
 
-      {/* Usage Example */}
+      {/* Exemplo de uso */}
       <div>
         <SubsectionTitle>Uso em Tailwind</SubsectionTitle>
         <CodeBlock>{`// Padding de cards
@@ -570,7 +569,7 @@ function LayoutSection() {
         </p>
       </div>
 
-      {/* Layout Tokens */}
+      {/* Tokens de layout */}
       <div>
         <SubsectionTitle>Dimensões</SubsectionTitle>
         <div className="space-y-3">
@@ -591,7 +590,7 @@ function LayoutSection() {
         </div>
       </div>
 
-      {/* Usage in Tailwind */}
+      {/* Uso em Tailwind */}
       <div>
         <SubsectionTitle>Uso em Tailwind</SubsectionTitle>
         <CodeBlock>{`// Largura do sidebar
@@ -611,25 +610,25 @@ className="size-icon-md"
 className="size-icon-lg"`}</CodeBlock>
       </div>
 
-      {/* Page Structure */}
+      {/* Estrutura de pagina */}
       <div>
         <SubsectionTitle>Estrutura de Página</SubsectionTitle>
-        <CodeBlock>{`// Padrão de página com header
+        <CodeBlock>{`// Padrao de pagina com header
 <div className="flex-1 flex flex-col">
-  {/* Header */}
+  {/* Cabecalho */}
   <div className="border-b backdrop-blur">
     <div className="px-6 py-6 flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Título</h1>
-        <p className="text-sm text-muted-foreground mt-1">Descrição</p>
+        <h1 className="text-2xl font-semibold tracking-tight">Titulo</h1>
+        <p className="text-sm text-muted-foreground mt-1">Descricao</p>
       </div>
-      <Button>Ação</Button>
+      <Button>Acao</Button>
     </div>
   </div>
 
-  {/* Content */}
+  {/* Conteudo */}
   <div className="flex-1 space-y-4 p-6">
-    {/* Conteúdo */}
+    {/* Conteudo da pagina */}
   </div>
 </div>`}</CodeBlock>
       </div>
@@ -661,14 +660,12 @@ function ComponentsSection() {
         </p>
       </div>
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          BOTÕES
-          ═══════════════════════════════════════════════════════════════════════ */}
-      <GroupTitle id="group-botoes">Botões</GroupTitle>
+      {/* Secao de botoes */}
+      <GroupTitle id="group-buttons">Botões</GroupTitle>
 
-      <div id="botoes">
+      <div id="buttons">
         <SubsectionTitle>Botões</SubsectionTitle>
-        <div className="flex flex-wrap gap-3">
+        <div className="flex flex-wrap gap-gap">
           <Button>Primary</Button>
           <Button variant="secondary">Secondary</Button>
           <Button variant="outline">Outline</Button>
@@ -679,9 +676,7 @@ function ComponentsSection() {
 
       <GroupDivider />
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          CARDS
-          ═══════════════════════════════════════════════════════════════════════ */}
+      {/* Secao de cards */}
       <GroupTitle id="group-cards">Cards</GroupTitle>
 
       <div id="card-button">
@@ -712,7 +707,7 @@ function ComponentsSection() {
         </div>
       </div>
 
-      <div id="card-navegacao">
+      <div id="card-navigation">
         <SubsectionTitle>Card de Navegação</SubsectionTitle>
         <button className="w-full flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-primary/30 hover:bg-primary/5 transition-all text-left cursor-pointer group">
           <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0 group-hover:border-primary/30 group-hover:bg-primary/10 transition-colors">
@@ -739,7 +734,7 @@ function ComponentsSection() {
         </div>
       </div>
 
-      <div id="cards-selecionaveis">
+      <div id="selectable-cards">
         <SubsectionTitle>Cards Selecionáveis</SubsectionTitle>
         <div className="space-y-3">
           {[
@@ -777,8 +772,8 @@ function ComponentsSection() {
                   <p className="text-sm text-muted-foreground">{description}</p>
                 </div>
                 {isSelected && (
-                  <div className="size-6 rounded-full bg-primary flex items-center justify-center shrink-0">
-                    <Check className="size-4 text-primary-foreground" />
+                  <div className="size-icon-container-sm rounded-full bg-primary flex items-center justify-center shrink-0">
+                    <Check className="size-icon-sm text-primary-foreground" />
                   </div>
                 )}
               </button>
@@ -787,41 +782,39 @@ function ComponentsSection() {
         </div>
       </div>
 
-      <div id="estrutura-cards">
+      <div id="card-structure">
         <SubsectionTitle>Estrutura Padronizada de Cards</SubsectionTitle>
         <p className="text-text-secondary mb-4">
           TODOS os cards de configurações DEVEM seguir esta estrutura exata:
         </p>
         <CodeBlock>{`<div className="flex items-center gap-gap p-card min-h-card rounded-xl bg-accent/50 border border-transparent hover:border-border transition-colors">
-  {/* Icon Container */}
+  {/* Container do icone */}
   <div className="size-icon-container-md rounded-xl bg-background border border-border flex items-center justify-center shrink-0">
     <Icon className="size-icon-md text-text-tertiary" />
   </div>
 
-  {/* Text Content */}
+  {/* Conteudo de texto */}
   <div className="flex-1 min-w-0">
     <p className="font-medium text-text-primary">{title}</p>
     <p className="text-sm text-muted-foreground">{description}</p>
   </div>
 
-  {/* Action (optional) */}
+  {/* Acao (opcional) */}
   <ActionElement className="shrink-0" />
 </div>`}</CodeBlock>
       </div>
 
       <GroupDivider />
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          DIALOGS
-          ═══════════════════════════════════════════════════════════════════════ */}
+      {/* Secao de dialogs */}
       <GroupTitle id="group-dialogs">Dialogs</GroupTitle>
 
-      <div id="dialog-formulario">
+      <div id="dialog-form">
         <SubsectionTitle>Dialog de Formulário</SubsectionTitle>
         <p className="text-text-secondary mb-4">
           Estrutura padronizada para dialogs de criação/edição:
         </p>
-        <div className="rounded-lg border border-border bg-secondary shadow-xl max-w-lg p-6 space-y-4">
+        <div className="rounded-lg border border-border bg-secondary shadow-xl max-w-content-max p-6 space-y-4">
           <div className="flex items-center gap-gap">
             <div className="size-icon-container-md rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
               <Building2 className="size-icon-md text-primary" />
@@ -841,19 +834,19 @@ function ComponentsSection() {
               </div>
             </div>
           </div>
-          <div className="flex items-center justify-end gap-3 pt-2">
+          <div className="flex items-center justify-end gap-gap pt-2">
             <Button variant="outline">Cancelar</Button>
             <Button>Criar item</Button>
           </div>
         </div>
       </div>
 
-      <div id="dialog-confirmacao">
+      <div id="dialog-confirmation">
         <SubsectionTitle>Dialog de Confirmação</SubsectionTitle>
         <p className="text-text-secondary mb-4">
           Estrutura padronizada para dialogs de confirmação de ações destrutivas:
         </p>
-        <div className="rounded-xl border border-border overflow-hidden bg-secondary p-6 space-y-4 max-w-lg">
+        <div className="rounded-xl border border-border overflow-hidden bg-secondary p-6 space-y-4 max-w-content-max">
           <div className="space-y-2">
             <p className="text-lg font-semibold">Confirmar exclusão</p>
             <p className="text-sm text-muted-foreground">
@@ -861,7 +854,7 @@ function ComponentsSection() {
               <strong>Nome do Cliente</strong>? Esta ação não pode ser desfeita.
             </p>
           </div>
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-gap">
             <Button variant="outline">Cancelar</Button>
             <Button variant="destructive">Excluir</Button>
           </div>
@@ -870,25 +863,21 @@ function ComponentsSection() {
 
       <GroupDivider />
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          POPOVERS
-          ═══════════════════════════════════════════════════════════════════════ */}
+      {/* Secao de popovers */}
       <GroupTitle id="group-popovers">Popovers</GroupTitle>
 
       <PopoversSection />
 
       <GroupDivider />
 
-      {/* ═══════════════════════════════════════════════════════════════════════
-          ESTADOS
-          ═══════════════════════════════════════════════════════════════════════ */}
-      <GroupTitle id="group-estados">Estados</GroupTitle>
+      {/* Secao de estados */}
+      <GroupTitle id="group-states">Estados</GroupTitle>
 
       <div id="empty-state">
         <SubsectionTitle>Empty State</SubsectionTitle>
-        <div className="flex flex-col items-center justify-center gap-3 py-12 group cursor-pointer">
-          <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
-            <Users className="size-8 text-primary" />
+        <div className="flex flex-col items-center justify-center gap-gap py-12 group cursor-pointer">
+          <div className="size-icon-container-lg rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center group-hover:bg-primary/15 group-hover:border-primary/30 transition-colors">
+            <Users className="size-icon-lg text-primary" />
           </div>
           <div className="text-center">
             <p className="text-base font-semibold text-text-secondary group-hover:text-text-primary transition-colors">
@@ -931,13 +920,13 @@ function PopoversSection() {
 
   return (
     <>
-      <div id="popover-selecao">
+      <div id="popover-selection">
         <SubsectionTitle>Popover de Seleção</SubsectionTitle>
         <p className="text-text-secondary mb-4">
           Popover com busca e lista de seleção. Usado para selecionar cônjuge, proprietários, etc.
         </p>
 
-        <div className="max-w-md">
+        <div className="w-full max-w-md">
           <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
             <PopoverTrigger asChild>
               <Button
@@ -950,12 +939,12 @@ function PopoversSection() {
                     ? `${selectedItems.length} item(ns) selecionado(s)`
                     : "Selecione os itens"}
                 </span>
-                <ChevronDown className="h-4 w-4 opacity-50" />
+                <ChevronDown className="size-icon-sm opacity-50" />
               </Button>
             </PopoverTrigger>
             <PopoverContent className="p-0" align="start" sideOffset={-40} style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}>
               <div className="flex items-center border-b px-3">
-                <Search className="h-4 w-4 shrink-0 opacity-50" />
+                <Search className="size-icon-sm shrink-0 opacity-50" />
                 <Input
                   placeholder="Buscar..."
                   value={searchValue}
@@ -965,11 +954,11 @@ function PopoversSection() {
                 />
               </div>
               <div className="max-h-[300px] overflow-y-auto">
-                {/* Ação: Criar novo (opcional) */}
+                {/* Acao: Criar novo (opcional) */}
                 <div className="p-1">
                   <div className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer">
-                    <div className="size-8 rounded-md bg-primary/10 flex items-center justify-center">
-                      <Plus className="h-4 w-4 text-primary" />
+                    <div className="size-icon-container-sm rounded-md bg-primary/10 flex items-center justify-center">
+                      <Plus className="size-icon-sm text-primary" />
                     </div>
                     <div className="flex-1">
                       <p className="text-sm font-medium">Criar novo item</p>
@@ -983,7 +972,7 @@ function PopoversSection() {
                   <p className="text-xs font-medium text-muted-foreground px-2">Itens existentes</p>
                 </div>
 
-                {/* Lista de resultados */}
+                {/* Lista de resultados da busca */}
                 <div className="p-1 pt-0">
                   {filteredClients.length === 0 ? (
                     <p className="py-6 text-center text-sm text-muted-foreground">
@@ -997,8 +986,10 @@ function PopoversSection() {
                           key={client.id}
                           className="flex items-center gap-2 px-2 py-2 rounded-md hover:bg-accent cursor-pointer"
                           onClick={() => toggleItem(client.id)}
+                          role="option"
+                          aria-selected={selectedItems.includes(client.id)}
                         >
-                          <div className="size-8 rounded-full bg-muted flex items-center justify-center shrink-0">
+                          <div className="size-icon-container-sm rounded-full bg-muted flex items-center justify-center shrink-0">
                             <span className="text-xs font-medium">
                               {client.name.charAt(0).toUpperCase()}
                             </span>
@@ -1010,7 +1001,7 @@ function PopoversSection() {
                             </p>
                           </div>
                           {isSelected && (
-                            <Check className="h-4 w-4 text-primary shrink-0" />
+                            <Check className="size-icon-sm text-primary shrink-0" />
                           )}
                         </div>
                       )
@@ -1021,7 +1012,7 @@ function PopoversSection() {
             </PopoverContent>
           </Popover>
 
-          {/* Card de selecionados */}
+          {/* Card com itens selecionados */}
           {selectedItems.length > 0 && (
             <div className="mt-3 rounded-xl border border-border/50 overflow-hidden divide-y divide-border/50">
               {mockClients
@@ -1029,9 +1020,9 @@ function PopoversSection() {
                 .map((client) => (
                   <div
                     key={client.id}
-                    className="group flex items-center gap-3 px-3 py-2.5 bg-accent/30 hover:bg-accent/60 transition-colors"
+                    className="group flex items-center gap-gap px-3 py-2.5 bg-accent/30 hover:bg-accent/60 transition-colors"
                   >
-                    <div className="size-8 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
+                    <div className="size-icon-container-sm rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
                       <span className="text-sm font-semibold text-primary">
                         {client.name.charAt(0).toUpperCase()}
                       </span>
@@ -1046,10 +1037,11 @@ function PopoversSection() {
                     </div>
                     <button
                       type="button"
-                      className="size-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
+                      className="size-icon-container-sm rounded-lg flex items-center justify-center text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors cursor-pointer opacity-0 group-hover:opacity-100"
                       onClick={() => toggleItem(client.id)}
+                      aria-label={`Remover ${client.name}`}
                     >
-                      <X className="size-4" />
+                      <X className="size-icon-sm" />
                     </button>
                   </div>
                 ))}
@@ -1058,7 +1050,7 @@ function PopoversSection() {
         </div>
       </div>
 
-      <div id="popover-estrutura">
+      <div id="popover-structure">
         <SubsectionTitle>Estrutura do Popover de Seleção</SubsectionTitle>
         <p className="text-text-secondary mb-4">
           Estrutura padronizada para popovers com busca e seleção:
@@ -1069,7 +1061,7 @@ function PopoversSection() {
       <span className="text-muted-foreground">
         {selected ? "X selecionado(s)" : "Selecione..."}
       </span>
-      <ChevronDown className="h-4 w-4 opacity-50" />
+      <ChevronDown className="size-icon-sm opacity-50" />
     </Button>
   </PopoverTrigger>
   <PopoverContent
@@ -1078,9 +1070,9 @@ function PopoversSection() {
     sideOffset={-40}
     style={{ width: 'var(--radix-popover-trigger-width)', minWidth: '300px' }}
   >
-    {/* Search Input */}
+    {/* Campo de busca */}
     <div className="flex items-center border-b px-3">
-      <Search className="h-4 w-4 shrink-0 opacity-50" />
+      <Search className="size-icon-sm shrink-0 opacity-50" />
       <Input
         placeholder="Buscar..."
         className="h-10 border-0 bg-transparent dark:bg-transparent
@@ -1090,22 +1082,22 @@ function PopoversSection() {
     </div>
 
     <div className="max-h-[300px] overflow-y-auto">
-      {/* Ação: Criar novo (opcional) */}
+      {/* Acao: Criar novo (opcional) */}
       <div className="p-1">
         <div className="flex items-center gap-2 px-2 py-2 rounded-md
                         hover:bg-accent cursor-pointer">
-          <div className="size-8 rounded-md bg-primary/10
+          <div className="size-icon-container-sm rounded-md bg-primary/10
                           flex items-center justify-center">
-            <Plus className="h-4 w-4 text-primary" />
+            <Plus className="size-icon-sm text-primary" />
           </div>
           <div className="flex-1">
             <p className="text-sm font-medium">Criar novo</p>
-            <p className="text-xs text-muted-foreground">Descrição</p>
+            <p className="text-xs text-muted-foreground">Descricao</p>
           </div>
         </div>
       </div>
 
-      {/* Label da seção */}
+      {/* Label da secao */}
       <div className="px-2 py-1.5">
         <p className="text-xs font-medium text-muted-foreground px-2">
           Itens existentes
@@ -1117,7 +1109,7 @@ function PopoversSection() {
         {items.map((item) => (
           <div className="flex items-center gap-2 px-2 py-2 rounded-md
                           hover:bg-accent cursor-pointer">
-            <div className="size-8 rounded-full bg-muted
+            <div className="size-icon-container-sm rounded-full bg-muted
                             flex items-center justify-center shrink-0">
               <span className="text-xs font-medium">{initial}</span>
             </div>
@@ -1126,7 +1118,7 @@ function PopoversSection() {
               <p className="text-xs text-muted-foreground">{subtitle}</p>
             </div>
             {isSelected && (
-              <Check className="h-4 w-4 text-primary shrink-0" />
+              <Check className="size-icon-sm text-primary shrink-0" />
             )}
           </div>
         ))}
@@ -1136,12 +1128,12 @@ function PopoversSection() {
 </Popover>`}</CodeBlock>
       </div>
 
-      <div id="popover-regras">
+      <div id="popover-rules">
         <SubsectionTitle>Regras de Uso</SubsectionTitle>
         <div className="space-y-3">
-          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
-            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="size-3.5 text-status-success" />
+          <div className="flex items-start gap-gap p-card rounded-xl bg-accent/50">
+            <div className="size-icon-container-sm rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-icon-sm text-status-success" />
             </div>
             <div>
               <p className="font-medium text-text-primary">sideOffset={-40}</p>
@@ -1150,9 +1142,9 @@ function PopoversSection() {
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
-            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="size-3.5 text-status-success" />
+          <div className="flex items-start gap-gap p-card rounded-xl bg-accent/50">
+            <div className="size-icon-container-sm rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-icon-sm text-status-success" />
             </div>
             <div>
               <p className="font-medium text-text-primary">bg-transparent dark:bg-transparent</p>
@@ -1161,9 +1153,9 @@ function PopoversSection() {
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
-            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="size-3.5 text-status-success" />
+          <div className="flex items-start gap-gap p-card rounded-xl bg-accent/50">
+            <div className="size-icon-container-sm rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-icon-sm text-status-success" />
             </div>
             <div>
               <p className="font-medium text-text-primary">width: var(--radix-popover-trigger-width)</p>
@@ -1172,9 +1164,9 @@ function PopoversSection() {
               </p>
             </div>
           </div>
-          <div className="flex items-start gap-3 p-card rounded-xl bg-accent/50">
-            <div className="size-6 rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
-              <Check className="size-3.5 text-status-success" />
+          <div className="flex items-start gap-gap p-card rounded-xl bg-accent/50">
+            <div className="size-icon-container-sm rounded-full bg-status-success-muted flex items-center justify-center shrink-0 mt-0.5">
+              <Check className="size-icon-sm text-status-success" />
             </div>
             <div>
               <p className="font-medium text-text-primary">Avatar com inicial + nome + subtítulo</p>
