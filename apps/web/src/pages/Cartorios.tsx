@@ -1,6 +1,6 @@
 import { useState, useCallback, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { notaryOfficesApi } from "@/lib/api"
 import { toast } from "sonner"
 import { Search, Plus, Loader2, ArrowUpDown, ArrowUp, ArrowDown, Building2, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -75,7 +75,7 @@ export default function Cartorios() {
   }>({})
   const numberInputRef = useRef<HTMLInputElement>(null)
 
-  const notaryOfficesData = useQuery(api.notaryOffices.list, {
+  const notaryOfficesData = useQuery(notaryOfficesApi.queries.list, {
     page,
     pageSize,
     search: search || undefined,
@@ -84,9 +84,9 @@ export default function Cartorios() {
     sortOrder,
   })
 
-  const createMutation = useMutation(api.notaryOffices.create)
-  const updateMutation = useMutation(api.notaryOffices.update)
-  const deleteMutation = useMutation(api.notaryOffices.remove)
+  const createMutation = useMutation(notaryOfficesApi.mutations.create)
+  const updateMutation = useMutation(notaryOfficesApi.mutations.update)
+  const deleteMutation = useMutation(notaryOfficesApi.mutations.remove)
 
   const fetchAddressByCep = useCallback(async (cep: string) => {
     const cleanedCep = cep.replace(/\D/g, "")

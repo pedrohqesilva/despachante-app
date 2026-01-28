@@ -1,21 +1,23 @@
-import { query } from "./_generated/server";
-import { auth } from "./auth";
+import { query } from "../_generated/server"
+import { auth } from "../auth"
 
 export const getCurrentUser = query({
   args: {},
   handler: async (ctx) => {
-    const userId = await auth.getUserId(ctx);
+    const userId = await auth.getUserId(ctx)
     if (!userId) {
-      return null;
+      return null
     }
-    const user = await ctx.db.get(userId);
+
+    const user = await ctx.db.get(userId)
     if (!user) {
-      return null;
+      return null
     }
+
     return {
       _id: user._id,
       name: user.name ?? "",
       email: user.email ?? "",
-    };
+    }
   },
-});
+})

@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { usersApi } from "@/lib/api"
 import { settingsService } from "../services/settings.service"
 import type { UpdateProfileDTO } from "../types/settings.types"
 
@@ -8,7 +8,7 @@ export function useUpdateProfile() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const updateProfileMutation = useMutation(api.users.updateProfile)
+  const updateProfileMutation = useMutation(usersApi.mutations.updateProfile)
 
   const updateProfile = async (data: UpdateProfileDTO) => {
     setIsLoading(true)

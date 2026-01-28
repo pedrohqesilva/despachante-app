@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useParams, useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { clientsApi, clientDocumentsApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { User, Building2, FileText, ArrowLeft, Pencil, Search, Plus, X, Heart, ChevronDown, Check, Loader2, UserRound, HeartHandshake, Gem, CircleDashed, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -105,17 +105,17 @@ export default function ClientDetails() {
   })
 
   const client = useQuery(
-    api.clients.get,
+    clientsApi.queries.get,
     id ? { id: id as Id<"clients"> } : "skip"
   )
 
   const spouse = useQuery(
-    api.clients.get,
+    clientsApi.queries.get,
     client?.spouseId ? { id: client.spouseId } : "skip"
   )
 
   const spouseSearchResults = useQuery(
-    api.clients.searchExcluding,
+    clientsApi.queries.searchExcluding,
     requiresSpouse(editForm.maritalStatus) && isEditDialogOpen
       ? {
         query: spouseSearch.trim() || undefined,
@@ -125,19 +125,19 @@ export default function ClientDetails() {
   )
 
   const selectedSpouse = useQuery(
-    api.clients.get,
+    clientsApi.queries.get,
     editForm.spouseId ? { id: editForm.spouseId } : "skip"
   )
 
   const missingDocuments = useQuery(
-    api.clientDocuments.getMissingRequired,
+    clientDocumentsApi.queries.getMissingRequired,
     client ? { clientId: client._id } : "skip"
   )
 
   const hasMissingDocuments = missingDocuments && missingDocuments.length > 0
 
-  const updateClientMutation = useMutation(api.clients.update)
-  const createClientMutation = useMutation(api.clients.create)
+  const updateClientMutation = useMutation(clientsApi.mutations.update)
+  const createClientMutation = useMutation(clientsApi.mutations.create)
 
   const isLoading = client === undefined
 

@@ -1,5 +1,5 @@
 import { useQuery } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { propertiesApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { Building, Building2, Home, Trees, Plus, ExternalLink, LucideIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -25,8 +25,8 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 }
 
 export function PropertiesSection({ clientId }: PropertiesSectionProps) {
-  const properties = useQuery(api.properties.listByClient, { clientId })
-  const isLoading = properties === undefined
+  const propertiesData = useQuery(propertiesApi.queries.listByClient, { clientId })
+  const isLoading = propertiesData === undefined
 
   if (isLoading) {
     return (
@@ -46,7 +46,7 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
     )
   }
 
-  if (!properties || properties.length === 0) {
+  if (!propertiesData || propertiesData.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-12 px-4">
         <div className="size-16 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
@@ -70,7 +70,7 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-sm text-muted-foreground">
-          {properties.length} imóvel(is) vinculado(s)
+          {propertiesData.length} imóvel(is) vinculado(s)
         </p>
         <Button variant="outline" size="sm">
           <Plus className="size-4 mr-2" />
@@ -79,7 +79,7 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
       </div>
 
       <div className="space-y-3">
-        {properties.map((property) => {
+        {propertiesData.map((property) => {
           const typeConfig = TYPE_CONFIG[property.type] || { label: property.type, icon: Building2 }
           const statusConfig = STATUS_CONFIG[property.status] || STATUS_CONFIG.pending
           const TypeIcon = typeConfig.icon

@@ -20,7 +20,7 @@ import { Id } from "@despachante/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
 import { toast } from "sonner"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { clientDocumentsApi } from "@/lib/api"
 import { DocumentType, ClientDocument } from "@/types/client"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
 
@@ -58,7 +58,7 @@ const DOCUMENT_TYPES: { value: DocumentType; label: string }[] = [
 
 
 function DocumentRow({ doc, onDelete }: DocumentRowProps) {
-  const url = useQuery(api.clientDocuments.getUrl, { storageId: doc.storageId })
+  const url = useQuery(clientDocumentsApi.queries.getUrl, { storageId: doc.storageId })
   const config = DOCUMENT_TYPE_CONFIG[doc.type as DocumentType] || DOCUMENT_TYPE_CONFIG.other
   const Icon = config.icon
 
@@ -142,11 +142,11 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
   const [totalFiles, setTotalFiles] = useState(0)
   const [currentFileIndex, setCurrentFileIndex] = useState(0)
 
-  const documents = useQuery(api.clientDocuments.listByClient, { clientId })
-  const missingDocuments = useQuery(api.clientDocuments.getMissingRequired, { clientId })
-  const generateUploadUrl = useMutation(api.clientDocuments.generateUploadUrl)
-  const createDocument = useMutation(api.clientDocuments.create)
-  const removeDocument = useMutation(api.clientDocuments.remove)
+  const documents = useQuery(clientDocumentsApi.queries.listByClient, { clientId })
+  const missingDocuments = useQuery(clientDocumentsApi.queries.getMissingRequired, { clientId })
+  const generateUploadUrl = useMutation(clientDocumentsApi.mutations.generateUploadUrl)
+  const createDocument = useMutation(clientDocumentsApi.mutations.create)
+  const removeDocument = useMutation(clientDocumentsApi.mutations.remove)
 
   const handleDragOver = useCallback((e: DragEvent<HTMLDivElement>) => {
     e.preventDefault()

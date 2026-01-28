@@ -1,6 +1,6 @@
 import { useState } from "react"
 import { useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { usersApi } from "@/lib/api"
 import { settingsService } from "../services/settings.service"
 import type { ChangePasswordDTO } from "../types/settings.types"
 
@@ -8,7 +8,7 @@ export function useChangePassword() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   
-  const changePasswordMutation = useMutation(api.users.changePassword)
+  const changePasswordMutation = useMutation(usersApi.mutations.changePassword)
 
   const changePassword = async (data: ChangePasswordDTO) => {
     setIsLoading(true)

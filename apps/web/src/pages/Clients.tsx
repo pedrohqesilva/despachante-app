@@ -1,7 +1,7 @@
 import { useState } from "react"
 import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { clientsApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { toast } from "sonner"
 import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Users, X, User, Loader2, Heart, ChevronDown, Check, UserRound, HeartHandshake, Gem, CircleDashed } from "lucide-react"
@@ -118,7 +118,7 @@ export default function Clients() {
   })
 
   const clientsData = useQuery(
-    api.clients.list,
+    clientsApi.queries.list,
     {
       page,
       pageSize,
@@ -129,12 +129,12 @@ export default function Clients() {
     }
   )
 
-  const deleteClientMutation = useMutation(api.clients.deleteClient)
-  const createClientMutation = useMutation(api.clients.create)
-  const updateClientMutation = useMutation(api.clients.update)
+  const deleteClientMutation = useMutation(clientsApi.mutations.deleteClient)
+  const createClientMutation = useMutation(clientsApi.mutations.create)
+  const updateClientMutation = useMutation(clientsApi.mutations.update)
 
   const duplicateCheck = useQuery(
-    api.clients.checkDuplicates,
+    clientsApi.queries.checkDuplicates,
     isNewClientDialogOpen && !editingClient && newClientForm.name.trim() && newClientForm.email.trim() && newClientForm.taxId.trim()
       ? {
         name: newClientForm.name.trim(),
@@ -147,7 +147,7 @@ export default function Clients() {
 
   // Busca de cônjuge
   const spouseSearchResults = useQuery(
-    api.clients.searchExcluding,
+    clientsApi.queries.searchExcluding,
     requiresSpouse(newClientForm.maritalStatus)
       ? {
         query: spouseSearch.trim() || undefined,
@@ -158,7 +158,7 @@ export default function Clients() {
 
   // Dados do cônjuge selecionado
   const selectedSpouse = useQuery(
-    api.clients.get,
+    clientsApi.queries.get,
     newClientForm.spouseId ? { id: newClientForm.spouseId } : "skip"
   )
 

@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
 import { useQuery, useMutation } from "convex/react"
-import { api } from "@despachante/convex/_generated/api"
+import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
 import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -238,7 +238,7 @@ export default function Properties() {
   }, [])
 
   const propertiesData = useQuery(
-    api.properties.list,
+    propertiesApi.queries.list,
     {
       page,
       pageSize,
@@ -251,19 +251,19 @@ export default function Properties() {
   )
 
   const activeClients = useQuery(
-    api.clients.list,
+    clientsApi.queries.list,
     {
       page: 1,
       pageSize: 10000,
     }
   )
 
-  const deletePropertyMutation = useMutation(api.properties.deleteProperty)
-  const createPropertyMutation = useMutation(api.properties.create)
-  const updatePropertyMutation = useMutation(api.properties.update)
+  const deletePropertyMutation = useMutation(propertiesApi.mutations.deleteProperty)
+  const createPropertyMutation = useMutation(propertiesApi.mutations.create)
+  const updatePropertyMutation = useMutation(propertiesApi.mutations.update)
 
   const duplicateCheck = useQuery(
-    api.properties.checkDuplicates,
+    propertiesApi.queries.checkDuplicates,
     isNewPropertyDialogOpen && !editingProperty && newPropertyForm.street.trim() && newPropertyForm.number.trim() && newPropertyForm.zipCode.trim()
       ? {
         street: newPropertyForm.street.trim(),

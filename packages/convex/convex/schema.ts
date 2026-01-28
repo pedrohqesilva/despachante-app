@@ -1,9 +1,19 @@
-import { defineSchema, defineTable } from "convex/server";
-import { authTables } from "@convex-dev/auth/server";
-import { v } from "convex/values";
+import { defineSchema, defineTable } from "convex/server"
+import { authTables } from "@convex-dev/auth/server"
+import { v } from "convex/values"
+import {
+  clientStatusValidator,
+  notaryOfficeStatusValidator,
+  propertyStatusValidator,
+  maritalStatusValidator,
+  propertyRegimeValidator,
+  propertyTypeValidator,
+  documentTypeValidator,
+} from "./lib/validators"
 
 export default defineSchema({
   ...authTables,
+
   users: defineTable({
     name: v.optional(v.string()),
     email: v.optional(v.string()),
@@ -11,32 +21,15 @@ export default defineSchema({
     image: v.optional(v.string()),
     isAnonymous: v.optional(v.boolean()),
   }).index("email", ["email"]),
+
   clients: defineTable({
     name: v.string(),
     email: v.string(),
     phone: v.optional(v.string()),
     taxId: v.string(),
-    status: v.union(
-      v.literal("active"),
-      v.literal("inactive"),
-      v.literal("pending")
-    ),
-    maritalStatus: v.optional(
-      v.union(
-        v.literal("single"),
-        v.literal("common_law_marriage"),
-        v.literal("married"),
-        v.literal("widowed"),
-        v.literal("divorced")
-      )
-    ),
-    propertyRegime: v.optional(
-      v.union(
-        v.literal("partial_communion"),
-        v.literal("total_communion"),
-        v.literal("total_separation")
-      )
-    ),
+    status: clientStatusValidator,
+    maritalStatus: v.optional(maritalStatusValidator),
+    propertyRegime: v.optional(propertyRegimeValidator),
     spouseId: v.optional(v.id("clients")),
     weddingDate: v.optional(v.string()),
     fatherName: v.optional(v.string()),
@@ -48,6 +41,7 @@ export default defineSchema({
     .index("status", ["status"])
     .index("taxId", ["taxId"])
     .index("spouseId", ["spouseId"]),
+
   notaryOffices: defineTable({
     name: v.string(),
     code: v.string(),
@@ -60,15 +54,13 @@ export default defineSchema({
     state: v.optional(v.string()),
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
-    status: v.union(
-      v.literal("active"),
-      v.literal("inactive")
-    ),
+    status: notaryOfficeStatusValidator,
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("code", ["code"])
     .index("status", ["status"]),
+
   properties: defineTable({
     zipCode: v.string(),
     street: v.string(),
@@ -77,19 +69,10 @@ export default defineSchema({
     neighborhood: v.string(),
     city: v.string(),
     state: v.string(),
-    type: v.union(
-      v.literal("house"),
-      v.literal("apartment"),
-      v.literal("land"),
-      v.literal("building")
-    ),
+    type: propertyTypeValidator,
     area: v.number(),
     value: v.number(),
-    status: v.union(
-      v.literal("active"),
-      v.literal("inactive"),
-      v.literal("pending")
-    ),
+    status: propertyStatusValidator,
     ownerIds: v.array(v.id("clients")),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -98,21 +81,14 @@ export default defineSchema({
     .index("city", ["city"])
     .index("type", ["type"])
     .index("zipCode", ["zipCode"]),
+
   clientDocuments: defineTable({
     name: v.string(),
-    type: v.union(
-      v.literal("cpf"),
-      v.literal("birth_certificate"),
-      v.literal("marriage_certificate"),
-      v.literal("identity"),
-      v.literal("address_proof"),
-      v.literal("other")
-    ),
+    type: documentTypeValidator,
     storageId: v.id("_storage"),
     clientIds: v.array(v.id("clients")),
     mimeType: v.string(),
     size: v.number(),
     createdAt: v.number(),
-  })
-    .index("type", ["type"]),
-});
+  }).index("type", ["type"]),
+})

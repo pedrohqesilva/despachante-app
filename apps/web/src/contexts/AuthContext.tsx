@@ -1,7 +1,7 @@
 import { createContext, ReactNode, useContext, useEffect, useState } from "react";
 import { useAuthActions, useAuthToken } from "@convex-dev/auth/react";
 import { useQuery } from "convex/react";
-import { api } from "@despachante/convex/_generated/api";
+import { usersApi } from "@/lib/api";
 
 type AuthContextType = {
   isLoading: boolean;
@@ -23,7 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const authToken = useAuthToken();
 
   const currentUser = useQuery(
-    api.users.getCurrentUser,
+    usersApi.queries.getCurrentUser,
     authToken ? {} : "skip"
   );
   const [isAuthenticating, setIsAuthenticating] = useState(false);
