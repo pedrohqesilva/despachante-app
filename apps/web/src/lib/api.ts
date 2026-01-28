@@ -15,6 +15,11 @@ export const propertiesApi = {
   mutations: api["properties/mutations"],
 }
 
+export const propertyDocumentsApi = {
+  queries: api["propertyDocuments/queries"],
+  mutations: api["propertyDocuments/mutations"],
+}
+
 export const notaryOfficesApi = {
   queries: api["notaryOffices/queries"],
   mutations: api["notaryOffices/mutations"],

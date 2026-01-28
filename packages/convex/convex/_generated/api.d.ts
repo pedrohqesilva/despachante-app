@@ -31,6 +31,8 @@ import type * as properties_helpers from "../properties/helpers.js";
 import type * as properties_index from "../properties/index.js";
 import type * as properties_mutations from "../properties/mutations.js";
 import type * as properties_queries from "../properties/queries.js";
+import type * as propertyDocuments_mutations from "../propertyDocuments/mutations.js";
+import type * as propertyDocuments_queries from "../propertyDocuments/queries.js";
 import type * as users_index from "../users/index.js";
 import type * as users_mutations from "../users/mutations.js";
 import type * as users_queries from "../users/queries.js";
@@ -65,6 +67,8 @@ declare const fullApi: ApiFromModules<{
   "properties/index": typeof properties_index;
   "properties/mutations": typeof properties_mutations;
   "properties/queries": typeof properties_queries;
+  "propertyDocuments/mutations": typeof propertyDocuments_mutations;
+  "propertyDocuments/queries": typeof propertyDocuments_queries;
   "users/index": typeof users_index;
   "users/mutations": typeof users_mutations;
   "users/queries": typeof users_queries;

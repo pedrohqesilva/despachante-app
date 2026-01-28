@@ -2,6 +2,13 @@ import { Id } from "@despachante/convex/_generated/dataModel"
 
 export type PropertyType = "house" | "apartment" | "land" | "building"
 export type PropertyStatus = "active" | "inactive" | "pending"
+export type PropertyDocumentType =
+  | "deed"
+  | "registration"
+  | "property_tax"
+  | "lien_certificate"
+  | "blueprint"
+  | "other"
 
 export interface Property {
   _id: Id<"properties">
@@ -39,4 +46,15 @@ export interface PropertyListResponse {
   page: number
   pageSize: number
   totalPages: number
+}
+
+export interface PropertyDocument {
+  _id: Id<"propertyDocuments">
+  name: string
+  type: PropertyDocumentType
+  storageId: Id<"_storage">
+  propertyId: Id<"properties">
+  mimeType: string
+  size: number
+  createdAt: number
 }

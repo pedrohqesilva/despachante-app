@@ -9,6 +9,7 @@ import {
   propertyRegimeValidator,
   propertyTypeValidator,
   documentTypeValidator,
+  propertyDocumentTypeValidator,
 } from "./lib/validators"
 
 export default defineSchema({
@@ -91,4 +92,16 @@ export default defineSchema({
     size: v.number(),
     createdAt: v.number(),
   }).index("type", ["type"]),
+
+  propertyDocuments: defineTable({
+    name: v.string(),
+    type: propertyDocumentTypeValidator,
+    storageId: v.id("_storage"),
+    propertyId: v.id("properties"),
+    mimeType: v.string(),
+    size: v.number(),
+    createdAt: v.number(),
+  })
+    .index("type", ["type"])
+    .index("propertyId", ["propertyId"]),
 })

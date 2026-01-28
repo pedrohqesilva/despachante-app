@@ -46,13 +46,23 @@ export const propertyTypeValidator = v.union(
   v.literal("building")
 )
 
-// Document type validators
+// Document type validators (client documents)
 export const documentTypeValidator = v.union(
   v.literal("cpf"),
   v.literal("birth_certificate"),
   v.literal("marriage_certificate"),
   v.literal("identity"),
   v.literal("address_proof"),
+  v.literal("other")
+)
+
+// Property document type validators
+export const propertyDocumentTypeValidator = v.union(
+  v.literal("deed"),
+  v.literal("registration"),
+  v.literal("property_tax"),
+  v.literal("lien_certificate"),
+  v.literal("blueprint"),
   v.literal("other")
 )
 
@@ -67,4 +77,5 @@ export type MaritalStatus = "single" | "common_law_marriage" | "married" | "wido
 export type PropertyRegime = "partial_communion" | "total_communion" | "total_separation"
 export type PropertyType = "house" | "apartment" | "land" | "building"
 export type DocumentType = "cpf" | "birth_certificate" | "marriage_certificate" | "identity" | "address_proof" | "other"
+export type PropertyDocumentType = "deed" | "registration" | "property_tax" | "lien_certificate" | "blueprint" | "other"
 export type SortOrder = "asc" | "desc"
