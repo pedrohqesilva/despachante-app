@@ -1,6 +1,5 @@
 import { useState } from "react"
 import { User, Shield, Palette, Bell, Building2 } from "lucide-react"
-import { cn } from "@/lib/utils"
 import {
   ProfileSection,
   SecuritySection,
@@ -8,15 +7,16 @@ import {
   NotificationsSection,
   RegistrationsSection,
 } from "@/features/settings"
+import { PageSidebar, type SidebarSection } from "@/components/page-sidebar"
 
 type SettingsSection = "profile" | "security" | "appearance" | "notifications" | "registrations"
 
-const sections = [
-  { id: "profile" as const, label: "Perfil", icon: User, description: "Suas informações pessoais" },
-  { id: "security" as const, label: "Segurança", icon: Shield, description: "Senha e autenticação" },
-  { id: "appearance" as const, label: "Aparência", icon: Palette, description: "Tema e personalização" },
-  { id: "notifications" as const, label: "Notificações", icon: Bell, description: "Como você recebe alertas" },
-  { id: "registrations" as const, label: "Cadastros", icon: Building2, description: "Dados do sistema" },
+const sections: SidebarSection<SettingsSection>[] = [
+  { id: "profile", label: "Perfil", icon: User, description: "Suas informações pessoais" },
+  { id: "security", label: "Segurança", icon: Shield, description: "Senha e autenticação" },
+  { id: "appearance", label: "Aparência", icon: Palette, description: "Tema e personalização" },
+  { id: "notifications", label: "Notificações", icon: Bell, description: "Como você recebe alertas" },
+  { id: "registrations", label: "Cadastros", icon: Building2, description: "Dados do sistema" },
 ]
 
 export default function Settings() {
@@ -53,32 +53,13 @@ export default function Settings() {
       </div>
 
       <div className="flex-1 flex min-h-0">
-        {/* Sidebar Navigation */}
-        <aside className="w-sidebar border-r border-border/50 shrink-0">
-          <nav className="p-4 space-y-1">
-            {sections.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveSection(id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer border",
-                  activeSection === id
-                    ? "bg-primary/10 text-primary border-primary/20"
-                    : "text-text-tertiary hover:text-text-primary hover:bg-accent border-transparent"
-                )}
-              >
-                <Icon className={cn(
-                  "size-icon-sm",
-                  activeSection === id ? "text-primary" : "text-text-disabled"
-                )} />
-                {label}
-              </button>
-            ))}
-          </nav>
-        </aside>
+        <PageSidebar
+          sections={sections}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 min-h-0 overflow-auto">
           <div className="max-w-content-max mx-auto p-8">
             <div className="mb-8">
               <h2 className="text-lg font-semibold">{currentSection?.label}</h2>

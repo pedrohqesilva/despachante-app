@@ -3,8 +3,9 @@ import { useParams, useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { clientsApi, clientDocumentsApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
-import { User, Building2, FileText, ArrowLeft, Pencil, Search, Plus, X, Heart, ChevronDown, Check, Loader2, UserRound, HeartHandshake, Gem, CircleDashed, AlertCircle } from "lucide-react"
+import { User, Building2, FileText, ArrowLeft, Pencil, Search, Plus, X, ChevronDown, Check, Loader2, UserRound, HeartHandshake, Gem, CircleDashed, AlertCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { PageSidebar, type SidebarSection } from "@/components/page-sidebar"
 import { Button } from "@/components/ui/button"
 import { Skeleton } from "@/components/ui/skeleton"
 import { Input } from "@/components/ui/input"
@@ -39,10 +40,10 @@ import { MaritalStatus, PropertyRegime } from "@/types/client"
 
 type ClientSection = "overview" | "properties" | "documents"
 
-const sections = [
-  { id: "overview" as const, label: "Visão Geral", icon: User, description: "Dados cadastrais do cliente" },
-  { id: "documents" as const, label: "Documentos", icon: FileText, description: "Arquivos e certidões do cliente" },
-  { id: "properties" as const, label: "Imóveis", icon: Building2, description: "Imóveis em que o cliente consta como proprietário" },
+const baseSections: SidebarSection<ClientSection>[] = [
+  { id: "overview", label: "Visão Geral", icon: User, description: "Dados cadastrais do cliente" },
+  { id: "documents", label: "Documentos", icon: FileText, description: "Arquivos e certidões do cliente" },
+  { id: "properties", label: "Imóveis", icon: Building2, description: "Imóveis em que o cliente consta como proprietário" },
 ]
 
 const MARITAL_STATUS_OPTIONS = [
@@ -307,7 +308,14 @@ export default function ClientDetails() {
     }
   }
 
-  const currentSection = sections.find(s => s.id === activeSection)
+  const currentSection = baseSections.find(s => s.id === activeSection)
+
+  const sections: SidebarSection<ClientSection>[] = baseSections.map(section => ({
+    ...section,
+    alert: section.id === "documents" && hasMissingDocuments
+      ? <AlertCircle className="size-4 text-destructive" />
+      : undefined,
+  }))
 
   if (isLoading) {
     return (
@@ -383,35 +391,13 @@ export default function ClientDetails() {
       </div>
 
       <div className="flex-1 flex min-h-0 overflow-hidden">
-        {/* Sidebar Navigation */}
-        <aside className="w-sidebar border-r border-border/50 shrink-0">
-          <nav className="p-4 space-y-1">
-            {sections.map(({ id, label, icon: Icon }) => (
-              <button
-                key={id}
-                onClick={() => setActiveSection(id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all cursor-pointer border",
-                  activeSection === id
-                    ? "bg-primary/10 text-primary border-primary/20"
-                    : "text-text-tertiary hover:text-text-primary hover:bg-accent border-transparent"
-                )}
-              >
-                <Icon className={cn(
-                  "size-icon-sm",
-                  activeSection === id ? "text-primary" : "text-text-disabled"
-                )} />
-                {label}
-                {id === "documents" && hasMissingDocuments && (
-                  <AlertCircle className="size-4 text-destructive ml-auto" />
-                )}
-              </button>
-            ))}
-          </nav>
-        </aside>
+        <PageSidebar
+          sections={sections}
+          activeSection={activeSection}
+          onSectionChange={setActiveSection}
+        />
 
-        {/* Content Area */}
-        <main className="flex-1 overflow-auto">
+        <main className="flex-1 min-h-0 overflow-auto">
           <div className="max-w-content-max mx-auto p-8">
             <div className="flex items-start justify-between mb-8">
               <div>
