@@ -1,5 +1,5 @@
 import { useState, useCallback, DragEvent } from "react"
-import { FileText, Upload, Download, Trash2, AlertCircle, IdCard, FileCheck, Heart, MapPin } from "lucide-react"
+import { FileText, Upload, Download, AlertCircle, IdCard, FileCheck, Heart, MapPin } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
+import { TrashButton } from "@/components/ui/trash-button"
 import { toast } from "sonner"
 import { useQuery, useMutation } from "convex/react"
 import { clientDocumentsApi } from "@/lib/api"
@@ -30,7 +31,7 @@ interface DocumentsSectionProps {
 
 interface DocumentRowProps {
   doc: ClientDocument
-  onDelete: (id: Id<"clientDocuments">, e: React.MouseEvent) => void
+  onDelete: (id: Id<"clientDocuments">) => void
 }
 
 interface PendingFile {
@@ -97,7 +98,11 @@ function DocumentRow({ doc, onDelete }: DocumentRowProps) {
 
   return (
     <div
-      onClick={handlePreview}
+      onClick={(e) => {
+        const target = e.target as HTMLElement
+        if (target.closest('[data-actions]')) return
+        handlePreview()
+      }}
       className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all cursor-pointer border border-border bg-accent/50 hover:bg-accent hover:border-border group relative"
     >
       <div className="size-10 rounded-xl flex items-center justify-center shrink-0 bg-background border border-border text-text-tertiary">
@@ -111,23 +116,22 @@ function DocumentRow({ doc, onDelete }: DocumentRowProps) {
         <span className="text-xs text-muted-foreground">{formatFileSize(doc.size)}</span>
         <span className="text-xs text-muted-foreground/70">{formatDateOnly(doc.createdAt)}</span>
       </div>
-      <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+      <div data-actions className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10">
         <Button
           variant="ghost"
           size="icon"
           className="size-8"
-          onClick={handleDownload}
+          onClick={(e) => {
+            e.stopPropagation()
+            handleDownload(e)
+          }}
         >
           <Download className="size-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="size-8 text-destructive hover:text-destructive"
-          onClick={(e) => onDelete(doc._id, e)}
-        >
-          <Trash2 className="size-4" />
-        </Button>
+        <TrashButton
+          onClick={() => onDelete(doc._id)}
+          title="Remover documento"
+        />
       </div>
     </div>
   )
@@ -258,8 +262,7 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
     input.click()
   }, [openUploadDialog])
 
-  const handleDelete = useCallback(async (documentId: Id<"clientDocuments">, e: React.MouseEvent) => {
-    e.stopPropagation()
+  const handleDelete = useCallback(async (documentId: Id<"clientDocuments">) => {
     try {
       await removeDocument({ id: documentId })
       toast.success("Documento removido")

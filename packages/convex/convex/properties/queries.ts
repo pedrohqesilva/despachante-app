@@ -72,6 +72,31 @@ export const get = query({
   },
 })
 
+export const getWithOwners = query({
+  args: { id: v.id("properties") },
+  handler: async (ctx, args) => {
+    await requireAuth(ctx)
+
+    const property = await ctx.db.get(args.id)
+    if (!property) {
+      return null
+    }
+
+    const owners = await Promise.all(
+      property.ownerIds.map((ownerId) => ctx.db.get(ownerId))
+    )
+
+    const validOwners = owners.filter(
+      (owner): owner is NonNullable<typeof owner> => owner !== null
+    )
+
+    return {
+      ...property,
+      owners: validOwners,
+    }
+  },
+})
+
 export const search = query({
   args: {
     query: v.string(),

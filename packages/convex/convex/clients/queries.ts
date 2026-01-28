@@ -117,3 +117,18 @@ export const searchExcluding = query({
       .slice(0, 20)
   },
 })
+
+export const getByIds = query({
+  args: {
+    ids: v.array(v.id("clients")),
+  },
+  handler: async (ctx, args) => {
+    await requireAuth(ctx)
+
+    const clients = await Promise.all(args.ids.map((id) => ctx.db.get(id)))
+
+    return clients.filter(
+      (client): client is NonNullable<typeof client> => client !== null
+    )
+  },
+})

@@ -1,8 +1,9 @@
 import { useState, useEffect, useMemo, useCallback, useRef } from "react"
+import { useNavigate } from "react-router-dom"
 import { useQuery, useMutation } from "convex/react"
 import { propertiesApi, clientsApi } from "@/lib/api"
 import { toast } from "sonner"
-import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees } from "lucide-react"
+import { Search, Plus, ArrowUpDown, ArrowUp, ArrowDown, Building2, X, Loader2, Check, ChevronDown, Home, Building, Trees, Users, ExternalLink } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -35,12 +36,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover"
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
 import { Label } from "@/components/ui/label"
+import { TrashButton } from "@/components/ui/trash-button"
 import { PropertiesTableActions } from "@/components/properties/PropertiesTableActions"
 import { ExportButton } from "@/components/properties/ExportButton"
 import { formatZipCode, formatCurrency, formatArea, formatTaxId } from "@/lib/format"
@@ -59,9 +56,12 @@ function PropertyRow({
   getStatusBadgeVariant,
   getStatusBadgeClassName,
   getStatusLabel,
-  onView,
   onEdit,
   onDelete,
+  onRowClick,
+  onNavigateToClient,
+  onRemoveOwner,
+  isRemovingOwner,
 }: {
   property: Property
   owners: Client[]
@@ -69,101 +69,159 @@ function PropertyRow({
   getStatusBadgeVariant: (status: PropertyStatus) => "default" | "secondary" | "outline"
   getStatusBadgeClassName: (status: PropertyStatus) => string
   getStatusLabel: (status: PropertyStatus) => string
-  onView: (property: Property) => void
   onEdit: (property: Property) => void
   onDelete: (property: Property) => Promise<void>
+  onRowClick: (property: Property) => void
+  onNavigateToClient: (clientId: Id<"clients">) => void
+  onRemoveOwner: (propertyId: Id<"properties">, clientId: Id<"clients">, currentOwnerIds: Id<"clients">[]) => Promise<void>
+  isRemovingOwner: boolean
 }) {
-  const [isTooltipOpen, setIsTooltipOpen] = useState(false)
+  const [isOwnersPopoverOpen, setIsOwnersPopoverOpen] = useState(false)
 
   const handleRowClick = (e: React.MouseEvent) => {
     const target = e.target as HTMLElement
-    if (target.closest('[data-actions]')) return
-    if (owners.length > 0) {
-      setIsTooltipOpen(!isTooltipOpen)
-    }
+    if (target.closest('[data-actions]') || target.closest('[data-owners-badge]')) return
+    onRowClick(property)
   }
 
   const handleMenuOpenChange = (open: boolean) => {
     if (open) {
-      setIsTooltipOpen(false)
+      setIsOwnersPopoverOpen(false)
     }
   }
 
   return (
-    <Tooltip open={isTooltipOpen} onOpenChange={(open) => !open && setIsTooltipOpen(false)}>
-      <TooltipTrigger asChild>
-        <TableRow
-          className={cn("hover:bg-muted/50", owners.length > 0 && "cursor-pointer")}
-          onClick={handleRowClick}
-        >
-          <TableCell className="text-text-tertiary">
-            {getTypeLabel(property.type)}
-          </TableCell>
-          <TableCell className="text-text-secondary">
-            {property.street}, {property.number}
-            {property.complement && `, ${property.complement}`}
-            , {property.neighborhood}, {property.city}/{property.state} - {formatZipCode(property.zipCode)}
-          </TableCell>
-          <TableCell className="text-text-tertiary">
-            {formatCurrency(property.value)}
-          </TableCell>
-          <TableCell className="text-text-tertiary">
-            {formatArea(property.area)}
-          </TableCell>
-          <TableCell>
-            <Badge
-              variant={getStatusBadgeVariant(property.status)}
-              className={getStatusBadgeClassName(property.status)}
+    <TableRow
+      className="hover:bg-muted/50 cursor-pointer"
+      onClick={handleRowClick}
+    >
+      <TableCell className="text-text-tertiary">
+        {getTypeLabel(property.type)}
+      </TableCell>
+      <TableCell className="text-text-secondary">
+        {property.street}, {property.number}
+        {property.complement && `, ${property.complement}`}
+        , {property.neighborhood}, {property.city}/{property.state} - {formatZipCode(property.zipCode)}
+      </TableCell>
+      <TableCell className="text-text-tertiary">
+        {formatCurrency(property.value)}
+      </TableCell>
+      <TableCell className="text-text-tertiary">
+        {formatArea(property.area)}
+      </TableCell>
+      <TableCell data-owners-badge>
+        <Popover open={isOwnersPopoverOpen} onOpenChange={setIsOwnersPopoverOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              onClick={(e) => e.stopPropagation()}
+              className="inline-flex items-center gap-1.5 px-2 py-1 rounded-md bg-accent hover:bg-accent/80 border border-border hover:border-border/80 transition-colors cursor-pointer"
             >
-              {getStatusLabel(property.status)}
-            </Badge>
-          </TableCell>
-          <TableCell className="text-right" data-actions>
-            <PropertiesTableActions
-              property={property}
-              onView={onView}
-              onEdit={onEdit}
-              onDelete={onDelete}
-              onMenuOpenChange={handleMenuOpenChange}
-            />
-          </TableCell>
-        </TableRow>
-      </TooltipTrigger>
-      {owners.length > 0 && (
-        <TooltipContent
-          side="bottom"
-          align="start"
-          sideOffset={4}
-          className="bg-popover text-popover-foreground border border-border shadow-lg p-4 w-(--radix-tooltip-trigger-width)"
+              <Users className="size-3.5 text-muted-foreground" />
+              <span className="text-sm font-medium text-text-secondary">{owners.length}</span>
+            </button>
+          </PopoverTrigger>
+          <PopoverContent className="w-80 p-0" align="start" sideOffset={4}>
+            <div className="p-3 border-b border-border/50">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                Proprietários
+              </p>
+            </div>
+            <div className="max-h-[300px] overflow-y-auto p-2 space-y-1">
+              {owners.length === 0 ? (
+                <p className="py-4 text-center text-sm text-muted-foreground">
+                  Nenhum proprietário vinculado
+                </p>
+              ) : (
+                owners.map((owner) => (
+                  <div
+                    key={owner._id}
+                    onClick={(e) => {
+                      const target = e.target as HTMLElement
+                      if (target.closest('[data-actions]')) return
+                      setIsOwnersPopoverOpen(false)
+                      onNavigateToClient(owner._id)
+                    }}
+                    className="group/owner flex items-center gap-2 p-2 rounded-lg hover:bg-accent cursor-pointer relative"
+                  >
+                    <div className="size-8 rounded-lg bg-background border border-border flex items-center justify-center shrink-0">
+                      <span className="text-xs font-medium text-text-tertiary">
+                        {owner.name.split(" ").map((n: string) => n[0]).slice(0, 2).join("").toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-text-primary truncate">{owner.name}</p>
+                      <p className="text-xs text-muted-foreground">{formatTaxId(owner.taxId)}</p>
+                    </div>
+                    <div className="shrink-0 opacity-100 group-hover/owner:opacity-0 transition-opacity duration-200 absolute right-2">
+                      <Badge
+                        variant={owner.status === "active" ? "default" : owner.status === "pending" ? "outline" : "secondary"}
+                        className={cn(
+                          "text-[10px]",
+                          owner.status === "active"
+                            ? "bg-status-success-muted text-status-success-foreground border-status-success-border"
+                            : owner.status === "pending"
+                              ? "bg-status-warning-muted text-status-warning-foreground border-status-warning-border"
+                              : "bg-status-neutral-muted text-status-neutral-foreground border-status-neutral-border"
+                        )}
+                      >
+                        {owner.status === "active" ? "Ativo" : owner.status === "pending" ? "Pendente" : "Inativo"}
+                      </Badge>
+                    </div>
+                    <div data-actions className="flex items-center gap-1 shrink-0 opacity-0 group-hover/owner:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="size-8"
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onNavigateToClient(owner._id)
+                          setIsOwnersPopoverOpen(false)
+                        }}
+                      >
+                        <ExternalLink className="size-4 text-muted-foreground" />
+                      </Button>
+                      <TrashButton
+                        onClick={() => {
+                          if (owners.length > 1) {
+                            onRemoveOwner(property._id, owner._id, property.ownerIds)
+                          }
+                        }}
+                        disabled={owners.length <= 1}
+                        isLoading={isRemovingOwner}
+                        title={owners.length <= 1 ? "O imóvel deve ter pelo menos um proprietário" : "Remover proprietário"}
+                      />
+                    </div>
+                  </div>
+                ))
+              )}
+            </div>
+          </PopoverContent>
+        </Popover>
+      </TableCell>
+      <TableCell>
+        <Badge
+          variant={getStatusBadgeVariant(property.status)}
+          className={getStatusBadgeClassName(property.status)}
         >
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">
-            Proprietários
-          </p>
-          <div className="grid grid-cols-3 gap-2">
-            {owners.map((owner) => (
-              <div
-                key={owner._id}
-                className="flex items-center gap-2 p-2 rounded-lg border border-border bg-accent/50"
-              >
-                <div className="size-7 rounded-lg bg-background border border-border flex items-center justify-center shrink-0">
-                  <span className="text-xs font-medium text-text-tertiary">
-                    {owner.name.split(" ").map(n => n[0]).slice(0, 2).join("").toUpperCase()}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-text-primary truncate">{owner.name}</p>
-                  <p className="text-xs text-muted-foreground">{formatTaxId(owner.taxId)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </TooltipContent>
-      )}
-    </Tooltip>
+          {getStatusLabel(property.status)}
+        </Badge>
+      </TableCell>
+      <TableCell className="text-right" data-actions>
+        <PropertiesTableActions
+          property={property}
+          onView={() => onRowClick(property)}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onMenuOpenChange={handleMenuOpenChange}
+        />
+      </TableCell>
+    </TableRow>
   )
 }
 
 export default function Properties() {
+  const navigate = useNavigate()
   const [search, setSearch] = useState("")
   const [statusFilter, setStatusFilter] = useState<PropertyStatus | "all">("all")
   const [typeFilter, setTypeFilter] = useState<PropertyType | "all">("all")
@@ -174,6 +232,7 @@ export default function Properties() {
   const [isNewPropertyDialogOpen, setIsNewPropertyDialogOpen] = useState(false)
   const [editingProperty, setEditingProperty] = useState<Property | null>(null)
   const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [isRemovingOwner, setIsRemovingOwner] = useState(false)
   const [ownerSearch, setOwnerSearch] = useState("")
   const [isOwnerPopoverOpen, setIsOwnerPopoverOpen] = useState(false)
   const [isSearchingClients, setIsSearchingClients] = useState(false)
@@ -292,9 +351,33 @@ export default function Properties() {
     }
   }
 
-  const handleView = (property: Property) => {
-    toast.info(`Visualizando imóvel: ${property.street}, ${property.number}`)
-    // TODO: Implementar modal de visualização
+  const handleRowClick = (property: Property) => {
+    navigate(`/imoveis/${property._id}`)
+  }
+
+  const handleNavigateToClient = (clientId: Id<"clients">) => {
+    navigate(`/clientes/${clientId}`)
+  }
+
+  const handleRemoveOwner = async (propertyId: Id<"properties">, clientId: Id<"clients">, currentOwnerIds: Id<"clients">[]) => {
+    if (currentOwnerIds.length <= 1) {
+      toast.error("O imóvel deve ter pelo menos um proprietário")
+      return
+    }
+
+    setIsRemovingOwner(true)
+    try {
+      await updatePropertyMutation({
+        id: propertyId,
+        ownerIds: currentOwnerIds.filter(id => id !== clientId),
+      })
+      toast.success("Proprietário removido com sucesso")
+    } catch (error) {
+      toast.error("Erro ao remover proprietário")
+      console.error(error)
+    } finally {
+      setIsRemovingOwner(false)
+    }
   }
 
   const handleEdit = (property: Property) => {
@@ -719,6 +802,9 @@ export default function Properties() {
                   </button>
                 </TableHead>
                 <TableHead className="w-[120px]">
+                  <span className="font-semibold">Proprietários</span>
+                </TableHead>
+                <TableHead className="w-[120px]">
                   <button
                     onClick={() => handleSort("status")}
                     className="flex items-center hover:text-foreground cursor-pointer font-semibold"
@@ -747,6 +833,9 @@ export default function Properties() {
                       <Skeleton className="h-4 w-[80px]" />
                     </TableCell>
                     <TableCell>
+                      <Skeleton className="h-4 w-[50px]" />
+                    </TableCell>
+                    <TableCell>
                       <Skeleton className="h-4 w-[80px]" />
                     </TableCell>
                     <TableCell>
@@ -756,7 +845,7 @@ export default function Properties() {
                 ))
               ) : properties.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="h-72 text-center">
+                  <TableCell colSpan={7} className="h-72 text-center">
                     <button
                       onClick={() => setIsNewPropertyDialogOpen(true)}
                       className="flex flex-col items-center justify-center gap-3 w-full h-full group cursor-pointer"
@@ -789,9 +878,12 @@ export default function Properties() {
                       getStatusBadgeVariant={getStatusBadgeVariant}
                       getStatusBadgeClassName={getStatusBadgeClassName}
                       getStatusLabel={getStatusLabel}
-                      onView={handleView}
                       onEdit={handleEdit}
                       onDelete={handleDelete}
+                      onRowClick={handleRowClick}
+                      onNavigateToClient={handleNavigateToClient}
+                      onRemoveOwner={handleRemoveOwner}
+                      isRemovingOwner={isRemovingOwner}
                     />
                   )
                 })
@@ -1347,6 +1439,7 @@ export default function Properties() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
     </div>
   )
 }

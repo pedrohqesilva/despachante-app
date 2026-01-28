@@ -1,4 +1,5 @@
 import { useQuery } from "convex/react"
+import { useNavigate } from "react-router-dom"
 import { propertiesApi } from "@/lib/api"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { Building, Building2, Home, Trees, Plus, ExternalLink, LucideIcon } from "lucide-react"
@@ -25,6 +26,7 @@ const STATUS_CONFIG: Record<string, { label: string; className: string }> = {
 }
 
 export function PropertiesSection({ clientId }: PropertiesSectionProps) {
+  const navigate = useNavigate()
   const propertiesData = useQuery(propertiesApi.queries.listByClient, { clientId })
   const isLoading = propertiesData === undefined
 
@@ -87,6 +89,11 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
           return (
             <div
               key={property._id}
+              onClick={(e) => {
+                const target = e.target as HTMLElement
+                if (target.closest('[data-actions]')) return
+                navigate(`/imoveis/${property._id}`)
+              }}
               className="group p-4 rounded-xl border border-border bg-accent/50 hover:bg-accent hover:border-border transition-all cursor-pointer relative"
             >
               <div className="flex items-center gap-4">
@@ -118,11 +125,15 @@ export function PropertiesSection({ clientId }: PropertiesSectionProps) {
                   <span className="text-sm font-semibold text-text-secondary">{formatCurrency(property.value)}</span>
                   <span className="text-xs text-muted-foreground">{formatArea(property.area)}</span>
                 </div>
-                <div className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                <div data-actions className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10">
                   <Button
                     variant="ghost"
                     size="icon"
                     className="size-8"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      navigate(`/imoveis/${property._id}`)
+                    }}
                   >
                     <ExternalLink className="size-4" />
                   </Button>

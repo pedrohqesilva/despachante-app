@@ -368,7 +368,7 @@ export default function ClientDetails() {
           <Button
             variant="ghost"
             size="icon"
-            onClick={() => navigate("/clientes")}
+            onClick={() => navigate(-1)}
             className="shrink-0"
           >
             <ArrowLeft className="size-5" />
