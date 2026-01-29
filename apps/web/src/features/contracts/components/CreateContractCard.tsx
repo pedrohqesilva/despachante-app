@@ -1,6 +1,7 @@
 "use client"
 
 import { ScrollText } from "lucide-react"
+import { IconContainer } from "@/components/ui/icon-container"
 import { cn } from "@/lib/utils"
 
 interface CreateContractCardProps {
@@ -28,15 +29,12 @@ export function CreateContractCard({
         className
       )}
     >
-      <div
-        className={cn(
-          "size-12 rounded-xl flex items-center justify-center shrink-0",
-          "bg-primary/10 border border-primary/20",
-          "group-hover:bg-primary/20 group-hover:border-primary/30 transition-all"
-        )}
-      >
-        <ScrollText className="size-6 text-primary" />
-      </div>
+      <IconContainer
+        icon={ScrollText}
+        size="lg"
+        className="bg-primary/10 border-primary/20"
+        iconClassName="text-primary"
+      />
       <div className="flex-1 min-w-0">
         <p className="font-semibold text-text-secondary group-hover:text-primary transition-colors">
           Criar Contrato

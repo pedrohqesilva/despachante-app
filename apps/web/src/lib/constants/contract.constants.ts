@@ -1,4 +1,5 @@
 import type { ContractStatus } from "@/types/contract"
+import type { StatusType } from "@/components/ui/status-badge"
 
 export const CONTRACT_STATUS_OPTIONS = [
   { value: "draft" as ContractStatus, label: "Rascunho" },
@@ -19,15 +20,15 @@ export function getContractStatusLabel(status: ContractStatus): string {
   }
 }
 
-export function getContractStatusBadgeClassName(status: ContractStatus): string {
+export function getContractStatusType(status: ContractStatus): StatusType {
   switch (status) {
     case "draft":
-      return "bg-status-warning-muted text-status-warning-foreground border-status-warning-border font-medium"
+      return "warning"
     case "final":
-      return "bg-status-success-muted text-status-success-foreground border-status-success-border font-medium"
+      return "success"
     case "signed":
-      return "bg-status-info-muted text-status-info-foreground border-status-info-border font-medium"
+      return "info"
     default:
-      return ""
+      return "neutral"
   }
 }

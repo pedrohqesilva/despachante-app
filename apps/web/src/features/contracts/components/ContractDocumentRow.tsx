@@ -10,7 +10,8 @@ import {
   Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
+import { StatusBadge } from "@/components/ui/status-badge"
+import { IconContainer } from "@/components/ui/icon-container"
 import { TrashButton } from "@/components/ui/trash-button"
 import {
   AlertDialog,
@@ -25,11 +26,10 @@ import {
   AlertDialogBody,
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
-import { cn } from "@/lib/utils"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
 import {
   getContractStatusLabel,
-  getContractStatusBadgeClassName,
+  getContractStatusType,
 } from "@/lib/constants/contract.constants"
 import { contractsApi } from "@/lib/api"
 import type { Contract, ContractStatus } from "@/types/contract"
@@ -135,9 +135,12 @@ export function ContractDocumentRow({
         }}
         className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all cursor-pointer border border-border bg-accent/50 hover:bg-accent hover:border-border group relative"
       >
-        <div className="size-10 rounded-xl flex items-center justify-center shrink-0 bg-primary/10 border border-primary/20 text-primary">
-          <ScrollText className="size-5" />
-        </div>
+        <IconContainer
+          icon={ScrollText}
+          size="md"
+          className="bg-primary/10 border-primary/20"
+          iconClassName="text-primary"
+        />
 
         <div className="flex-1 min-w-0">
           <p className="font-medium text-text-secondary truncate">{contract.name}</p>
@@ -160,15 +163,12 @@ export function ContractDocumentRow({
             </>
           ) : (
             <>
-              <Badge
-                variant="outline"
-                className={cn(
-                  "text-xs",
-                  getContractStatusBadgeClassName(contract.status as ContractStatus)
-                )}
+              <StatusBadge
+                status={getContractStatusType(contract.status as ContractStatus)}
+                className="text-xs"
               >
                 {getContractStatusLabel(contract.status as ContractStatus)}
-              </Badge>
+              </StatusBadge>
               <span className="text-xs text-muted-foreground/70">
                 {formatDateOnly(contract._creationTime)}
               </span>

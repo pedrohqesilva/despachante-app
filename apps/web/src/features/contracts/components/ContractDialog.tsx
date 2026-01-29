@@ -44,6 +44,12 @@ const EDIT_MODE_CONFIG = {
   description: "Continue editando o contrato",
 }
 
+const STEP_LABELS: Record<DialogStep, string> = {
+  select: "Dados",
+  preview: "Preview",
+  edit: "Editar",
+}
+
 interface StepIndicatorProps {
   currentStep: DialogStep
   steps: DialogStep[]
@@ -53,28 +59,40 @@ function StepIndicator({ currentStep, steps }: StepIndicatorProps) {
   const currentIndex = steps.indexOf(currentStep)
 
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center pr-4">
       {steps.map((step, index) => {
         const isActive = index === currentIndex
         const isCompleted = index < currentIndex
 
         return (
-          <div key={step} className="flex items-center gap-2">
-            <div
-              className={cn(
-                "size-7 rounded-full flex items-center justify-center text-xs font-medium transition-all",
-                isActive && "bg-primary text-primary-foreground",
-                isCompleted && "bg-primary/20 text-primary",
-                !isActive && !isCompleted && "bg-muted text-muted-foreground"
-              )}
-            >
-              {isCompleted ? <Check className="size-3.5" /> : index + 1}
+          <div key={step} className="flex items-center">
+            <div className="flex flex-col items-center gap-1">
+              <div
+                className={cn(
+                  "size-8 rounded-full flex items-center justify-center text-sm font-semibold transition-all border-2",
+                  isActive && "bg-primary text-primary-foreground border-primary shadow-sm shadow-primary/25",
+                  isCompleted && "bg-primary/10 text-primary border-primary/30",
+                  !isActive && !isCompleted && "bg-muted/50 text-muted-foreground border-border"
+                )}
+              >
+                {isCompleted ? <Check className="size-4" /> : index + 1}
+              </div>
+              <span
+                className={cn(
+                  "text-[10px] font-medium transition-colors",
+                  isActive && "text-primary",
+                  isCompleted && "text-primary/70",
+                  !isActive && !isCompleted && "text-muted-foreground"
+                )}
+              >
+                {STEP_LABELS[step]}
+              </span>
             </div>
             {index < steps.length - 1 && (
               <div
                 className={cn(
-                  "w-8 h-0.5 rounded-full transition-all",
-                  index < currentIndex ? "bg-primary/40" : "bg-muted"
+                  "w-6 h-0.5 rounded-full mx-1 mb-5 transition-all",
+                  index < currentIndex ? "bg-primary/50" : "bg-border"
                 )}
               />
             )}
