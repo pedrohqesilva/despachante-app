@@ -38,7 +38,7 @@ RUN pnpm --filter @despachante/web build
 # Production stage
 FROM nginx:alpine
 
-COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=builder /app/apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 
 # Support dynamic PORT from Railway
