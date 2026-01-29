@@ -21,7 +21,6 @@ export const create = mutation({
       description: args.description,
       content: args.content,
       status: args.status ?? "active",
-      createdAt: now,
       updatedAt: now,
     })
 

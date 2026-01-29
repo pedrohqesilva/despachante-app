@@ -37,7 +37,6 @@ export const create = mutation({
       spouseId: args.spouseId,
       fatherName: args.fatherName,
       motherName: args.motherName,
-      createdAt: now,
       updatedAt: now,
     })
 

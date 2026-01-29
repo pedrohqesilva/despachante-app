@@ -32,7 +32,6 @@ export const create = mutation({
       propertyId: args.propertyId,
       mimeType: args.mimeType,
       size: args.size,
-      createdAt: getCurrentTimestamp(),
     })
 
     return documentId

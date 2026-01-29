@@ -1,6 +1,6 @@
 "use client"
 
-import { ScrollText, Plus } from "lucide-react"
+import { ScrollText } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 interface CreateContractCardProps {
@@ -20,7 +20,7 @@ export function CreateContractCard({
       onClick={onClick}
       disabled={disabled}
       className={cn(
-        "w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all",
+        "w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all cursor-pointer",
         "border-2 border-dashed border-border/50 hover:border-primary/50",
         "bg-gradient-to-br from-primary/5 to-transparent hover:from-primary/10",
         "group",
@@ -38,12 +38,9 @@ export function CreateContractCard({
         <ScrollText className="size-6 text-primary" />
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2">
-          <p className="font-semibold text-text-secondary group-hover:text-primary transition-colors">
-            Criar Contrato
-          </p>
-          <Plus className="size-4 text-muted-foreground group-hover:text-primary transition-colors" />
-        </div>
+        <p className="font-semibold text-text-secondary group-hover:text-primary transition-colors">
+          Criar Contrato
+        </p>
         <p className="text-sm text-muted-foreground mt-0.5">
           Gere um contrato a partir de um modelo com os dados do imovel
         </p>

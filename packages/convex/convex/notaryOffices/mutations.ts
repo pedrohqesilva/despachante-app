@@ -46,7 +46,6 @@ export const create = mutation({
       phone: args.phone,
       email: args.email,
       status: args.status ?? "active",
-      createdAt: now,
       updatedAt: now,
     })
 

@@ -4,15 +4,17 @@ export type ContractStatus = "draft" | "final" | "signed"
 
 export interface Contract {
   _id: Id<"contracts">
+  _creationTime: number
   name: string
-  templateId: Id<"contractTemplates">
+  description?: string
+  templateId?: Id<"contractTemplates">
   propertyId: Id<"properties">
   clientId: Id<"clients">
   notaryOfficeId?: Id<"notaryOffices">
   content: string
   status: ContractStatus
   pdfStorageId?: Id<"_storage">
-  createdAt: number
+  pdfSize?: number
   updatedAt: number
 }
 

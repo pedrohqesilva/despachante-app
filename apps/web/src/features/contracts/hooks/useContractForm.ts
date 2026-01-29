@@ -8,18 +8,18 @@ export interface ContractFormData {
   name: string
   description: string
   templateId: Id<"contractTemplates"> | null
-  clientId: Id<"clients"> | null
-  notaryOfficeId: Id<"notaryOffices"> | null
+  clientIds: Id<"clients">[]
+  notaryOfficeIds: Id<"notaryOffices">[]
 }
 
 export interface ContractFormErrors {
   name?: string
-  templateId?: string
-  clientId?: string
+  clientIds?: string
 }
 
 export interface UseContractFormOptions {
   contract?: Contract | null
+  initialClientIds?: Id<"clients">[]
 }
 
 export interface UseContractFormReturn {
@@ -30,6 +30,8 @@ export interface UseContractFormReturn {
     field: K,
     value: ContractFormData[K]
   ) => void
+  toggleClient: (clientId: Id<"clients">) => void
+  toggleNotaryOffice: (notaryOfficeId: Id<"notaryOffices">) => void
   validate: () => boolean
   reset: () => void
   isValid: boolean
@@ -39,26 +41,29 @@ const initialFormData: ContractFormData = {
   name: "",
   description: "",
   templateId: null,
-  clientId: null,
-  notaryOfficeId: null,
+  clientIds: [],
+  notaryOfficeIds: [],
 }
 
 export function useContractForm(
   options?: UseContractFormOptions
 ): UseContractFormReturn {
-  const { contract } = options || {}
+  const { contract, initialClientIds = [] } = options || {}
 
   const [formData, setFormData] = useState<ContractFormData>(() => {
     if (contract) {
       return {
         name: contract.name,
-        description: "",
+        description: contract.description || "",
         templateId: contract.templateId,
-        clientId: contract.clientId,
-        notaryOfficeId: contract.notaryOfficeId || null,
+        clientIds: contract.clientId ? [contract.clientId] : [],
+        notaryOfficeIds: contract.notaryOfficeId ? [contract.notaryOfficeId] : [],
       }
     }
-    return initialFormData
+    return {
+      ...initialFormData,
+      clientIds: initialClientIds,
+    }
   })
 
   const [errors, setErrors] = useState<ContractFormErrors>({})
@@ -73,19 +78,42 @@ export function useContractForm(
     [errors]
   )
 
+  const toggleClient = useCallback((clientId: Id<"clients">) => {
+    setFormData((prev) => {
+      const isSelected = prev.clientIds.includes(clientId)
+      return {
+        ...prev,
+        clientIds: isSelected
+          ? prev.clientIds.filter((id) => id !== clientId)
+          : [...prev.clientIds, clientId],
+      }
+    })
+    if (errors.clientIds) {
+      setErrors((prev) => ({ ...prev, clientIds: undefined }))
+    }
+  }, [errors.clientIds])
+
+  const toggleNotaryOffice = useCallback((notaryOfficeId: Id<"notaryOffices">) => {
+    setFormData((prev) => {
+      const isSelected = prev.notaryOfficeIds.includes(notaryOfficeId)
+      return {
+        ...prev,
+        notaryOfficeIds: isSelected
+          ? prev.notaryOfficeIds.filter((id) => id !== notaryOfficeId)
+          : [...prev.notaryOfficeIds, notaryOfficeId],
+      }
+    })
+  }, [])
+
   const validate = useCallback((): boolean => {
     const newErrors: ContractFormErrors = {}
 
     if (!formData.name.trim()) {
-      newErrors.name = "Nome do contrato e obrigatorio"
+      newErrors.name = "Nome do contrato é obrigatório"
     }
 
-    if (!formData.templateId) {
-      newErrors.templateId = "Selecione um modelo"
-    }
-
-    if (!formData.clientId) {
-      newErrors.clientId = "Selecione um cliente"
+    if (formData.clientIds.length === 0) {
+      newErrors.clientIds = "Selecione pelo menos um cliente"
     }
 
     setErrors(newErrors)
@@ -93,18 +121,24 @@ export function useContractForm(
   }, [formData])
 
   const reset = useCallback(() => {
-    setFormData(initialFormData)
+    setFormData({
+      ...initialFormData,
+      clientIds: initialClientIds,
+    })
     setErrors({})
-  }, [])
+  }, [initialClientIds])
 
   const isValid =
-    !!formData.name.trim() && !!formData.templateId && !!formData.clientId
+    !!formData.name.trim() &&
+    formData.clientIds.length > 0
 
   return {
     formData,
     errors,
     setFormData,
     updateField,
+    toggleClient,
+    toggleNotaryOffice,
     validate,
     reset,
     isValid,

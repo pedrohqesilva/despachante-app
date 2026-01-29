@@ -291,7 +291,7 @@ getContractTemplateStatusBadgeClassName(status)
 | `description` | Nao | Descricao do proposito do modelo |
 | `content` | Sim | Conteudo HTML do modelo (com placeholders) |
 | `status` | Sim | Status (active/inactive) |
-| `createdAt` | Auto | Data de criacao |
+| `_creationTime` | Auto | Data de criacao (gerado pelo Convex) |
 | `updatedAt` | Auto | Data de ultima atualizacao |
 
 ## Placeholders Disponiveis

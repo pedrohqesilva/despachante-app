@@ -20,7 +20,7 @@ interface Property {
   value: number
   status: string
   ownerIds: string[]
-  createdAt: number
+  _creationTime: number
   updatedAt: number
 }
 

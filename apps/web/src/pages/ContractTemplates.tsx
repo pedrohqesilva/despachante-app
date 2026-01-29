@@ -36,7 +36,7 @@ import {
 import type { ContractTemplate, ContractTemplateStatus } from "@/types/contract-template"
 import { formatDateOnly } from "@/lib/format"
 
-type SortField = "name" | "createdAt" | "status"
+type SortField = "name" | "_creationTime" | "status"
 type SortOrder = "asc" | "desc"
 
 export default function ContractTemplates() {
@@ -44,7 +44,7 @@ export default function ContractTemplates() {
   const [statusFilter, setStatusFilter] = useState<ContractTemplateStatus | "all">("all")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<SortField>("createdAt")
+  const [sortBy, setSortBy] = useState<SortField>("_creationTime")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTemplate, setEditingTemplate] = useState<ContractTemplate | null>(null)
@@ -181,7 +181,7 @@ export default function ContractTemplates() {
                 </SortableTableHead>
                 <TableHeadPlain>Descrição</TableHeadPlain>
                 <SortableTableHead
-                  field="createdAt"
+                  field="_creationTime"
                   currentSortField={sortBy}
                   currentSortOrder={sortOrder}
                   onSort={handleSort}
@@ -229,7 +229,7 @@ export default function ContractTemplates() {
                     <TableCell className="font-semibold text-text-primary">{template.name}</TableCell>
                     <TableCell className="text-text-secondary">{template.description || "-"}</TableCell>
                     <TableCell className="text-text-tertiary">
-                      {formatDateOnly(template.createdAt)}
+                      {formatDateOnly(template._creationTime)}
                     </TableCell>
                     <TableCell>
                       <Badge

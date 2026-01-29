@@ -3,7 +3,7 @@ export { CreateContractCard } from "./components/CreateContractCard"
 export { ContractDialog } from "./components/ContractDialog"
 export { ContractFormFields } from "./components/ContractFormFields"
 export { ContractPreview } from "./components/ContractPreview"
-export { ContractEditor } from "./components/ContractEditor"
+export { ContractEditor, type ContractEditorRef } from "./components/ContractEditor"
 export { ContractDocumentRow } from "./components/ContractDocumentRow"
 export { ContractsList } from "./components/ContractsList"
 

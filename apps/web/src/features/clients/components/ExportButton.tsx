@@ -23,7 +23,7 @@ export function ExportButton({ clients, disabled }: ExportButtonProps) {
         : client.status === "inactive"
         ? "Inativo"
         : "Pendente",
-      formatDateOnly(client.createdAt),
+      formatDateOnly(client._creationTime),
     ])
 
     const csvContent = [

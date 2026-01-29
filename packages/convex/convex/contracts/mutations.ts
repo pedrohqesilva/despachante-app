@@ -8,7 +8,8 @@ import { contractStatusValidator } from "../lib/validators"
 export const create = mutation({
   args: {
     name: v.string(),
-    templateId: v.id("contractTemplates"),
+    description: v.optional(v.string()),
+    templateId: v.optional(v.id("contractTemplates")),
     propertyId: v.id("properties"),
     clientId: v.id("clients"),
     notaryOfficeId: v.optional(v.id("notaryOffices")),
@@ -18,20 +19,23 @@ export const create = mutation({
   handler: async (ctx, args) => {
     await requireAuth(ctx)
 
-    const [template, property, client] = await Promise.all([
-      ctx.db.get(args.templateId),
+    const [property, client] = await Promise.all([
       ctx.db.get(args.propertyId),
       ctx.db.get(args.clientId),
     ])
 
-    if (!template) {
-      throw new NotFoundError("Modelo de contrato")
-    }
     if (!property) {
       throw new NotFoundError("Imóvel")
     }
     if (!client) {
       throw new NotFoundError("Cliente")
+    }
+
+    if (args.templateId) {
+      const template = await ctx.db.get(args.templateId)
+      if (!template) {
+        throw new NotFoundError("Modelo de contrato")
+      }
     }
 
     if (args.notaryOfficeId) {
@@ -44,13 +48,13 @@ export const create = mutation({
     const now = getCurrentTimestamp()
     const contractId = await ctx.db.insert("contracts", {
       name: args.name,
+      description: args.description,
       templateId: args.templateId,
       propertyId: args.propertyId,
       clientId: args.clientId,
       notaryOfficeId: args.notaryOfficeId,
       content: args.content,
       status: args.status ?? "draft",
-      createdAt: now,
       updatedAt: now,
     })
 
@@ -62,6 +66,7 @@ export const update = mutation({
   args: {
     id: v.id("contracts"),
     name: v.optional(v.string()),
+    description: v.optional(v.string()),
     content: v.optional(v.string()),
     status: v.optional(contractStatusValidator),
     notaryOfficeId: v.optional(v.id("notaryOffices")),
@@ -191,7 +196,6 @@ export const createPropertyDocument = mutation({
         storageId: args.storageId,
         mimeType: args.mimeType,
         size: args.size,
-        createdAt: getCurrentTimestamp(),
       })
       return existingDoc._id
     }
@@ -203,7 +207,6 @@ export const createPropertyDocument = mutation({
       propertyId: contract.propertyId,
       mimeType: args.mimeType,
       size: args.size,
-      createdAt: getCurrentTimestamp(),
       contractId: args.contractId,
     })
 

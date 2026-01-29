@@ -19,6 +19,7 @@ import type { PlaceholderGroup, Placeholder } from "@/types/contract-template"
 interface PlaceholdersDialogProps {
   onPlaceholderClick: (placeholder: string) => void
   disabled?: boolean
+  tabIndex?: number
 }
 
 const ICON_MAP: Record<string, LucideIcon> = {
@@ -53,6 +54,7 @@ function PlaceholderItem({ placeholder, onClick }: PlaceholderItemProps) {
 export function PlaceholdersDialog({
   onPlaceholderClick,
   disabled,
+  tabIndex,
 }: PlaceholdersDialogProps) {
   const [open, setOpen] = useState(false)
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(
@@ -79,7 +81,7 @@ export function PlaceholdersDialog({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="sm" disabled={disabled}>
+        <Button variant="outline" size="sm" disabled={disabled} tabIndex={tabIndex}>
           <Braces className="size-4 mr-2" />
           Campos Disponíveis
         </Button>

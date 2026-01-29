@@ -4,6 +4,7 @@ export type NotaryOfficeStatus = "active" | "inactive"
 
 export interface NotaryOffice {
   _id: Id<"notaryOffices">
+  _creationTime: number
   name: string
   code: string
   zipCode?: string
@@ -16,7 +17,6 @@ export interface NotaryOffice {
   phone?: string
   email?: string
   status: NotaryOfficeStatus
-  createdAt: number
   updatedAt: number
 }
 

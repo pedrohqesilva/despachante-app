@@ -22,7 +22,8 @@
       "Bash(pnpm build:*)",
       "Bash(pnpm --filter web build:*)",
       "Bash(pnpm typecheck:*)",
-      "Bash(pnpm run build:*)"
+      "Bash(pnpm run build:*)",
+      "Bash(pnpm:*)"
     ]
   }
 }

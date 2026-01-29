@@ -42,7 +42,7 @@ export function ExportButton({ properties, disabled }: ExportButtonProps) {
       formatCurrency(property.value),
       getPropertyStatusLabel(property.status),
       property.ownerIds.length.toString(),
-      formatDateOnly(property.createdAt),
+      formatDateOnly(property._creationTime),
     ])
 
     const csvContent = [

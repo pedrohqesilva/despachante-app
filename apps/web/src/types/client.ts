@@ -24,17 +24,18 @@ export type DocumentType =
 
 export interface ClientDocument {
   _id: Id<"clientDocuments">
+  _creationTime: number
   name: string
   type: DocumentType
   storageId: Id<"_storage">
   clientIds: Id<"clients">[]
   mimeType: string
   size: number
-  createdAt: number
 }
 
 export interface Client {
   _id: Id<"clients">
+  _creationTime: number
   name: string
   email: string
   phone?: string
@@ -46,7 +47,6 @@ export interface Client {
   weddingDate?: string
   fatherName?: string
   motherName?: string
-  createdAt: number
   updatedAt: number
 }
 

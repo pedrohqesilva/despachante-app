@@ -13,7 +13,7 @@ import { Table } from "@tiptap/extension-table"
 import { TableRow } from "@tiptap/extension-table-row"
 import { TableCell } from "@tiptap/extension-table-cell"
 import { TableHeader } from "@tiptap/extension-table-header"
-import { useEffect, useImperativeHandle, forwardRef, useCallback, useState } from "react"
+import { useEffect, useImperativeHandle, forwardRef, useCallback, useState, useMemo } from "react"
 import {
   Bold,
   Italic,
@@ -64,6 +64,42 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 import { cn } from "@/lib/utils"
+
+const createEditorExtensions = (placeholder: string) => [
+  StarterKit.configure({
+    heading: {
+      levels: [1, 2, 3],
+    },
+    underline: false,
+  }),
+  Placeholder.configure({
+    placeholder,
+    emptyEditorClass: "is-editor-empty",
+  }),
+  Underline,
+  TextAlign.configure({
+    types: ["heading", "paragraph"],
+  }),
+  Highlight.configure({
+    multicolor: true,
+  }),
+  TextStyle,
+  Color,
+  Image.configure({
+    HTMLAttributes: {
+      class: "max-w-full h-auto rounded-lg",
+    },
+  }),
+  Table.configure({
+    resizable: true,
+    HTMLAttributes: {
+      class: "border-collapse table-auto w-full",
+    },
+  }),
+  TableRow,
+  TableHeader,
+  TableCell,
+]
 
 const TEXT_COLORS = [
   { name: "Padrão", color: null },
@@ -646,43 +682,16 @@ export const RichTextEditor = forwardRef<RichTextEditorRef, RichTextEditorProps>
     },
     ref
   ) {
+    const extensions = useMemo(
+      () => createEditorExtensions(placeholder),
+      [placeholder]
+    )
+
     const editor = useEditor({
-      extensions: [
-        StarterKit.configure({
-          heading: {
-            levels: [1, 2, 3],
-          },
-        }),
-        Placeholder.configure({
-          placeholder,
-          emptyEditorClass: "is-editor-empty",
-        }),
-        Underline,
-        TextAlign.configure({
-          types: ["heading", "paragraph"],
-        }),
-        Highlight.configure({
-          multicolor: true,
-        }),
-        TextStyle,
-        Color,
-        Image.configure({
-          HTMLAttributes: {
-            class: "max-w-full h-auto rounded-lg",
-          },
-        }),
-        Table.configure({
-          resizable: true,
-          HTMLAttributes: {
-            class: "border-collapse table-auto w-full",
-          },
-        }),
-        TableRow,
-        TableHeader,
-        TableCell,
-      ],
+      extensions,
       content: value,
       editable: !disabled,
+      immediatelyRender: false,
       onUpdate: ({ editor }) => {
         onChange(editor.getHTML())
       },

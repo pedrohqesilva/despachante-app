@@ -169,6 +169,7 @@ export function ContractTemplateDialog({
               <PlaceholdersDialog
                 onPlaceholderClick={handlePlaceholderClick}
                 disabled={isSubmitting}
+                tabIndex={-1}
               />
             </div>
             <div className="flex-1 min-h-0">

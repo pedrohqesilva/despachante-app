@@ -4,15 +4,14 @@ import { useCallback, useState } from "react"
 import { useQuery, useMutation } from "convex/react"
 import {
   ScrollText,
-  Eye,
   Pencil,
   Download,
-  Trash2,
   AlertTriangle,
   Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { TrashButton } from "@/components/ui/trash-button"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -27,7 +26,7 @@ import {
 } from "@/components/ui/alert-dialog"
 import { toast } from "sonner"
 import { cn } from "@/lib/utils"
-import { formatDateOnly } from "@/lib/format"
+import { formatDateOnly, formatFileSize } from "@/lib/format"
 import {
   getContractStatusLabel,
   getContractStatusBadgeClassName,
@@ -68,6 +67,14 @@ export function ContractDocumentRow({
       onEdit(contract)
     }
   }, [contract, onEdit])
+
+  const handleOpenPdf = useCallback(() => {
+    if (pdfUrl) {
+      window.open(pdfUrl, "_blank")
+    } else {
+      toast.error("PDF não disponível")
+    }
+  }, [pdfUrl])
 
   const handleExportPdf = useCallback(async () => {
     if (!pdfUrl) {
@@ -120,7 +127,11 @@ export function ContractDocumentRow({
         onClick={(e) => {
           const target = e.target as HTMLElement
           if (target.closest("[data-actions]")) return
-          handleView()
+          if (canEdit) {
+            handleEdit()
+          } else if (canExport) {
+            handleOpenPdf()
+          }
         }}
         className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all cursor-pointer border border-border bg-accent/50 hover:bg-accent hover:border-border group relative"
       >
@@ -129,39 +140,46 @@ export function ContractDocumentRow({
         </div>
 
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <p className="font-medium text-text-secondary truncate">
-              {contract.name}
-            </p>
-            <Badge
-              variant="outline"
-              className={cn(
-                "shrink-0 text-xs",
-                getContractStatusBadgeClassName(contract.status as ContractStatus)
-              )}
-            >
-              {getContractStatusLabel(contract.status as ContractStatus)}
-            </Badge>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Criado em {formatDateOnly(contract.createdAt)}
+          <p className="font-medium text-text-secondary truncate">{contract.name}</p>
+          <p className="text-sm text-muted-foreground truncate">
+            {contract.description || "Contrato"}
           </p>
+        </div>
+
+        <div className="flex flex-col items-end gap-0.5 shrink-0 opacity-100 group-hover:opacity-0 transition-opacity duration-200 absolute right-4">
+          {contract.status === "final" || contract.status === "signed" ? (
+            <>
+              {contract.pdfSize && (
+                <span className="text-xs text-muted-foreground">
+                  {formatFileSize(contract.pdfSize)}
+                </span>
+              )}
+              <span className="text-xs text-muted-foreground/70">
+                {formatDateOnly(contract._creationTime)}
+              </span>
+            </>
+          ) : (
+            <>
+              <Badge
+                variant="outline"
+                className={cn(
+                  "text-xs",
+                  getContractStatusBadgeClassName(contract.status as ContractStatus)
+                )}
+              >
+                {getContractStatusLabel(contract.status as ContractStatus)}
+              </Badge>
+              <span className="text-xs text-muted-foreground/70">
+                {formatDateOnly(contract._creationTime)}
+              </span>
+            </>
+          )}
         </div>
 
         <div
           data-actions
-          className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10"
+          className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 absolute right-4 z-10"
         >
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8"
-            onClick={handleView}
-            title="Visualizar"
-          >
-            <Eye className="size-4" />
-          </Button>
-
           {canEdit && (
             <Button
               variant="ghost"
@@ -191,15 +209,10 @@ export function ContractDocumentRow({
             </Button>
           )}
 
-          <Button
-            variant="ghost"
-            size="icon"
-            className="size-8 text-destructive hover:text-destructive hover:bg-destructive/10"
+          <TrashButton
             onClick={() => setShowDeleteDialog(true)}
             title="Excluir"
-          >
-            <Trash2 className="size-4" />
-          </Button>
+          />
         </div>
       </div>
 

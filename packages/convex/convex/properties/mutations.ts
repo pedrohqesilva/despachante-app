@@ -35,7 +35,6 @@ export const create = mutation({
       value: args.value,
       status: "active",
       ownerIds: args.ownerIds,
-      createdAt: now,
       updatedAt: now,
     })
 

@@ -12,6 +12,7 @@ export type PropertyDocumentType =
 
 export interface Property {
   _id: Id<"properties">
+  _creationTime: number
   zipCode: string
   street: string
   number: string
@@ -24,7 +25,6 @@ export interface Property {
   value: number
   status: PropertyStatus
   ownerIds: Id<"clients">[]
-  createdAt: number
   updatedAt: number
 }
 
@@ -50,11 +50,11 @@ export interface PropertyListResponse {
 
 export interface PropertyDocument {
   _id: Id<"propertyDocuments">
+  _creationTime: number
   name: string
   type: PropertyDocumentType
   storageId: Id<"_storage">
   propertyId: Id<"properties">
   mimeType: string
   size: number
-  createdAt: number
 }

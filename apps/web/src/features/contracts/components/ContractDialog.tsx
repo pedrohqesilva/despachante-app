@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import { useMutation } from "convex/react"
 import { ScrollText, ChevronLeft, ChevronRight, Save, Check, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -19,15 +19,15 @@ import { useContractForm } from "../hooks/useContractForm"
 import { useContractGeneration } from "../hooks/useContractGeneration"
 import { ContractFormFields } from "./ContractFormFields"
 import { ContractPreview } from "./ContractPreview"
-import { ContractEditor } from "./ContractEditor"
+import { ContractEditor, type ContractEditorRef } from "./ContractEditor"
 import { generateContractPdf } from "../utils/pdf-generator"
 
 type DialogStep = "select" | "preview" | "edit"
 
 const STEP_CONFIG: Record<DialogStep, { title: string; description: string }> = {
   select: {
-    title: "Selecionar Dados",
-    description: "Escolha o modelo e as informacoes do contrato",
+    title: "Novo Contrato",
+    description: "Preencha os dados do contrato",
   },
   preview: {
     title: "Visualizar Contrato",
@@ -35,8 +35,13 @@ const STEP_CONFIG: Record<DialogStep, { title: string; description: string }> = 
   },
   edit: {
     title: "Editar Contrato",
-    description: "Faca ajustes finais no texto do contrato",
+    description: "Faca ajustes no texto do contrato",
   },
+}
+
+const EDIT_MODE_CONFIG = {
+  title: "Editar Rascunho",
+  description: "Continue editando o contrato",
 }
 
 interface StepIndicatorProps {
@@ -85,6 +90,13 @@ interface ContractDialogProps {
   ownerIds: Id<"clients">[]
   open: boolean
   onOpenChange: (open: boolean) => void
+  editingContract?: {
+    _id: Id<"contracts">
+    name: string
+    description?: string
+    content: string
+    status: ContractStatus
+  }
 }
 
 export function ContractDialog({
@@ -92,13 +104,16 @@ export function ContractDialog({
   ownerIds,
   open,
   onOpenChange,
+  editingContract,
 }: ContractDialogProps) {
-  const [step, setStep] = useState<DialogStep>("select")
-  const [editedContent, setEditedContent] = useState("")
+  const isEditMode = !!editingContract
+  const [step, setStep] = useState<DialogStep>(isEditMode ? "edit" : "select")
+  const [editedContent, setEditedContent] = useState(editingContract?.content || "")
   const [isSaving, setIsSaving] = useState(false)
+  const editorRef = useRef<ContractEditorRef>(null)
 
-  const { formData, errors, updateField, validate, reset, isValid } =
-    useContractForm()
+  const { formData, errors, updateField, toggleClient, toggleNotaryOffice, validate, reset, isValid } =
+    useContractForm({ initialClientIds: ownerIds })
 
   const {
     generatedContent,
@@ -109,31 +124,48 @@ export function ContractDialog({
     isReady,
   } = useContractGeneration({
     templateId: formData.templateId,
-    clientId: formData.clientId,
+    clientIds: formData.clientIds,
     propertyId,
-    notaryOfficeId: formData.notaryOfficeId,
+    notaryOfficeIds: formData.notaryOfficeIds,
   })
 
   const createContract = useMutation(contractsApi.mutations.create)
+  const updateContract = useMutation(contractsApi.mutations.update)
   const generateUploadUrl = useMutation(contractsApi.mutations.generateUploadUrl)
   const updatePdfStorageId = useMutation(contractsApi.mutations.updatePdfStorageId)
   const createPropertyDocument = useMutation(contractsApi.mutations.createPropertyDocument)
 
   const steps: DialogStep[] = ["select", "preview", "edit"]
 
+  useEffect(() => {
+    if (editingContract) {
+      setStep("edit")
+      setEditedContent(editingContract.content)
+    } else {
+      setStep("select")
+      setEditedContent("")
+    }
+  }, [editingContract])
+
   const handleClose = useCallback(() => {
     onOpenChange(false)
     setTimeout(() => {
-      setStep("select")
-      setEditedContent("")
+      setStep(isEditMode ? "edit" : "select")
+      setEditedContent(editingContract?.content || "")
       reset()
     }, 200)
-  }, [onOpenChange, reset])
+  }, [onOpenChange, reset, isEditMode, editingContract])
 
-  const handleGenerate = useCallback(() => {
+  const handleContinue = useCallback(() => {
     if (!validate()) return
-    generate()
-  }, [validate, generate])
+
+    if (formData.templateId) {
+      generate()
+    } else {
+      setEditedContent("")
+      setStep("edit")
+    }
+  }, [validate, generate, formData.templateId])
 
   useEffect(() => {
     if (generatedContent && step === "select") {
@@ -141,6 +173,12 @@ export function ContractDialog({
       setStep("preview")
     }
   }, [generatedContent, step])
+
+  useEffect(() => {
+    if (step === "edit" && open) {
+      setTimeout(() => editorRef.current?.focus(), 100)
+    }
+  }, [step, open])
 
   const handleBack = useCallback(() => {
     const currentIndex = steps.indexOf(step)
@@ -161,27 +199,39 @@ export function ContractDialog({
 
   const handleSave = useCallback(
     async (status: ContractStatus) => {
-      if (!formData.templateId || !formData.clientId) return
-
       setIsSaving(true)
       try {
         const content = step === "edit" ? editedContent : generatedContent
+        let contractId: Id<"contracts">
 
-        const contractId = await createContract({
-          name: formData.name,
-          templateId: formData.templateId,
-          propertyId,
-          clientId: formData.clientId,
-          notaryOfficeId: formData.notaryOfficeId || undefined,
-          content,
-          status,
-        })
+        if (isEditMode && editingContract) {
+          await updateContract({
+            id: editingContract._id,
+            content,
+            status,
+          })
+          contractId = editingContract._id
+        } else {
+          const primaryClientId = formData.clientIds[0]
+          if (!primaryClientId) return
+
+          contractId = await createContract({
+            name: formData.name,
+            description: formData.description || undefined,
+            templateId: formData.templateId || undefined,
+            propertyId,
+            clientId: primaryClientId,
+            notaryOfficeId: formData.notaryOfficeIds[0] || undefined,
+            content,
+            status,
+          })
+        }
 
         if (status === "final") {
           try {
             const pdfBlob = await generateContractPdf({
               content,
-              filename: formData.name,
+              filename: isEditMode ? editingContract!.name : formData.name,
             })
 
             const uploadUrl = await generateUploadUrl()
@@ -205,8 +255,12 @@ export function ContractDialog({
                 mimeType: "application/pdf",
                 size: pdfBlob.size,
               })
+            } else {
+              toast.error("Erro ao fazer upload do PDF")
+              console.error("PDF upload error:", uploadResponse.statusText)
             }
           } catch (pdfError) {
+            toast.error("Erro ao gerar PDF do contrato")
             console.error("PDF generation error:", pdfError)
           }
         }
@@ -230,7 +284,10 @@ export function ContractDialog({
       editedContent,
       generatedContent,
       step,
+      isEditMode,
+      editingContract,
       createContract,
+      updateContract,
       generateUploadUrl,
       updatePdfStorageId,
       createPropertyDocument,
@@ -238,11 +295,13 @@ export function ContractDialog({
     ]
   )
 
-  const stepConfig = STEP_CONFIG[step]
+  const stepConfig = isEditMode ? EDIT_MODE_CONFIG : STEP_CONFIG[step]
+
+  const dialogWidth = step === "select" && !isEditMode ? "sm:max-w-[500px]" : "sm:max-w-[1200px]"
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="max-w-[1200px] sm:max-w-[1200px] p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
+      <DialogContent className={cn("p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col", dialogWidth)}>
         <div className="flex items-center justify-between gap-4 p-6 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
@@ -257,7 +316,7 @@ export function ContractDialog({
               </DialogDescription>
             </div>
           </div>
-          <StepIndicator currentStep={step} steps={steps} />
+          {!isEditMode && <StepIndicator currentStep={step} steps={steps} />}
         </div>
 
         <div className="flex-1 min-h-0 overflow-y-auto p-6">
@@ -265,8 +324,9 @@ export function ContractDialog({
             <ContractFormFields
               formData={formData}
               errors={errors}
-              ownerIds={ownerIds}
               onFieldChange={updateField}
+              onToggleClient={toggleClient}
+              onToggleNotaryOffice={toggleNotaryOffice}
               disabled={isGenerating}
             />
           )}
@@ -277,6 +337,7 @@ export function ContractDialog({
 
           {step === "edit" && (
             <ContractEditor
+              ref={editorRef}
               content={editedContent}
               onChange={setEditedContent}
               disabled={isSaving}
@@ -292,7 +353,7 @@ export function ContractDialog({
 
         <div className="flex items-center justify-between gap-3 p-6 border-t border-border/50 shrink-0">
           <div>
-            {step !== "select" && (
+            {step !== "select" && !isEditMode && (
               <Button
                 variant="outline"
                 onClick={handleBack}
@@ -311,8 +372,8 @@ export function ContractDialog({
 
             {step === "select" && (
               <Button
-                onClick={handleGenerate}
-                disabled={!isValid || isGenerating || !isReady}
+                onClick={handleContinue}
+                disabled={!isValid || isGenerating || !!(formData.templateId && !isReady)}
               >
                 {isGenerating ? (
                   <>
@@ -321,7 +382,7 @@ export function ContractDialog({
                   </>
                 ) : (
                   <>
-                    Gerar Contrato
+                    {formData.templateId ? "Gerar Contrato" : "Criar Contrato"}
                     <ChevronRight className="size-4 ml-1" />
                   </>
                 )}

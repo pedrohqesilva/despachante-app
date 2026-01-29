@@ -55,7 +55,7 @@ import { Property, PropertyStatus, PropertyType } from "@/types/property"
 import { Client } from "@/types/client"
 import { Id } from "@despachante/convex/_generated/dataModel"
 
-type SortField = "address" | "city" | "type" | "area" | "value" | "createdAt" | "status"
+type SortField = "address" | "city" | "type" | "area" | "value" | "_creationTime" | "status"
 type SortOrder = "asc" | "desc"
 
 export default function Properties() {
@@ -65,7 +65,7 @@ export default function Properties() {
   const [typeFilter, setTypeFilter] = useState<PropertyType | "all">("all")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<SortField>("createdAt")
+  const [sortBy, setSortBy] = useState<SortField>("_creationTime")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
   const [isPropertyDialogOpen, setIsPropertyDialogOpen] = useState(false)
   const [editingProperty, setEditingProperty] = useState<Property | null>(null)

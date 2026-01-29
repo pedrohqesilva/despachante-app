@@ -133,7 +133,7 @@ function DocumentRow({ doc, onDelete }: DocumentRowProps) {
       </div>
       <div className="flex flex-col items-end gap-0.5 shrink-0 opacity-100 group-hover:opacity-0 transition-opacity duration-200 absolute right-4">
         <span className="text-xs text-muted-foreground">{formatFileSize(doc.size)}</span>
-        <span className="text-xs text-muted-foreground/70">{formatDateOnly(doc.createdAt)}</span>
+        <span className="text-xs text-muted-foreground/70">{formatDateOnly(doc._creationTime)}</span>
       </div>
       <div data-actions className="flex items-center gap-1 shrink-0 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-accent rounded-lg p-1 -m-1 relative z-10">
         <Button
@@ -167,6 +167,7 @@ export function DocumentsSection({ propertyId, ownerIds }: DocumentsSectionProps
   const [documentToDelete, setDocumentToDelete] = useState<{ id: Id<"propertyDocuments">; name: string } | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
   const [isContractDialogOpen, setIsContractDialogOpen] = useState(false)
+  const [editingContract, setEditingContract] = useState<Contract | null>(null)
 
   const documents = useQuery(propertyDocumentsApi.queries.listByProperty, { propertyId })
   const contracts = useQuery(contractsApi.queries.listByProperty, { propertyId })
@@ -360,11 +361,15 @@ export function DocumentsSection({ propertyId, ownerIds }: DocumentsSectionProps
             <ContractDocumentRow
               key={contract._id}
               contract={contract as Contract}
+              onEdit={(c) => {
+                setEditingContract(c)
+                setIsContractDialogOpen(true)
+              }}
             />
           ))}
           {documents
             ?.filter((doc) => doc.type !== "contract")
-            .sort((a, b) => b.createdAt - a.createdAt)
+            .sort((a, b) => b._creationTime - a._creationTime)
             .map((doc) => (
               <DocumentRow
                 key={doc._id}
@@ -513,7 +518,19 @@ export function DocumentsSection({ propertyId, ownerIds }: DocumentsSectionProps
         propertyId={propertyId}
         ownerIds={ownerIds}
         open={isContractDialogOpen}
-        onOpenChange={setIsContractDialogOpen}
+        onOpenChange={(open) => {
+          setIsContractDialogOpen(open)
+          if (!open) {
+            setEditingContract(null)
+          }
+        }}
+        editingContract={editingContract ? {
+          _id: editingContract._id,
+          name: editingContract.name,
+          description: editingContract.description,
+          content: editingContract.content,
+          status: editingContract.status,
+        } : undefined}
       />
     </div>
   )

@@ -4,11 +4,11 @@ export type ContractTemplateStatus = "active" | "inactive"
 
 export interface ContractTemplate {
   _id: Id<"contractTemplates">
+  _creationTime: number
   name: string
   description?: string
   content: string
   status: ContractTemplateStatus
-  createdAt: number
   updatedAt: number
 }
 

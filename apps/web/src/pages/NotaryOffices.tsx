@@ -36,7 +36,7 @@ import {
 } from "@/lib/constants"
 import type { NotaryOffice, NotaryOfficeStatus } from "@/types/notary-office"
 
-type SortField = "name" | "code" | "createdAt" | "status"
+type SortField = "name" | "code" | "_creationTime" | "status"
 type SortOrder = "asc" | "desc"
 
 export default function NotaryOffices() {
@@ -44,7 +44,7 @@ export default function NotaryOffices() {
   const [statusFilter, setStatusFilter] = useState<NotaryOfficeStatus | "all">("all")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<SortField>("createdAt")
+  const [sortBy, setSortBy] = useState<SortField>("_creationTime")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingNotaryOffice, setEditingNotaryOffice] = useState<NotaryOffice | null>(null)

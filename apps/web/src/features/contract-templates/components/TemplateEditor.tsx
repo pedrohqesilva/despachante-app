@@ -19,7 +19,7 @@ export interface TemplateEditorRef {
 }
 
 export const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>(
-  function TemplateEditor(
+  (
     {
       value,
       onChange,
@@ -30,7 +30,7 @@ export const TemplateEditor = forwardRef<TemplateEditorRef, TemplateEditorProps>
       toolbarExtra,
     },
     ref
-  ) {
+  ) => {
     return (
       <RichTextEditor
         ref={ref as React.Ref<RichTextEditorRef>}

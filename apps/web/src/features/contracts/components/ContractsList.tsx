@@ -71,7 +71,7 @@ export function ContractsList({
 
           <div className="text-right shrink-0">
             <p className="text-xs text-muted-foreground">
-              {formatDateOnly(contract.createdAt)}
+              {formatDateOnly(contract._creationTime)}
             </p>
           </div>
         </button>

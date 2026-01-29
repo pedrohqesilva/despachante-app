@@ -37,7 +37,6 @@ export default defineSchema({
     weddingDate: v.optional(v.string()),
     fatherName: v.optional(v.string()),
     motherName: v.optional(v.string()),
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("email", ["email"])
@@ -58,7 +57,6 @@ export default defineSchema({
     phone: v.optional(v.string()),
     email: v.optional(v.string()),
     status: notaryOfficeStatusValidator,
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("code", ["code"])
@@ -77,7 +75,6 @@ export default defineSchema({
     value: v.number(),
     status: propertyStatusValidator,
     ownerIds: v.array(v.id("clients")),
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("status", ["status"])
@@ -92,7 +89,6 @@ export default defineSchema({
     clientIds: v.array(v.id("clients")),
     mimeType: v.string(),
     size: v.number(),
-    createdAt: v.number(),
   }).index("type", ["type"]),
 
   propertyDocuments: defineTable({
@@ -102,7 +98,6 @@ export default defineSchema({
     propertyId: v.id("properties"),
     mimeType: v.string(),
     size: v.number(),
-    createdAt: v.number(),
     contractId: v.optional(v.id("contracts")),
   })
     .index("type", ["type"])
@@ -114,20 +109,19 @@ export default defineSchema({
     description: v.optional(v.string()),
     content: v.string(),
     status: contractTemplateStatusValidator,
-    createdAt: v.number(),
     updatedAt: v.number(),
   }).index("status", ["status"]),
 
   contracts: defineTable({
     name: v.string(),
-    templateId: v.id("contractTemplates"),
+    description: v.optional(v.string()),
+    templateId: v.optional(v.id("contractTemplates")),
     propertyId: v.id("properties"),
     clientId: v.id("clients"),
     notaryOfficeId: v.optional(v.id("notaryOffices")),
     content: v.string(),
     status: contractStatusValidator,
     pdfStorageId: v.optional(v.id("_storage")),
-    createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("propertyId", ["propertyId"])

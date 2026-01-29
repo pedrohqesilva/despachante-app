@@ -8,9 +8,9 @@ import { replacePlaceholders, type ReplacementData } from "../utils/placeholder-
 
 export interface UseContractGenerationOptions {
   templateId: Id<"contractTemplates"> | null
-  clientId: Id<"clients"> | null
+  clientIds: Id<"clients">[]
   propertyId: Id<"properties">
-  notaryOfficeId: Id<"notaryOffices"> | null
+  notaryOfficeIds: Id<"notaryOffices">[]
 }
 
 export interface UseContractGenerationReturn {
@@ -25,10 +25,13 @@ export interface UseContractGenerationReturn {
 export function useContractGeneration(
   options: UseContractGenerationOptions
 ): UseContractGenerationReturn {
-  const { templateId, clientId, propertyId, notaryOfficeId } = options
+  const { templateId, clientIds, propertyId, notaryOfficeIds } = options
 
   const [generatedContent, setGeneratedContent] = useState("")
   const [error, setError] = useState<string | null>(null)
+
+  const primaryClientId = clientIds[0] || null
+  const primaryNotaryOfficeId = notaryOfficeIds[0] || null
 
   const template = useQuery(
     contractTemplatesApi.queries.getById,
@@ -37,40 +40,40 @@ export function useContractGeneration(
 
   const client = useQuery(
     clientsApi.queries.get,
-    clientId ? { id: clientId } : "skip"
+    primaryClientId ? { id: primaryClientId } : "skip"
   )
 
   const property = useQuery(propertiesApi.queries.get, { id: propertyId })
 
   const notaryOffice = useQuery(
     notaryOfficesApi.queries.getById,
-    notaryOfficeId ? { id: notaryOfficeId } : "skip"
+    primaryNotaryOfficeId ? { id: primaryNotaryOfficeId } : "skip"
   )
 
   const isLoading =
     (templateId && template === undefined) ||
-    (clientId && client === undefined) ||
+    (primaryClientId && client === undefined) ||
     property === undefined ||
-    (notaryOfficeId && notaryOffice === undefined)
+    (primaryNotaryOfficeId && notaryOffice === undefined)
 
   const isReady =
-    !!template && !!client && !!property && (!notaryOfficeId || !!notaryOffice)
+    !!template && !!client && !!property && (!primaryNotaryOfficeId || !!notaryOffice)
 
   const generate = useCallback(() => {
     setError(null)
 
     if (!template) {
-      setError("Modelo nao encontrado")
+      setError("Modelo não encontrado")
       return
     }
 
     if (!client) {
-      setError("Cliente nao encontrado")
+      setError("Cliente não encontrado")
       return
     }
 
     if (!property) {
-      setError("Imovel nao encontrado")
+      setError("Imóvel não encontrado")
       return
     }
 

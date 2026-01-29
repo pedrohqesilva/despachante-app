@@ -63,7 +63,20 @@ export const listByProperty = query({
       .withIndex("propertyId", (q) => q.eq("propertyId", args.propertyId))
       .collect()
 
-    return contracts.sort((a, b) => b.createdAt - a.createdAt)
+    const contractsWithSize = await Promise.all(
+      contracts.map(async (contract) => {
+        if (contract.pdfStorageId) {
+          const doc = await ctx.db
+            .query("propertyDocuments")
+            .withIndex("contractId", (q) => q.eq("contractId", contract._id))
+            .first()
+          return { ...contract, pdfSize: doc?.size }
+        }
+        return { ...contract, pdfSize: undefined }
+      })
+    )
+
+    return contractsWithSize.sort((a, b) => b._creationTime - a._creationTime)
   },
 })
 
@@ -81,7 +94,7 @@ export const listByClient = query({
       (contract) => contract.status === "final" || contract.status === "signed"
     )
 
-    return finalizedContracts.sort((a, b) => b.createdAt - a.createdAt)
+    return finalizedContracts.sort((a, b) => b._creationTime - a._creationTime)
   },
 })
 
@@ -96,7 +109,7 @@ export const getWithRelations = query({
     }
 
     const [template, property, client, notaryOffice] = await Promise.all([
-      ctx.db.get(contract.templateId),
+      contract.templateId ? ctx.db.get(contract.templateId) : null,
       ctx.db.get(contract.propertyId),
       ctx.db.get(contract.clientId),
       contract.notaryOfficeId ? ctx.db.get(contract.notaryOfficeId) : null,

@@ -50,7 +50,7 @@ import {
 } from "@/lib/constants"
 import type { Client, ClientStatus } from "@/types/client"
 
-type SortField = "name" | "email" | "createdAt" | "status"
+type SortField = "name" | "email" | "_creationTime" | "status"
 type SortOrder = "asc" | "desc"
 
 export default function Clients() {
@@ -61,7 +61,7 @@ export default function Clients() {
   const [statusFilter, setStatusFilter] = useState<ClientStatus | "all">("all")
   const [page, setPage] = useState(1)
   const [pageSize, setPageSize] = useState(10)
-  const [sortBy, setSortBy] = useState<SortField>("createdAt")
+  const [sortBy, setSortBy] = useState<SortField>("_creationTime")
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc")
 
   // Dialog state
