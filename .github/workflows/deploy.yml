@@ -67,7 +67,7 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy web to Railway
-        run: railway up --service web --config apps/web/railway.json --detach
+        run: cp apps/web/railway.json . && railway up --service web --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
@@ -82,6 +82,6 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy server to Railway
-        run: railway up --service server --config apps/server/railway.json --detach
+        run: cp apps/server/railway.json . && railway up --service server --detach
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
