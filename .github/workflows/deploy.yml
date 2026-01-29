@@ -66,6 +66,23 @@ jobs:
       - name: Install Railway CLI
         run: npm install -g @railway/cli
 
+      - name: Setup Railway config for web
+        run: |
+          cat > railway.json << 'EOF'
+          {
+            "$schema": "https://railway.app/railway.schema.json",
+            "build": {
+              "builder": "DOCKERFILE",
+              "dockerfilePath": "apps/web/Dockerfile"
+            },
+            "deploy": {
+              "numReplicas": 1,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 3
+            }
+          }
+          EOF
+
       - name: Deploy web to Railway
         run: railway up --service web --detach
         env:
@@ -80,6 +97,25 @@ jobs:
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
+
+      - name: Setup Railway config for server
+        run: |
+          cat > railway.json << 'EOF'
+          {
+            "$schema": "https://railway.app/railway.schema.json",
+            "build": {
+              "builder": "DOCKERFILE",
+              "dockerfilePath": "apps/server/Dockerfile"
+            },
+            "deploy": {
+              "numReplicas": 1,
+              "healthcheckPath": "/health",
+              "healthcheckTimeout": 30,
+              "restartPolicyType": "ON_FAILURE",
+              "restartPolicyMaxRetries": 3
+            }
+          }
+          EOF
 
       - name: Deploy server to Railway
         run: railway up --service server --detach
