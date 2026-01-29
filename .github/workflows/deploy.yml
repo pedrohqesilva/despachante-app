@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [main]
 
+env:
+  NODE_VERSION: 20
+  PNPM_VERSION: 9
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -14,12 +18,12 @@ jobs:
 
       - uses: pnpm/action-setup@v2
         with:
-          version: 9
+          version: ${{ env.PNPM_VERSION }}
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'pnpm'
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "pnpm"
 
       - name: Install dependencies
         run: pnpm install
@@ -30,9 +34,31 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
-  deploy-web:
-    needs: build
+  changes:
+    runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    outputs:
+      web: ${{ steps.filter.outputs.web }}
+      server: ${{ steps.filter.outputs.server }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            web:
+              - "apps/web/**"
+              - "packages/**"
+              - "pnpm-lock.yaml"
+            server:
+              - "apps/server/**"
+              - "packages/**"
+              - "pnpm-lock.yaml"
+
+  deploy-web:
+    needs: [build, changes]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -44,8 +70,8 @@ jobs:
           service: web
 
   deploy-server:
-    needs: build
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: [build, changes]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4

@@ -138,7 +138,6 @@ export function ContractDialog({
     isLoading: isGenerating,
     error: generationError,
     generate,
-    templateName,
     isReady,
   } = useContractGeneration({
     templateId: formData.templateId,

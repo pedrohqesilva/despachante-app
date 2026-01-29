@@ -33,12 +33,12 @@ export function AppLogo() {
         <div className='flex items-center' style={{ gap: '24px' }}>
             <img
                 src={logoPath}
-                alt="Vitrizium Logo"
+                alt="Despachapp Logo"
                 className="h-8 w-auto"
             />
             <img
                 src={textoPath}
-                alt="Vitrizium"
+                alt="Despachapp"
                 className="h-4 w-auto"
             />
         </div>

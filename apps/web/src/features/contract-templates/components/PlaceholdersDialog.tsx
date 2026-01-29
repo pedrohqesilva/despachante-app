@@ -14,7 +14,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { CollapsibleSection } from "@/components/ui/collapsible-section"
 import { PLACEHOLDER_GROUPS } from "@/lib/constants/contract-template.constants"
-import type { PlaceholderGroup, Placeholder } from "@/types/contract-template"
+import type { Placeholder } from "@/types/contract-template"
 
 interface PlaceholdersDialogProps {
   onPlaceholderClick: (placeholder: string) => void

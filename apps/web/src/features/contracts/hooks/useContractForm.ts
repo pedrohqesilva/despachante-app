@@ -55,7 +55,7 @@ export function useContractForm(
       return {
         name: contract.name,
         description: contract.description || "",
-        templateId: contract.templateId,
+        templateId: contract.templateId ?? null,
         clientIds: contract.clientId ? [contract.clientId] : [],
         notaryOfficeIds: contract.notaryOfficeId ? [contract.notaryOfficeId] : [],
       }

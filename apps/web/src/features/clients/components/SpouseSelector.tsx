@@ -1,5 +1,5 @@
 import { useState } from "react"
-import { Search, Plus, ChevronDown, Check, Loader2, Heart, X } from "lucide-react"
+import { Search, Plus, ChevronDown, Loader2, Heart, X } from "lucide-react"
 import { Id } from "@despachante/convex/_generated/dataModel"
 import { cn } from "@/lib/utils"
 import { formatTaxId } from "@/lib/format"

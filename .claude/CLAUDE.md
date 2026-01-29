@@ -201,6 +201,24 @@ Use the specialized agents when working on specific layers of the application:
 - Refactoring backend code
 - Integrating frontend with backend
 
+### CI/CD Specialist
+
+**`.claude/agents/cicd-specialist.md`** - Use for:
+- Configuring GitHub Actions workflows
+- Managing Railway deployments and services
+- Setting up environment variables and secrets
+- Troubleshooting build and deployment failures
+- Optimizing CI/CD pipeline performance
+- Implementing deployment strategies
+
+**When to use:**
+- Setting up new deployment pipelines
+- Debugging deployment failures
+- Adding or modifying environment variables
+- Optimizing build times
+- Configuring new services in Railway
+- Managing secrets and credentials
+
 ### How to Use Agents
 
 1. Identify the task layer (frontend or backend)

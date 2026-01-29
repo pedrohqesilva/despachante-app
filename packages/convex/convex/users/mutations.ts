@@ -36,15 +36,12 @@ export const changePassword = mutation({
     currentPassword: v.string(),
     newPassword: v.string(),
   },
-  handler: async (ctx, args) => {
+  handler: async (ctx, _args) => {
     const userId = await auth.getUserId(ctx)
     if (!userId) {
       throw new Error("Usuário não autenticado")
     }
 
-    // Convex Auth gerencia senhas internamente
-    // Esta mutation é um placeholder - a mudança de senha
-    // deve ser feita através do fluxo de autenticação do Convex Auth
     throw new Error("Alteração de senha deve ser feita através do fluxo de recuperação de senha")
   },
 })

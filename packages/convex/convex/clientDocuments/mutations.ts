@@ -1,7 +1,6 @@
 import { mutation } from "../_generated/server"
 import { v } from "convex/values"
 import { requireAuth } from "../lib/auth"
-import { getCurrentTimestamp } from "../lib/utils"
 import { NotFoundError } from "../lib/errors"
 import { documentTypeValidator } from "../lib/validators"
 import type { Id } from "../_generated/dataModel"

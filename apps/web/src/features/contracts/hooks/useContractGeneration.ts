@@ -50,11 +50,12 @@ export function useContractGeneration(
     primaryNotaryOfficeId ? { id: primaryNotaryOfficeId } : "skip"
   )
 
-  const isLoading =
+  const isLoading = Boolean(
     (templateId && template === undefined) ||
     (primaryClientId && client === undefined) ||
     property === undefined ||
     (primaryNotaryOfficeId && notaryOffice === undefined)
+  )
 
   const isReady =
     !!template && !!client && !!property && (!primaryNotaryOfficeId || !!notaryOffice)

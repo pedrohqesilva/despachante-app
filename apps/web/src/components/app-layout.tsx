@@ -1,6 +1,5 @@
 import { Outlet } from 'react-router-dom'
 import { AppHeader } from './app-header'
-import { AppFooter } from './app-footer'
 
 export function AppLayout() {
     return (

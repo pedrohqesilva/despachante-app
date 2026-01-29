@@ -14,7 +14,10 @@
     "typecheck": "turbo typecheck",
     "clean": "turbo clean && rm -rf node_modules",
     "convex:dev": "pnpm --filter @despachante/convex dev",
-    "convex:deploy": "pnpm --filter @despachante/convex deploy"
+    "convex:deploy": "pnpm --filter @despachante/convex deploy",
+    "railway:deploy": "railway up apps/web --service web --detach && railway up apps/server --service server --detach",
+    "railway:deploy:web": "railway up apps/web --service web",
+    "railway:deploy:server": "railway up apps/server --service server"
   },
   "devDependencies": {
     "shadcn": "^3.7.0",

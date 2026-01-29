@@ -36,13 +36,11 @@ import type { Contract, ContractStatus } from "@/types/contract"
 
 interface ContractDocumentRowProps {
   contract: Contract
-  onView?: (contract: Contract) => void
   onEdit?: (contract: Contract) => void
 }
 
 export function ContractDocumentRow({
   contract,
-  onView,
   onEdit,
 }: ContractDocumentRowProps) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
@@ -55,12 +53,6 @@ export function ContractDocumentRow({
   )
 
   const removeContract = useMutation(contractsApi.mutations.remove)
-
-  const handleView = useCallback(() => {
-    if (onView) {
-      onView(contract)
-    }
-  }, [contract, onView])
 
   const handleEdit = useCallback(() => {
     if (onEdit && contract.status === "draft") {
