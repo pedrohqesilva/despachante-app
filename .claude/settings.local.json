@@ -23,7 +23,10 @@
       "Bash(pnpm --filter web build:*)",
       "Bash(pnpm typecheck:*)",
       "Bash(pnpm run build:*)",
-      "Bash(pnpm:*)"
+      "Bash(pnpm:*)",
+      "mcp__shadcn__search_items_in_registries",
+      "mcp__shadcn__get_add_command_for_items",
+      "mcp__shadcn__view_items_in_registries"
     ]
   }
 }

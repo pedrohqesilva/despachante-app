@@ -94,7 +94,20 @@ export const listByClient = query({
       (contract) => contract.status === "final" || contract.status === "signed"
     )
 
-    return finalizedContracts.sort((a, b) => b._creationTime - a._creationTime)
+    const contractsWithSize = await Promise.all(
+      finalizedContracts.map(async (contract) => {
+        if (contract.pdfStorageId) {
+          const doc = await ctx.db
+            .query("propertyDocuments")
+            .withIndex("contractId", (q) => q.eq("contractId", contract._id))
+            .first()
+          return { ...contract, pdfSize: doc?.size }
+        }
+        return { ...contract, pdfSize: undefined }
+      })
+    )
+
+    return contractsWithSize.sort((a, b) => b._creationTime - a._creationTime)
   },
 })
 

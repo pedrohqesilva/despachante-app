@@ -1,5 +1,6 @@
 import { useState, useCallback, DragEvent } from "react"
 import { FileText, Upload, Download, AlertCircle, IdCard, FileCheck, Heart, MapPin, AlertTriangle } from "lucide-react"
+import { Alert, AlertTitle, AlertDescription } from "@/components/ui/alert"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -36,7 +37,8 @@ import { useQuery, useMutation } from "convex/react"
 import { clientDocumentsApi, contractsApi } from "@/lib/api"
 import { DocumentType, ClientDocument } from "@/types/client"
 import { formatDateOnly, formatFileSize } from "@/lib/format"
-import { ContractsList } from "@/features/contracts"
+import { ContractDocumentRow } from "@/features/contracts"
+import type { Contract } from "@/types/contract"
 
 interface DocumentsSectionProps {
   clientId: Id<"clients">
@@ -301,22 +303,21 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
 
   return (
     <div className="space-y-6">
-      {/* Alerta de documentos pendentes */}
       {hasMissingDocuments && (
-        <div className="flex items-start gap-3 p-4 rounded-xl border border-destructive/30 bg-destructive/10">
-          <AlertCircle className="size-5 text-destructive shrink-0 mt-0.5" />
-          <div>
-            <p className="text-sm font-medium text-destructive">Documentos pendentes</p>
-            <ul className="text-sm text-muted-foreground mt-2 space-y-1">
+        <Alert variant="destructive">
+          <AlertCircle />
+          <AlertTitle>Documentos pendentes</AlertTitle>
+          <AlertDescription>
+            <ul className="mt-1 space-y-1">
               {missingDocuments.map(type => (
                 <li key={type} className="flex items-center gap-2">
-                  <span className="size-1 rounded-full bg-muted-foreground/50 shrink-0" />
+                  <span className="size-1 rounded-full bg-current/50 shrink-0" />
                   {DOCUMENT_TYPE_CONFIG[type as DocumentType]?.label || type}
                 </li>
               ))}
             </ul>
-          </div>
-        </div>
+          </AlertDescription>
+        </Alert>
       )}
 
       {/* Área de upload */}
@@ -366,21 +367,23 @@ export function DocumentsSection({ clientId }: DocumentsSectionProps) {
         )}
       </div>
 
-      {/* Lista de contratos finalizados */}
-      {hasContracts && (
-        <ContractsList contracts={clientContracts} />
-      )}
-
-      {/* Lista de documentos */}
-      {hasDocuments && (
+      {(hasDocuments || hasContracts) && (
         <div className="space-y-3">
-          {[...documents].sort((a, b) => b._creationTime - a._creationTime).map((doc) => (
-            <DocumentRow
-              key={doc._id}
-              doc={doc as ClientDocument}
-              onDelete={(id, name) => setDocumentToDelete({ id, name })}
+          {clientContracts?.map((contract) => (
+            <ContractDocumentRow
+              key={contract._id}
+              contract={contract as Contract}
             />
           ))}
+          {documents
+            ?.sort((a, b) => b._creationTime - a._creationTime)
+            .map((doc) => (
+              <DocumentRow
+                key={doc._id}
+                doc={doc as ClientDocument}
+                onDelete={(id, name) => setDocumentToDelete({ id, name })}
+              />
+            ))}
         </div>
       )}
 

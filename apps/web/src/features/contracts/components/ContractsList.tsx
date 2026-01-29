@@ -1,6 +1,5 @@
 "use client"
 
-import { useQuery } from "convex/react"
 import { ScrollText } from "lucide-react"
 import { StatusBadge } from "@/components/ui/status-badge"
 import { IconContainer } from "@/components/ui/icon-container"
@@ -11,22 +10,19 @@ import {
   getContractStatusLabel,
   getContractStatusType,
 } from "@/lib/constants/contract.constants"
-import { contractsApi } from "@/lib/api"
-import type { Id } from "@despachante/convex/_generated/dataModel"
 import type { Contract, ContractStatus } from "@/types/contract"
 
 interface ContractsListProps {
-  clientId: Id<"clients">
+  contracts: Contract[] | undefined
   onContractClick?: (contract: Contract) => void
   className?: string
 }
 
 export function ContractsList({
-  clientId,
+  contracts,
   onContractClick,
   className,
 }: ContractsListProps) {
-  const contracts = useQuery(contractsApi.queries.listByClient, { clientId })
 
   if (!contracts || contracts.length === 0) {
     return (
@@ -45,7 +41,7 @@ export function ContractsList({
         <button
           key={contract._id}
           type="button"
-          onClick={() => onContractClick?.(contract as Contract)}
+          onClick={() => onContractClick?.(contract)}
           className="w-full flex items-center gap-4 p-4 rounded-xl text-left transition-all border border-border bg-accent/50 hover:bg-accent hover:border-border group"
         >
           <IconContainer
