@@ -1,9 +1,8 @@
 // Components
 export { ContractTemplateDialog } from "./components/ContractTemplateDialog"
-export { ContractTemplateFormFields } from "./components/ContractTemplateFormFields"
 export { ContractTemplatesTableActions } from "./components/ContractTemplatesTableActions"
 export { TemplateEditor } from "./components/TemplateEditor"
-export { PlaceholdersSidebar } from "./components/PlaceholdersSidebar"
+export { PlaceholdersDialog } from "./components/PlaceholdersDialog"
 
 // Hooks
 export { useContractTemplateForm } from "./hooks/useContractTemplateForm"

@@ -19,13 +19,13 @@ import { useState } from "react"
 import type { ContractTemplate } from "@/types/contract-template"
 
 interface ContractTemplatesTableActionsProps {
-  contractTemplate: ContractTemplate
-  onEdit?: (contractTemplate: ContractTemplate) => void
-  onDelete?: (contractTemplate: ContractTemplate) => Promise<void>
+  template: ContractTemplate
+  onEdit?: (template: ContractTemplate) => void
+  onDelete?: (template: ContractTemplate) => Promise<void>
 }
 
 export function ContractTemplatesTableActions({
-  contractTemplate,
+  template,
   onEdit,
   onDelete,
 }: ContractTemplatesTableActionsProps) {
@@ -37,7 +37,7 @@ export function ContractTemplatesTableActions({
 
     setIsDeleting(true)
     try {
-      await onDelete(contractTemplate)
+      await onDelete(template)
       setDeleteDialogOpen(false)
     } catch (error) {
       console.error("Error deleting contract template:", error)
@@ -57,7 +57,7 @@ export function ContractTemplatesTableActions({
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
           {onEdit && (
-            <DropdownMenuItem onClick={() => onEdit(contractTemplate)}>
+            <DropdownMenuItem onClick={() => onEdit(template)}>
               <Edit className="mr-2 h-4 w-4" />
               Editar
             </DropdownMenuItem>
@@ -83,7 +83,7 @@ export function ContractTemplatesTableActions({
             <DialogTitle>Confirmar exclusão</DialogTitle>
             <DialogDescription>
               Tem certeza que deseja excluir o modelo{" "}
-              <strong>{contractTemplate.name}</strong>? Esta ação não pode ser desfeita.
+              <strong>{template.name}</strong>? Esta ação não pode ser desfeita.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

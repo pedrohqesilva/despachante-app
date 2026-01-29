@@ -242,7 +242,7 @@ export function ContractDialog({
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[900px] p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
+      <DialogContent className="max-w-[1200px] sm:max-w-[1200px] p-0 gap-0 overflow-hidden max-h-[90vh] flex flex-col">
         <div className="flex items-center justify-between gap-4 p-6 border-b border-border/50 shrink-0">
           <div className="flex items-center gap-3">
             <div className="size-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center shrink-0">
@@ -260,7 +260,7 @@ export function ContractDialog({
           <StepIndicator currentStep={step} steps={steps} />
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6">
+        <div className="flex-1 min-h-0 overflow-y-auto p-6">
           {step === "select" && (
             <ContractFormFields
               formData={formData}

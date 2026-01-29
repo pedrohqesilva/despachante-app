@@ -2,6 +2,7 @@
 
 import { useQuery } from "convex/react"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import {
   Select,
@@ -163,6 +164,22 @@ export function ContractFormFields({
         {errors.name && (
           <p className="text-xs text-destructive">{errors.name}</p>
         )}
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="description" className="text-sm font-medium">
+          Descrição{" "}
+          <span className="text-muted-foreground text-xs">(opcional)</span>
+        </Label>
+        <Textarea
+          id="description"
+          value={formData.description}
+          onChange={(e) => onFieldChange("description", e.target.value)}
+          placeholder="Breve descrição do contrato..."
+          disabled={disabled}
+          rows={2}
+          className="resize-none max-h-30 overflow-y-auto"
+        />
       </div>
     </div>
   )

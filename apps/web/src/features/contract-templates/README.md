@@ -8,10 +8,9 @@ Modulo responsavel pela gestao de modelos de contrato do sistema, incluindo func
 contract-templates/
 ├── components/
 │   ├── ContractTemplateDialog.tsx       # Dialog de criacao/edicao de modelo
-│   ├── ContractTemplateFormFields.tsx   # Campos do formulario (nome, descricao, status)
 │   ├── ContractTemplatesTableActions.tsx # Menu de acoes da tabela
 │   ├── TemplateEditor.tsx               # Editor TipTap para conteudo
-│   └── PlaceholdersSidebar.tsx          # Sidebar com placeholders clicaveis
+│   └── PlaceholdersDialog.tsx           # Dialog com placeholders clicaveis
 ├── hooks/
 │   └── useContractTemplateForm.ts       # Hook de gerenciamento do formulario
 ├── index.ts                              # Barrel export
@@ -29,35 +28,19 @@ Dialog principal para criacao e edicao de modelos de contrato.
 interface ContractTemplateDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-  contractTemplate?: ContractTemplate | null  // Modelo para edicao (null = criacao)
+  template?: ContractTemplate | null  // Modelo para edicao (null = criacao)
   onSave: (data: ContractTemplateDialogSaveData) => Promise<void>
 }
 ```
 
 **Caracteristicas:**
-- Layout responsivo com editor a esquerda e sidebar de placeholders a direita
+- Layout full-screen (1000px max-width, 90vh altura)
+- Campos de Nome, Descricao e Status em linha no topo
+- Editor TipTap ocupando a area principal
+- Botao "Campos Disponíveis" que abre dialog de placeholders
 - Modo criacao e edicao
 - Validacao de campos obrigatorios
 - Campo de status apenas em modo edicao
-- Integracao entre editor e sidebar de placeholders
-
-### ContractTemplateFormFields
-
-Campos reutilizaveis do formulario de modelo.
-
-**Secoes:**
-1. **Informacoes do Modelo** - Nome, Descricao, Status (apenas edicao)
-
-**Props:**
-```typescript
-interface ContractTemplateFormFieldsProps {
-  formData: ContractTemplateFormData
-  errors: ContractTemplateFormErrors
-  onFieldChange: (field, value) => void
-  isEditing?: boolean
-  disabled?: boolean
-}
-```
 
 ### TemplateEditor
 
@@ -89,25 +72,26 @@ interface TemplateEditorRef {
 - Placeholder text quando vazio
 - Suporte a insercao de texto via ref (para placeholders)
 - Estilos prose do Tailwind
+- Preenche altura disponivel automaticamente
 
-### PlaceholdersSidebar
+### PlaceholdersDialog
 
-Sidebar com grupos de placeholders organizados por categoria.
+Dialog com grupos de placeholders organizados por categoria.
 
 **Props:**
 ```typescript
-interface PlaceholdersSidebarProps {
+interface PlaceholdersDialogProps {
   onPlaceholderClick: (placeholder: string) => void
   disabled?: boolean
-  className?: string
 }
 ```
 
 **Caracteristicas:**
+- Abre via botao "Campos Disponíveis" com icone de chaves
 - Grupos expansiveis/colapsaveis por categoria
 - Icones por categoria (User, Building2, Landmark, Calendar)
-- Tooltip com exemplo e formato do placeholder
-- Clique insere `{{placeholder.key}}` no editor
+- Grid de 2 colunas com nome e exemplo de cada placeholder
+- Clique insere `{{placeholder.key}}` no editor e fecha o dialog
 
 **Categorias de Placeholders:**
 - Cliente (nome, CPF, email, telefone, etc.)
@@ -122,9 +106,9 @@ Menu de acoes para cada linha da tabela.
 **Props:**
 ```typescript
 interface ContractTemplatesTableActionsProps {
-  contractTemplate: ContractTemplate
-  onEdit?: (contractTemplate: ContractTemplate) => void
-  onDelete?: (contractTemplate: ContractTemplate) => Promise<void>
+  template: ContractTemplate
+  onEdit?: (template: ContractTemplate) => void
+  onDelete?: (template: ContractTemplate) => Promise<void>
 }
 ```
 
@@ -234,7 +218,7 @@ function ContractTemplatesPage() {
       <ContractTemplateDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
-        contractTemplate={editingTemplate}
+        template={editingTemplate}
         onSave={handleSave}
       />
 
@@ -245,7 +229,7 @@ function ContractTemplatesPage() {
             <TableCell>{template.description}</TableCell>
             <TableCell>
               <ContractTemplatesTableActions
-                contractTemplate={template}
+                template={template}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
               />

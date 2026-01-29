@@ -6,6 +6,7 @@ import type { Contract } from "@/types/contract"
 
 export interface ContractFormData {
   name: string
+  description: string
   templateId: Id<"contractTemplates"> | null
   clientId: Id<"clients"> | null
   notaryOfficeId: Id<"notaryOffices"> | null
@@ -36,6 +37,7 @@ export interface UseContractFormReturn {
 
 const initialFormData: ContractFormData = {
   name: "",
+  description: "",
   templateId: null,
   clientId: null,
   notaryOfficeId: null,
@@ -50,6 +52,7 @@ export function useContractForm(
     if (contract) {
       return {
         name: contract.name,
+        description: "",
         templateId: contract.templateId,
         clientId: contract.clientId,
         notaryOfficeId: contract.notaryOfficeId || null,
