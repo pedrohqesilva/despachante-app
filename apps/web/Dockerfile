@@ -42,13 +42,8 @@ COPY apps/web/nginx.conf /etc/nginx/conf.d/default.conf
 COPY --from=builder /app/apps/web/dist /usr/share/nginx/html
 
 # Support dynamic PORT from Railway
-COPY <<EOF /docker-entrypoint.d/99-dynamic-port.sh
-#!/bin/sh
-if [ -n "\$PORT" ]; then
-    sed -i "s/listen 80;/listen \$PORT;/g" /etc/nginx/conf.d/default.conf
-fi
-EOF
-RUN chmod +x /docker-entrypoint.d/99-dynamic-port.sh
+RUN printf '#!/bin/sh\nif [ -n "$PORT" ]; then\n    sed -i "s/listen 80;/listen $PORT;/g" /etc/nginx/conf.d/default.conf\nfi\n' > /docker-entrypoint.d/99-dynamic-port.sh && \
+    chmod +x /docker-entrypoint.d/99-dynamic-port.sh
 
 EXPOSE 80
 CMD ["nginx", "-g", "daemon off;"]
