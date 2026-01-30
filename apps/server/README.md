@@ -4,11 +4,11 @@ Backend Express da aplicacao Despachante App.
 
 ## Stack
 
-| Tecnologia | Versao | Descricao |
-|------------|--------|-----------|
-| Node.js | 20+ | Runtime |
-| Express | 4.18 | Framework web |
-| TypeScript | 5.7 | Tipagem estatica |
+| Tecnologia | Versao | Descricao        |
+| ---------- | ------ | ---------------- |
+| Node.js    | 20+    | Runtime          |
+| Express    | 4.18   | Framework web    |
+| TypeScript | 5.7    | Tipagem estatica |
 
 ## Estrutura
 
@@ -51,22 +51,22 @@ pnpm start
 
 ## Variaveis de Ambiente
 
-| Variavel | Descricao | Obrigatorio |
-|----------|-----------|-------------|
-| `PORT` | Porta do servidor | Nao (default: 5000) |
+| Variavel | Descricao         | Obrigatorio         |
+| -------- | ----------------- | ------------------- |
+| `PORT`   | Porta do servidor | Nao (default: 5000) |
 
 ## API
 
-| Metodo | Endpoint | Descricao |
-|--------|----------|-----------|
-| `GET` | `/health` | Health check |
-| `GET` | `/api/status` | Status da API |
+| Metodo | Endpoint      | Descricao     |
+| ------ | ------------- | ------------- |
+| `GET`  | `/health`     | Health check  |
+| `GET`  | `/api/status` | Status da API |
 
 ## Scripts
 
-| Script | Descricao |
-|--------|-----------|
-| `pnpm dev` | Servidor com hot-reload |
-| `pnpm build` | Compila TypeScript |
-| `pnpm start` | Executa build de producao |
-| `pnpm typecheck` | Verificacao de tipos |
+| Script           | Descricao                 |
+| ---------------- | ------------------------- |
+| `pnpm dev`       | Servidor com hot-reload   |
+| `pnpm build`     | Compila TypeScript        |
+| `pnpm start`     | Executa build de producao |
+| `pnpm typecheck` | Verificacao de tipos      |

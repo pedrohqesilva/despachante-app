@@ -4,15 +4,15 @@ Frontend React da aplicacao Despachante App.
 
 ## Stack
 
-| Tecnologia | Versao | Descricao |
-|------------|--------|-----------|
-| React | 19 | UI Library |
-| Vite | 6 | Build tool |
-| TypeScript | 5.7 | Tipagem estatica |
-| Tailwind CSS | 4 | Estilizacao |
-| React Router | 7 | Roteamento |
-| Convex | 1.31 | Backend/Auth |
-| shadcn/ui | - | Componentes UI |
+| Tecnologia   | Versao | Descricao        |
+| ------------ | ------ | ---------------- |
+| React        | 19     | UI Library       |
+| Vite         | 6      | Build tool       |
+| TypeScript   | 5.7    | Tipagem estatica |
+| Tailwind CSS | 4      | Estilizacao      |
+| React Router | 7      | Roteamento       |
+| Convex       | 1.31   | Backend/Auth     |
+| shadcn/ui    | -      | Componentes UI   |
 
 ## Estrutura
 
@@ -64,11 +64,11 @@ pnpm preview
 
 Crie um arquivo `.env` em `apps/web/`:
 
-| Variavel | Descricao | Obrigatorio |
-|----------|-----------|-------------|
-| `VITE_APP_NAME` | Nome da aplicacao | Nao |
-| `VITE_CONVEX_URL` | URL do Convex Cloud | Sim |
-| `CONVEX_DEPLOYMENT` | ID do deployment Convex | Sim |
+| Variavel            | Descricao               | Obrigatorio |
+| ------------------- | ----------------------- | ----------- |
+| `VITE_APP_NAME`     | Nome da aplicacao       | Nao         |
+| `VITE_CONVEX_URL`   | URL do Convex Cloud     | Sim         |
+| `CONVEX_DEPLOYMENT` | ID do deployment Convex | Sim         |
 
 ## Autenticacao
 
@@ -80,10 +80,10 @@ O app usa Convex Auth com provider de Password:
 
 ## Scripts
 
-| Script | Descricao |
-|--------|-----------|
-| `pnpm dev` | Servidor de desenvolvimento |
-| `pnpm build` | Build de producao |
-| `pnpm preview` | Preview do build |
-| `pnpm lint` | Executa ESLint |
-| `pnpm typecheck` | Verificacao de tipos |
+| Script           | Descricao                   |
+| ---------------- | --------------------------- |
+| `pnpm dev`       | Servidor de desenvolvimento |
+| `pnpm build`     | Build de producao           |
+| `pnpm preview`   | Preview do build            |
+| `pnpm lint`      | Executa ESLint              |
+| `pnpm typecheck` | Verificacao de tipos        |
