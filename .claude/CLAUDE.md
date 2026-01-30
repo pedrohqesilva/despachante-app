@@ -219,12 +219,33 @@ Use the specialized agents when working on specific layers of the application:
 - Configuring new services in Railway
 - Managing secrets and credentials
 
+### Security Specialist
+
+**`.claude/agents/security-specialist.md`** - Use for:
+- Identifying OWASP Top 10 vulnerabilities
+- Reviewing code for security flaws
+- Auditing authentication and authorization implementations
+- Analyzing dependencies for known CVEs
+- Reviewing CI/CD security configurations
+- Implementing secure coding patterns
+- Configuring security headers
+
+**When to use:**
+- Performing security audits on the codebase
+- Reviewing code for injection vulnerabilities (XSS, SQLi, etc.)
+- Auditing authentication flows
+- Checking for exposed secrets or credentials
+- Validating input sanitization
+- Ensuring secure data handling practices
+- Before deploying to production
+
 ### How to Use Agents
 
-1. Identify the task layer (frontend or backend)
+1. Identify the task layer (frontend, backend, CI/CD, or security)
 2. Reference the appropriate agent file for guidelines
 3. Follow the architectural patterns described
 4. Apply the language standards (English code, Portuguese UI/comments)
+5. For security concerns, always involve the security-specialist agent
 
 ### Parallel Execution for New Features
 
