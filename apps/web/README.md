@@ -1,6 +1,6 @@
 # @despachante/web
 
-Frontend React da aplicacao Despachante App.
+Frontend React da aplicacao Despachante App..
 
 ## Stack
 

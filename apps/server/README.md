@@ -1,6 +1,6 @@
 # @despachante/server
 
-Backend Express da aplicacao Despachante App.
+Backend Express da aplicacao Despachante App..
 
 ## Stack
 
