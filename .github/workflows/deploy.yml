@@ -17,13 +17,13 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4.1.1
 
-      - uses: pnpm/action-setup@fe02b34f77f8bc703788d5cd3f28f1a27a392f31 # v2.4.0
+      - uses: pnpm/action-setup@v4.1.0
         with:
           version: ${{ env.PNPM_VERSION }}
 
-      - uses: actions/setup-node@60ecd5dd545a775178f52524783378180af0d1f8 # v4.0.2
+      - uses: actions/setup-node@v4.0.2
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: "pnpm"
@@ -47,9 +47,9 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
       server: ${{ steps.filter.outputs.server }}
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4.1.1
 
-      - uses: dorny/paths-filter@de90cc6fb38fc0963ad72b210f1f284cd68cea36 # v3.0.2
+      - uses: dorny/paths-filter@v3.0.2
         id: filter
         with:
           filters: |
@@ -67,7 +67,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4.1.1
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli@3.14.0
@@ -82,7 +82,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+      - uses: actions/checkout@v4.1.1
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli@3.14.0
