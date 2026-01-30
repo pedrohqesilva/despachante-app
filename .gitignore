@@ -1,4 +1,35 @@
+# Dependencies
 node_modules
-.turbo
+.pnpm-store
+
+# Build outputs
 dist
+.turbo
+.next
+.vite
+
+# Environment files - NEVER commit these
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
 nul
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Credentials
+*.pem
+*.key
+credentials*.json
+serviceAccountKey*.json

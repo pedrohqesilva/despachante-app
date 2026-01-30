@@ -5,8 +5,28 @@ import apiRoutes from './routes/api.js';
 
 const app = express();
 
-// Middleware
-app.use(cors());
+// CORS configurado com origens permitidas
+const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+        const allowedOrigins = config.corsOrigin.split(',').map(o => o.trim());
+
+        // Permitir requisições sem origin (ex: mobile apps, Postman em dev)
+        if (!origin && !config.isProduction) {
+            return callback(null, true);
+        }
+
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Origem não permitida pelo CORS'));
+        }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
