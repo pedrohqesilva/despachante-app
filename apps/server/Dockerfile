@@ -1,5 +1,5 @@
 # Build stage
-FROM node:20-alpine AS builder
+FROM node:25-alpine AS builder
 WORKDIR /app
 
 # Enable pnpm
@@ -25,7 +25,7 @@ RUN pnpm --filter @despachante/shared build || true
 RUN pnpm --filter @despachante/server build
 
 # Production stage
-FROM node:20-alpine
+FROM node:25-alpine
 WORKDIR /app
 
 RUN corepack enable && corepack prepare pnpm@9 --activate
