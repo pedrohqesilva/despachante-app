@@ -164,42 +164,26 @@ When you need up-to-date documentation for any library (React, Next.js, Convex, 
 
 ## Specialized Agents
 
-Use the specialized agents when working on specific layers of the application:
+Use the specialized agents when working on specific areas of the application:
 
-### Frontend Specialist
+### Dev Specialist (Full-Stack)
 
-**`.claude/agents/frontend-specialist.md`** - Use for:
+**`.claude/agents/dev-specialist.md`** - Use for:
+- Creating complete features from database to UI
+- Implementing full CRUD operations end-to-end
+- Building forms with validation on both frontend and backend
 - Creating and modifying React/Next.js components
 - Managing shadcn/ui components using MCP tools
 - Implementing styling with Tailwind CSS 4
-- Structuring applications with Feature-Sliced Design
-- Applying SOLID principles in frontend
-- Implementing layouts and UI features
-- Ensuring accessibility and UX best practices
-
-**When to use:**
-- Creating new UI components or features
-- Implementing complex frontend architecture
-- Working with shadcn/ui components
-- Structuring frontend code organization
-- Implementing design patterns and layouts
-
-### Backend Specialist
-
-**`.claude/agents/convex-backend-specialist.md`** - Use for:
-- Creating or modifying database schemas
+- Creating or modifying database schemas (Convex)
 - Implementing queries and mutations
-- Designing API structures
-- Applying clean architecture patterns
-- Implementing business logic
-- Ensuring SOLID principles in backend code
+- Ensuring type consistency across all layers
 
 **When to use:**
-- Creating new database tables or modifying schema
-- Implementing backend queries and mutations
-- Adding validation or business logic
-- Refactoring backend code
-- Integrating frontend with backend
+- Creating new features (schema + queries + mutations + components + hooks)
+- Adding fields or functionality that spans both layers
+- Refactoring features that involve frontend and/or backend
+- Any frontend or backend development task
 
 ### CI/CD Specialist
 
@@ -241,57 +225,14 @@ Use the specialized agents when working on specific layers of the application:
 
 ### How to Use Agents
 
-1. Identify the task layer (frontend, backend, CI/CD, or security)
+1. Identify the task area:
+   - **Development (frontend/backend)**: Use dev-specialist
+   - **CI/CD**: Use cicd-specialist
+   - **Security**: Use security-specialist
 2. Reference the appropriate agent file for guidelines
 3. Follow the architectural patterns described
 4. Apply the language standards (English code, Portuguese UI/comments)
 5. For security concerns, always involve the security-specialist agent
-
-### Parallel Execution for New Features
-
-When creating a new feature that requires both frontend and backend work, **launch both agents in parallel** for maximum efficiency:
-
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    New Feature Request                       │
-└─────────────────────────────────────────────────────────────┘
-                              │
-              ┌───────────────┴───────────────┐
-              ▼                               ▼
-┌─────────────────────────┐     ┌─────────────────────────┐
-│   Backend Specialist    │     │   Frontend Specialist   │
-│                         │     │                         │
-│ • Create schema         │     │ • Create components     │
-│ • Implement queries     │     │ • Implement hooks       │
-│ • Implement mutations   │     │ • Create UI/forms       │
-│ • Add validation        │     │ • Add styling           │
-└─────────────────────────┘     └─────────────────────────┘
-              │                               │
-              └───────────────┬───────────────┘
-                              ▼
-┌─────────────────────────────────────────────────────────────┐
-│              Integration & Testing                           │
-└─────────────────────────────────────────────────────────────┘
-```
-
-**When to use parallel execution:**
-- Creating a new feature (e.g., "criar módulo de documentos")
-- Adding CRUD operations for a new entity
-- Implementing a complete user flow
-
-**How to execute in parallel:**
-1. Send a single message with multiple Task tool calls
-2. One Task for `convex-backend-specialist` (schema, queries, mutations)
-3. One Task for `frontend-specialist` (components, hooks, UI)
-4. Both agents work simultaneously
-5. Integrate and test after both complete
-
-**Example prompt for parallel execution:**
-```
-Criar feature de documentos:
-- Backend: schema, queries (list, get), mutations (create, update, delete)
-- Frontend: DocumentDialog, DocumentFormFields, useDocumentForm, página de listagem
-```
 
 ## Enforcement Rules
 
@@ -306,6 +247,7 @@ When writing or reviewing code, always ensure:
 8. **When editing any file, remove unnecessary comments** - delete obvious, redundant, or outdated comments that don't add value
 9. **Read feature README before starting work** - always read the README.md of a feature before modifying it
 10. **Always update feature README** - when modifying components, hooks, or types in a feature folder
+11. **Check for existing components before creating new ones** - always search for existing components in `shared/components/`, `features/*/components/`, and shadcn/ui before creating a new component. Reuse and extend existing components instead of duplicating functionality
 
 ## Feature Documentation
 
