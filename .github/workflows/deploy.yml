@@ -67,7 +67,7 @@ jobs:
       - uses: actions/checkout@v4.1.1
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli@3.14.0
+        run: npm install -g @railway/cli
 
       - name: Deploy web to Railway
         run: cp apps/web/railway.json . && railway up --service web --detach
@@ -82,7 +82,7 @@ jobs:
       - uses: actions/checkout@v4.1.1
 
       - name: Install Railway CLI
-        run: npm install -g @railway/cli@3.14.0
+        run: npm install -g @railway/cli
 
       - name: Deploy server to Railway
         run: cp apps/server/railway.json . && railway up --service server --detach
