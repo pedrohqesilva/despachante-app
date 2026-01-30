@@ -16,7 +16,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v6.0.2
 
       - uses: pnpm/action-setup@v4.1.0
 
@@ -44,7 +44,7 @@ jobs:
       web: ${{ steps.filter.outputs.web }}
       server: ${{ steps.filter.outputs.server }}
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v6.0.2
 
       - uses: dorny/paths-filter@v3.0.2
         id: filter
@@ -64,7 +64,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.web == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v6.0.2
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
@@ -79,7 +79,7 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push' && needs.changes.outputs.server == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4.1.1
+      - uses: actions/checkout@v6.0.2
 
       - name: Install Railway CLI
         run: npm install -g @railway/cli
