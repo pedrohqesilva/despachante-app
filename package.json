@@ -20,8 +20,8 @@
     "railway:deploy:server": "railway up apps/server --service server"
   },
   "devDependencies": {
-    "shadcn": "^3.7.0",
-    "turbo": "^2.3.0"
+    "shadcn": "^3.8.4",
+    "turbo": "^2.8.3"
   },
   "engines": {
     "node": ">=20.0.0",
